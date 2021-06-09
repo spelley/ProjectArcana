@@ -98,6 +98,9 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
 
     public List<StatusEffect> statusEffects = new List<StatusEffect>();
 
+    public event Action OnUnitTurnStart;
+    public event Action OnUnitTurnEnd;
+
     public event Action<IDamageable, IDamageable, ModInt> OnPredictDealDamage;
     public event Action<IDamageable, IDamageable, ModInt> OnDealDamageCalculation;
     public event Action<IDamageable, IDamageable, ModInt> OnPredictReceiveDamage;
@@ -131,11 +134,12 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
     public void StartTurn()
     {
         Debug.Log("Started turn: "+this.unitName);
+        OnUnitTurnStart?.Invoke();
     }
 
     public void EndTurn()
     {
-
+        OnUnitTurnEnd?.Invoke();
     }
 
     public void AddStatus(StatusEffect statusEffect)

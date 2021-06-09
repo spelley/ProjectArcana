@@ -147,6 +147,5 @@ public class CameraController : MonoBehaviour
     {
         movePosition = Vector3.zero;
         followTarget = target.transform;
-        //vcam.Follow = target.transform;
     }
 }

@@ -50,47 +50,59 @@ public class TacticsMotor : MonoBehaviour
         }
     }
 
+    void OnDestroy()
+    {
+        if(battleManager != null)
+        {
+            battleManager.OnEncounterStart -= OnEncounterStart;
+            battleManager.OnEncounterEnd -= OnEncounterEnd;
+
+            battleManager.OnSkillConfirm += OnSkillConfirm;
+            battleManager.OnSkillExecute += OnSkillExecute;
+            battleManager.OnSkillClear += OnSkillClear;
+            mapManager.OnTravelPath += OnTravelPath;
+        }
+        characterMotor.unitData.OnUnitTurnStart -= OnUnitTurnStart;
+        characterMotor.unitData.OnUnitTurnEnd -= OnUnitTurnEnd;
+    }
+
     public void OnEncounterStart()
     {
-        battleManager.turnManager.OnTurnStart += OnTurnStart;
-        battleManager.turnManager.OnTurnEnd += OnTurnEnd;
         characterMotor.locked = true;
+
+        characterMotor.unitData.OnUnitTurnStart += OnUnitTurnStart;
+        characterMotor.unitData.OnUnitTurnEnd += OnUnitTurnEnd;
 
         SnapToGrid();
     }
 
     public void OnEncounterEnd()
     {
-        if(battleManager.turnManager != null)
-        {
-            battleManager.turnManager.OnTurnStart -= OnTurnStart;
-            battleManager.turnManager.OnTurnEnd -= OnTurnEnd;
-        }
         characterMotor.locked = false;
+
+        characterMotor.unitData.OnUnitTurnStart -= OnUnitTurnStart;
+        characterMotor.unitData.OnUnitTurnEnd -= OnUnitTurnEnd;
 
         mapManager.ClearAllTiles();
     }
 
-    void OnTurnStart(ITurnTaker curTurnTaker)
+    void OnUnitTurnStart()
     {
-        if(curTurnTaker == characterMotor.unitData as ITurnTaker)
+        battleManager.OnSkillConfirm += OnSkillConfirm;
+        battleManager.OnSkillExecute += OnSkillExecute;
+        battleManager.OnSkillClear += OnSkillClear;
+        mapManager.OnTravelPath += OnTravelPath;
+
+        cameraController.SetFocus(this.gameObject);
+
+        AIBrain aiBrain = characterMotor.unitData.aiBrain;
+        if(aiBrain != null)
         {
-            battleManager.OnSkillConfirm += OnSkillConfirm;
-            battleManager.OnSkillExecute += OnSkillExecute;
-            battleManager.OnSkillClear += OnSkillClear;
-            mapManager.OnTravelPath += OnTravelPath;
-
-            cameraController.SetFocus(this.gameObject);
-
-            AIBrain aiBrain = characterMotor.unitData.aiBrain;
-            if(characterMotor.unitData.canMove && characterMotor.unitData.canAct && aiBrain != null && characterMotor.unitData.faction != Faction.ALLY)
-            {
-                AI(aiBrain);
-            }
-            else if(characterMotor.unitData.canMove)
-            {
-                mapManager.LoadWalkabilityZone(this.gameObject, this.transform.position);
-            }
+            AI(aiBrain);
+        }
+        else if(characterMotor.unitData.canMove)
+        {
+            mapManager.LoadWalkabilityZone(this.gameObject, this.transform.position);
         }
     }
 
@@ -189,16 +201,13 @@ public class TacticsMotor : MonoBehaviour
         anim.SetBool("Moving", false);
     }
 
-    void OnTurnEnd(ITurnTaker curTurnTaker)
+    void OnUnitTurnEnd()
     {
-        if(curTurnTaker == (characterMotor.unitData as ITurnTaker))
-        {
-            battleManager.OnSkillConfirm -= OnSkillConfirm;
-            battleManager.OnSkillExecute -= OnSkillExecute;
-            battleManager.OnSkillClear -= OnSkillClear;
-            mapManager.OnTravelPath -= OnTravelPath;
-            mapManager.ClearAllTiles();
-        }
+        battleManager.OnSkillConfirm -= OnSkillConfirm;
+        battleManager.OnSkillExecute -= OnSkillExecute;
+        battleManager.OnSkillClear -= OnSkillClear;
+        mapManager.OnTravelPath -= OnTravelPath;
+        mapManager.ClearAllTiles();
     }
 
     void OnSkillConfirm(SkillData skillData, UnitData unitData, List<GridCell> targets)
