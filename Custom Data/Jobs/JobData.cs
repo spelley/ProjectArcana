@@ -59,7 +59,7 @@ public class JobData: ScriptableObject
     }
 
     [SerializeField]
-    private List<JobSkill> _skills = new List<JobSkill>();
+    List<JobSkill> _skills = new List<JobSkill>();
     public List<JobSkill> skills
     {
         get
@@ -73,7 +73,7 @@ public class JobData: ScriptableObject
     }
 
     [SerializeField]
-    private List<UnitJob> jobRequirements = new List<UnitJob>();
+    List<UnitJob> jobRequirements = new List<UnitJob>();
 
     public bool IsQualifiedFor(UnitData unit)
     {

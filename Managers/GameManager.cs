@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    private static GameManager _instance;
+    static GameManager _instance;
     public static GameManager Instance 
     { 
         get 
@@ -35,7 +35,7 @@ public class GameManager : MonoBehaviour
 
     [SerializeField]
     GameObject battleManagerPrefab;
-    private BattleManager _battleManager;
+    BattleManager _battleManager;
     public BattleManager BattleManager
     {
         get
@@ -50,7 +50,7 @@ public class GameManager : MonoBehaviour
 
     [SerializeField]
     GameObject mapManagerPrefab;
-    private MapManager _mapManager;
+    MapManager _mapManager;
     public MapManager MapManager
     {
         get

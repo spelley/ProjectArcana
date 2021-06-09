@@ -6,7 +6,7 @@ using UnityEngine;
 public abstract class CommandData: ScriptableObject
 {
     [SerializeField]
-    private string _commandName;
+    string _commandName;
     public string commandName
     { 
         get
@@ -20,7 +20,7 @@ public abstract class CommandData: ScriptableObject
     }
 
     [SerializeField]
-    private string _description;
+    string _description;
     public string description
     { 
         get

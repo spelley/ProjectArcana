@@ -7,10 +7,10 @@ using UnityEngine;
 public class HasteStatus : StatusEffect
 {
     [SerializeField]
-    private float hasteMultiplier = 1.5f;
+    float hasteMultiplier = 1.5f;
 
     [SerializeField]
-    private StatusEffect neutralizedBy;
+    StatusEffect neutralizedBy;
     
     public override void Apply(UnitData unitData)
     {

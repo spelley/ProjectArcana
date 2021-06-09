@@ -34,7 +34,7 @@ public class FormationData : ScriptableObject
     }
 
     [SerializeField]
-    private Sprite _image;
+    Sprite _image;
     public Sprite image
     {
         get

@@ -8,7 +8,7 @@ using System.IO;
 [ExecuteInEditMode]
 public class MapBuilder : MonoBehaviour
 {
-    private static MapBuilder _instance;
+    static MapBuilder _instance;
     public static MapBuilder Instance 
     { 
         get 

@@ -15,23 +15,23 @@ public class CameraController : MonoBehaviour
     Transform followTarget;
 
     [SerializeField]
-    private float maxSize = 14f;
+    float maxSize = 14f;
 
     [SerializeField]
-    private float minSize = 4f;
+    float minSize = 4f;
 
     [SerializeField]
-    private float zoomSpeed = 5f;
+    float zoomSpeed = 5f;
 
     [SerializeField]
-    private float rotationSpeed = 5f;
+    float rotationSpeed = 5f;
     [SerializeField]
-    private float scrollSpeed = 5f;
+    float scrollSpeed = 5f;
 
     [SerializeField]
-    private List<float> rotations = new List<float>();
+    List<float> rotations = new List<float>();
 
-    private int curRotation = 0;
+    int curRotation = 0;
 
     Vector3 movePosition;
 

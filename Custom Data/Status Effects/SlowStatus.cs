@@ -6,10 +6,10 @@ using UnityEngine;
 public class SlowStatus : StatusEffect
 {
     [SerializeField]
-    private float slowMultiplier = 0.5f;
+    float slowMultiplier = 0.5f;
 
     [SerializeField]
-    private StatusEffect neutralizedBy;
+    StatusEffect neutralizedBy;
     
     public override void Apply(UnitData unitData)
     {

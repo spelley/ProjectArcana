@@ -5,7 +5,7 @@ public class CameraFollow : MonoBehaviour {
 	Vector3 offset;
     public Transform target;
     public float smoothTime = 0.3F;
-    private Vector3 velocity = Vector3.zero;
+    Vector3 velocity = Vector3.zero;
 
 	// Use this for initialization
 	void Start () {

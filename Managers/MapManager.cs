@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class MapManager : MonoBehaviour
 {
-    private static MapManager _instance;
+    static MapManager _instance;
     public static MapManager Instance 
     { 
         get 

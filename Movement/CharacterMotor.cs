@@ -5,7 +5,7 @@ using TMPro;
 
 public class CharacterMotor : MonoBehaviour 
 {
-    private bool _locked;
+    bool _locked;
     public bool locked {
         get
         {
@@ -30,20 +30,20 @@ public class CharacterMotor : MonoBehaviour
     public float moveSpeed = 12f;
     public float jumpSpeed = 1f;
     public float gravity = 9.8f;
-    private bool jump;
-    private float verticalVelocity;
-    private float groundedTimer; 
+    bool jump;
+    float verticalVelocity;
+    float groundedTimer; 
     public UnitData unitData;
-    private Animator anim; // Reference to the animator component.
-    private Camera cam;
-    private CharacterController characterController;
+    Animator anim; // Reference to the animator component.
+    Camera cam;
+    CharacterController characterController;
     [SerializeField]
     GameObject popUpContainer;
     [SerializeField]
     TextMeshPro popUpText;
     
-    private float horizontal = 0f;
-    private float vertical = 0f;
+    float horizontal = 0f;
+    float vertical = 0f;
 
     // Functions
     void Awake()

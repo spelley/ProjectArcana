@@ -79,7 +79,7 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
     }
 
     [SerializeField]
-    private Sprite _sprite;
+    Sprite _sprite;
     public Sprite sprite
     {
         get
@@ -162,7 +162,7 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
        }
     }
 
-    private int GetStatusIndex(StatusEffect statusEffect)
+    int GetStatusIndex(StatusEffect statusEffect)
     {
         for(int i = 0; i < statusEffects.Count; i++)
         {

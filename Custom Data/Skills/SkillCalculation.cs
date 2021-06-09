@@ -6,7 +6,7 @@ using UnityEngine;
 public abstract class SkillCalculation: ScriptableObject
 {
     [SerializeField]
-    private string _calculationName;
+    string _calculationName;
     public string calculationName
     { 
         get
@@ -20,7 +20,7 @@ public abstract class SkillCalculation: ScriptableObject
     }
 
     [SerializeField]
-    private string _description;
+    string _description;
     public string description
     { 
         get

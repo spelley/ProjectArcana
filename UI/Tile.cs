@@ -9,27 +9,27 @@ public class Tile : MonoBehaviour
     BattleManager battleManager;
     
     [SerializeField]
-    private GridCell gridCell;
+    GridCell gridCell;
 
     [SerializeField]
-    private MeshRenderer tileMaterial;
+    MeshRenderer tileMaterial;
 
     [SerializeField]
-    private Material defaultMat;
+    Material defaultMat;
 
     [SerializeField]
-    private Material pathMat;
+    Material pathMat;
 
     [SerializeField]
-    private Material targetableMat;
+    Material targetableMat;
 
     [SerializeField]
-    private Material targetedMat;
+    Material targetedMat;
 
     [SerializeField]
-    private Material unwalkableMat;
+    Material unwalkableMat;
 
-    private TileType _tileType;
+    TileType _tileType;
     public TileType TileType
     {
         get

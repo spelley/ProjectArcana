@@ -9,7 +9,7 @@ using Unity.Collections;
 public abstract class SkillData: ScriptableObject
 {
     [SerializeField]
-    private string _skillName;
+    string _skillName;
     public string skillName
     { 
         get
@@ -23,7 +23,7 @@ public abstract class SkillData: ScriptableObject
     }
 
     [SerializeField]
-    private string _description;
+    string _description;
     public string description
     { 
         get
@@ -37,7 +37,7 @@ public abstract class SkillData: ScriptableObject
     }
 
     [SerializeField]
-    private List<Element> _elements = new List<Element>();
+    List<Element> _elements = new List<Element>();
     public List<Element> elements
     {
         get
@@ -52,7 +52,7 @@ public abstract class SkillData: ScriptableObject
 
     [Header("Animation Information")]
     [SerializeField]
-    private BattleAnimation _castAnimation;
+    BattleAnimation _castAnimation;
     public BattleAnimation castAnimation
     { 
         get
@@ -66,7 +66,7 @@ public abstract class SkillData: ScriptableObject
     }
 
     [SerializeField]
-    private GameObject _executeAnimation;
+    GameObject _executeAnimation;
     public GameObject executeAnimation
     {
         get
@@ -81,7 +81,7 @@ public abstract class SkillData: ScriptableObject
     
     [Header("Targeting Information")]
     [SerializeField]
-    private TargetType _targetType;
+    TargetType _targetType;
     public TargetType targetType
     {
         get
@@ -95,7 +95,7 @@ public abstract class SkillData: ScriptableObject
     }
 
     [SerializeField]
-    private TargetShape _targetShape;
+    TargetShape _targetShape;
     public TargetShape targetShape
     {
         get
@@ -109,7 +109,7 @@ public abstract class SkillData: ScriptableObject
     }
 
     [SerializeField]
-    private RangeType _rangeType;
+    RangeType _rangeType;
     public RangeType rangeType
     {
         get
@@ -123,7 +123,7 @@ public abstract class SkillData: ScriptableObject
     }
 
     [SerializeField]
-    private int _range;
+    int _range;
     public int range
     {
         get
@@ -137,7 +137,7 @@ public abstract class SkillData: ScriptableObject
     }
 
     [SerializeField]
-    private int _height;
+    int _height;
     public int height
     {
         get
@@ -151,7 +151,7 @@ public abstract class SkillData: ScriptableObject
     }
 
     [SerializeField]
-    private int _heightTolerance;
+    int _heightTolerance;
     public int heightTolerance
     {
         get
@@ -165,7 +165,7 @@ public abstract class SkillData: ScriptableObject
     }
 
     [SerializeField]
-    private int _areaOfEffect;
+    int _areaOfEffect;
     public int areaOfEffect
     {
         get
@@ -179,7 +179,7 @@ public abstract class SkillData: ScriptableObject
     }
 
     [SerializeField]
-    private bool _requireUnitTarget = true;
+    bool _requireUnitTarget = true;
     public bool requireUnitTarget
     {
         get
@@ -194,7 +194,7 @@ public abstract class SkillData: ScriptableObject
 
     [Header("Skill Calculation Information")]
     [SerializeField]
-    private SkillCalculation _skillCalculation;
+    SkillCalculation _skillCalculation;
     public SkillCalculation skillCalculation
     {
         get
@@ -208,7 +208,7 @@ public abstract class SkillData: ScriptableObject
     }
 
     [SerializeField]
-    private Stat _primaryAttribute;
+    Stat _primaryAttribute;
     public Stat primaryAttribute
     {
         get
@@ -222,7 +222,7 @@ public abstract class SkillData: ScriptableObject
     }
 
     [SerializeField]
-    private Stat _secondaryAttribute;
+    Stat _secondaryAttribute;
     public Stat secondaryAttribute
     {
         get
@@ -236,7 +236,7 @@ public abstract class SkillData: ScriptableObject
     }
 
     [SerializeField]
-    private Stat _tertiaryAttribute;
+    Stat _tertiaryAttribute;
     public Stat tertiaryAttribute
     {
         get
@@ -250,7 +250,7 @@ public abstract class SkillData: ScriptableObject
     }
 
     [SerializeField]
-    private int _primaryValue;
+    int _primaryValue;
     public int primaryValue
     {
         get
@@ -264,7 +264,7 @@ public abstract class SkillData: ScriptableObject
     }
 
     [SerializeField]
-    private int _secondaryValue;
+    int _secondaryValue;
     public int secondaryValue
     {
         get
@@ -278,7 +278,7 @@ public abstract class SkillData: ScriptableObject
     }
 
     [SerializeField]
-    private int _tertiaryValue;
+    int _tertiaryValue;
     public int tertiaryValue
     {
         get
