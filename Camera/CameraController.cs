@@ -1,0 +1,152 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using Cinemachine;
+
+public class CameraController : MonoBehaviour
+{
+    Camera cam;
+    CinemachineBrain brain;
+    CinemachineVirtualCamera vcam;
+
+    [SerializeField]
+    Transform focusPoint;
+    [SerializeField]
+    Transform followTarget;
+
+    [SerializeField]
+    private float maxSize = 14f;
+
+    [SerializeField]
+    private float minSize = 4f;
+
+    [SerializeField]
+    private float zoomSpeed = 5f;
+
+    [SerializeField]
+    private float rotationSpeed = 5f;
+    [SerializeField]
+    private float scrollSpeed = 5f;
+
+    [SerializeField]
+    private List<float> rotations = new List<float>();
+
+    private int curRotation = 0;
+
+    Vector3 movePosition;
+
+    void Awake()
+    {
+        FindCamera();
+        curRotation = 0;
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        if(vcam == null)
+        {
+            FindCamera();
+        }
+        else
+        {
+            if(followTarget != null)
+            {
+                focusPoint.position = followTarget.position + movePosition;
+            }
+            float curSize = vcam.m_Lens.OrthographicSize;
+            if((Input.GetKey(KeyCode.Equals) || Input.GetKey(KeyCode.Plus)) && curSize > minSize)
+            {
+                vcam.m_Lens.OrthographicSize = Mathf.Clamp(curSize - (zoomSpeed * Time.deltaTime), minSize, maxSize);
+            }
+            else if(Input.GetKey(KeyCode.Minus) && curSize < maxSize)
+            {
+                vcam.m_Lens.OrthographicSize = Mathf.Clamp(curSize + (zoomSpeed * Time.deltaTime), minSize, maxSize);
+            }
+            
+            if(Input.GetKeyDown(KeyCode.Escape))
+            {
+                SetFocus(followTarget.gameObject);
+            }
+
+            //HandleLockedRotations();
+            HandleScroll();
+            HandleSmoothedRotations();
+        }
+    }
+
+    void HandleScroll()
+    {
+        float scrollHorizontal = 0;
+        float scrollVertical = 0;
+        if(Input.GetKey(KeyCode.LeftArrow))
+        {
+            scrollHorizontal = -1;
+        }
+        else if(Input.GetKey(KeyCode.RightArrow))
+        {
+            scrollHorizontal = 1;
+        }
+
+        if(Input.GetKey(KeyCode.DownArrow))
+        {
+            scrollVertical = -1;
+        }
+        else if(Input.GetKey(KeyCode.UpArrow))
+        {
+            scrollVertical = 1;
+        }
+
+        if(scrollVertical != 0 || scrollHorizontal != 0)
+        {
+            Vector3 input = Quaternion.Euler(0, vcam.transform.eulerAngles.y, 0) * new Vector3(scrollHorizontal, 0.0f, scrollVertical);
+            movePosition += input * scrollSpeed * Time.deltaTime;
+        }
+        focusPoint.position += movePosition;
+    }
+
+    void HandleLockedRotations()
+    {
+        if(Input.GetKeyDown(KeyCode.Q))
+        {
+            curRotation = (curRotation == 0) ? (rotations.Count - 1) : (curRotation - 1);
+            vcam.transform.localRotation = Quaternion.Euler(30f, rotations[curRotation], 0);
+        }
+        else if(Input.GetKeyDown(KeyCode.E))
+        {
+            curRotation = (curRotation == (rotations.Count - 1)) ? 0 : (curRotation + 1);
+            vcam.transform.localRotation = Quaternion.Euler(30f, rotations[curRotation], 0);
+        }
+    }
+
+    void HandleSmoothedRotations()
+    {
+        int modifier = 0;
+        if(Input.GetKey(KeyCode.E))
+        {
+            modifier = -1;
+        }
+        else if(Input.GetKey(KeyCode.Q))
+        {
+            modifier = 1;
+        }
+        if(modifier != 0)
+        {
+            vcam.transform.localRotation = Quaternion.Euler(30f, (vcam.transform.eulerAngles.y + (modifier * rotationSpeed * Time.deltaTime)), 0);
+        }
+    }
+
+    void FindCamera()
+    {
+        cam = Camera.main;
+        brain = (GetComponent<Camera>() == null) ? null : cam.GetComponent<CinemachineBrain>();
+        vcam = (brain == null) ? null : brain.ActiveVirtualCamera as CinemachineVirtualCamera;
+    }
+
+    public void SetFocus(GameObject target)
+    {
+        movePosition = Vector3.zero;
+        followTarget = target.transform;
+        //vcam.Follow = target.transform;
+    }
+}
