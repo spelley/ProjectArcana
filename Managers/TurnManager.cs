@@ -46,7 +46,7 @@ public class TurnManager
             OnTurnStart?.Invoke(curTurnTaker);
         }
 
-        BattleManager.Instance.CheckIfWin();
+        BattleManager.Instance.IsEncounterResolved();
     }
 
     public void EndTurn()
@@ -54,8 +54,10 @@ public class TurnManager
         curTurnTaker.EndTurn();
         OnTurnEnd?.Invoke(curTurnTaker);
 
-        BattleManager.Instance.CheckIfWin();
-        StartNextTurn();
+        if(!BattleManager.Instance.IsEncounterResolved())
+        {
+            StartNextTurn();
+        }
     }
 
     ITurnTaker GetNextTurn()

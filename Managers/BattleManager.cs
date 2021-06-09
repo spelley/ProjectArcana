@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class BattleManager : MonoBehaviour
 {
+    // Setup/Initialization
     private static BattleManager _instance;
     public static BattleManager Instance 
     { 
@@ -31,7 +32,7 @@ public class BattleManager : MonoBehaviour
         }
     }
 
-    // events
+    // Events
     public event Action OnBattleManagerLoad;
     public event Action OnEncounterStart;
     public event Action OnEncounterEnd;
@@ -45,10 +46,41 @@ public class BattleManager : MonoBehaviour
     public event Action<SkillData, UnitData, List<GridCell>> OnSkillExecute;
     public event Action<SkillData> OnSkillClear;
 
-    List<ITurnTaker> enemies = new List<ITurnTaker>();
-    List<ITurnTaker> party = new List<ITurnTaker>();
+    // Encounter handling
+    List<ITurnTaker> _enemies = new List<ITurnTaker>();
+    public List<ITurnTaker> enemies
+    {
+        get
+        {
+            return _enemies;
+        }
+        private set
+        {
+            _enemies = value;
+        }
+    }
+    List<ITurnTaker> _party = new List<ITurnTaker>();
+    public List<ITurnTaker> party
+    {
+        get
+        {
+            return _party;
+        }
+        private set
+        {
+            _party = value;
+        }
+    }
     List<UnitData> combatants = new List<UnitData>();
+    List<EncounterCondition> curEncounterLossConditions = new List<EncounterCondition>();
+    [SerializeField]
+    EncounterCondition defaultEncounterLossCondition;
+    List<EncounterCondition> curEncounterWinConditions = new List<EncounterCondition>();
+    [SerializeField]
+    EncounterCondition defaultEncounterWinCondition;
     public bool inCombat { get; private set; }
+    
+    // Skill handling
     public SkillData curSkill { get; private set; }
     public UnitData curUnit
     {
@@ -76,11 +108,14 @@ public class BattleManager : MonoBehaviour
         OnBattleManagerLoad?.Invoke();
     }
 
-    public void StartEncounter(List<ITurnTaker> enemyCombatants)
+    public void StartEncounter(List<ITurnTaker> enemyCombatants, List<EncounterCondition> winConditions, List<EncounterCondition> lossConditions)
     {
         combatants.Clear();
         party.Clear();
         enemies.Clear();
+        curEncounterWinConditions.Clear();
+        curEncounterLossConditions.Clear();
+
         List<ITurnTaker> turnTakers = new List<ITurnTaker>();
 
         combatants.AddRange(gameManager.party);
@@ -117,9 +152,28 @@ public class BattleManager : MonoBehaviour
             }
         }
 
+        // handle win conditions
+        if(winConditions.Count == 0)
+        {
+            curEncounterWinConditions.Add(defaultEncounterWinCondition);
+        }
+        else
+        {
+            curEncounterWinConditions.AddRange(winConditions);
+        }
+
+        // handle loss conditions
+        if(lossConditions.Count == 0)
+        {
+            curEncounterLossConditions.Add(defaultEncounterLossCondition);
+        }
+        else
+        {
+            curEncounterLossConditions.AddRange(lossConditions);
+        }
+
         inCombat = true;
 
-        // TODO: write script to detect enemies
         turnManager = new TurnManager(turnTakers);
         OnEncounterStart?.Invoke();
         turnManager.StartNextTurn();
@@ -231,43 +285,44 @@ public class BattleManager : MonoBehaviour
         OnSkillClear?.Invoke(curSkill);
         curSkill = null;
         curTargets.Clear();
-        CheckIfWin();
+        IsEncounterResolved();
     }
 
-    public void CheckIfWin()
+    public bool IsEncounterResolved()
     {
-        bool allAlliesIncap = true;
-        foreach(UnitData ally in party)
+        bool win = false;
+        foreach(EncounterCondition winCondition in curEncounterWinConditions)
         {
-            if(!ally.incapacitated)
+            if(winCondition.IsCompleted())
             {
-                allAlliesIncap = false;
+                win = true;
                 break;
             }
         }
 
-        if(allAlliesIncap)
-        {
-            EncounterLost();
-            return;
-        }
-
-        bool allEnemiesIncap = true;
-        foreach(UnitData enemy in enemies)
-        {
-            if(!enemy.incapacitated)
-            {
-                allEnemiesIncap = false;
-                break;
-            }
-        }
-
-        if(allEnemiesIncap)
+        if(win)
         {
             EncounterWon();
-            return;
+            return true;
         }
-        // TODO: Add WinCondition checking
+
+        bool loss = false;
+        foreach(EncounterCondition lossCondition in curEncounterLossConditions)
+        {
+            if(lossCondition.IsCompleted())
+            {
+                loss = true;
+                break;
+            }
+        }
+
+        if(loss)
+        {
+            EncounterLost();
+            return true;
+        }
+
+        return false;
     }
 
     public void EncounterWon()
