@@ -72,10 +72,6 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
         {
             return stats.CalculateSpeed();
         }
-        set
-        {
-            // empty
-        }
     }
 
     [SerializeField]

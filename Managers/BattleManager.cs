@@ -330,7 +330,6 @@ public class BattleManager : MonoBehaviour
         Debug.Log("Battle has been won!");
         // TODO: Actual encounter rewards
         OnEncounterWon?.Invoke();
-        EndEncounter();
     }
 
     public void EncounterLost()
@@ -338,6 +337,5 @@ public class BattleManager : MonoBehaviour
         Debug.Log("Battle has been lost!");
         // TODO: Actual encounter cleanup?
         OnEncounterLost?.Invoke();
-        EndEncounter();
     }
 }

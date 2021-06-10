@@ -7,7 +7,7 @@ public interface ITurnTaker
     Vector3Int curPosition {get; set;}
     bool incapacitated { get; }
     int ct { get; set; }
-    int speed { get; set; }
+    int speed { get; }
     bool moved { get; set; }
     bool acted { get; set; }
     Sprite sprite { get; set; }
