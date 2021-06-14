@@ -47,7 +47,7 @@ public class PredictedTurnsUI : MonoBehaviour
 
     void OnTurnStart(ITurnTaker curTurnTaker)
     {
-        Queue<ITurnTaker> turnTakers = bm.turnManager.GetPredictedTurns(9);
+        Queue<ITurnTaker> turnTakers = bm.turnManager.GetPredictedTurns(20);
         ResetSprites();
 
         CreateSprite(curTurnTaker);

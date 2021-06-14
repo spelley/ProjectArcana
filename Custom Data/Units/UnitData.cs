@@ -48,6 +48,14 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
             return CalculateIsIncapacitated();
         }
     }
+
+    public bool isPlayerControlled
+    {
+        get
+        {
+            return aiBrain == null && faction == Faction.ALLY;
+        }
+    }
     public bool moved { get; set; }
     public bool acted { get; set; }
     public bool canAct
@@ -270,7 +278,7 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
 
     bool CalculateCanMove()
     {
-        if(incapacitated)
+        if(incapacitated || moved)
         {
             return false;
         }

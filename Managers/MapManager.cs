@@ -59,6 +59,7 @@ public class MapManager : MonoBehaviour
     List<GameObject> pooledTiles;
     Dictionary<GridCell, GameObject> renderedTiles = new Dictionary<GridCell, GameObject>();
     public event Action<Stack<GridCell>> OnTravelPath;
+    public event Action OnTravelPathEnd;
 
     void Awake()
     {
@@ -875,6 +876,11 @@ public class MapManager : MonoBehaviour
     public void TravelPath(Stack<GridCell> path)
     {
         OnTravelPath?.Invoke(path);
+    }
+
+    public void TravelPathEnd()
+    {
+        OnTravelPathEnd?.Invoke();
     }
 
     void OnDestroy()

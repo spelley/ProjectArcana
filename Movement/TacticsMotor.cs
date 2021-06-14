@@ -100,10 +100,6 @@ public class TacticsMotor : MonoBehaviour
         {
             AI(aiBrain);
         }
-        else if(characterMotor.unitData.canMove)
-        {
-            mapManager.LoadWalkabilityZone(this.gameObject, this.transform.position);
-        }
     }
 
     void AI(AIBrain aiBrain)
@@ -194,11 +190,11 @@ public class TacticsMotor : MonoBehaviour
             curCell = cell;
             startPosition = cell.realWorldPosition;
         }
-
         mapManager.UpdateUnitPosition(curCell.position, characterMotor.unitData);
 
         isMoving = false;
         anim.SetBool("Moving", false);
+        mapManager.TravelPathEnd();
     }
 
     void OnUnitTurnEnd()
@@ -301,10 +297,6 @@ public class TacticsMotor : MonoBehaviour
         if(Input.GetKeyDown(KeyCode.Escape) && battleManager.targeting && battleManager.curSkill != null && !isMoving)
         {
             battleManager.SkillTargetCancel(battleManager.curSkill, characterMotor.unitData);
-            if(!characterMotor.unitData.moved && !characterMotor.unitData.acted && characterMotor.unitData.canMove)
-            {
-                mapManager.LoadWalkabilityZone(this.gameObject, this.transform.position, true);
-            }
         }
     }
 }
