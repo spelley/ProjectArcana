@@ -109,13 +109,13 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
     public event Action<IDamageable, IDamageable, ModInt> OnDealDamageCalculation;
     public event Action<IDamageable, IDamageable, ModInt> OnPredictReceiveDamage;
     public event Action<IDamageable, IDamageable, ModInt> OnReceiveDamageCalculation;
-    public event Action<IDamageable, IDamageable, List<Element>, int> OnReceiveDamage;
+    public event Action<IDamageable, IDamageable, List<ElementData>, int> OnReceiveDamage;
 
     public event Action<IDamageable, IDamageable, ModInt> OnPredictHealOther;
     public event Action<IDamageable, IDamageable, ModInt> OnHealOtherCalculation;
     public event Action<IDamageable, IDamageable, ModInt> OnPredictReceiveHeal;
     public event Action<IDamageable, IDamageable, ModInt> OnReceiveHealCalculation;
-    public event Action<IDamageable, IDamageable, List<Element>, int> OnReceiveHeal;
+    public event Action<IDamageable, IDamageable, List<ElementData>, int> OnReceiveHeal;
     
     public event Action<ModBool> OnCalculateIsIncapacitated;
     public event Action<ModBool> OnCalculateCanMove;
@@ -194,7 +194,7 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
         return false;
     }
 
-    public int PredictDealDamage(int damage, IDamageable target, List<Element> elements)
+    public int PredictDealDamage(int damage, IDamageable target, List<ElementData> elements)
     {
         ModInt modifiedDamage = new ModInt(damage);
         modifiedDamage.elements = elements;
@@ -203,7 +203,7 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
         return target.PredictReceiveDamage(modifiedDamage.GetCalculated(), this, modifiedDamage.elements);
     }
 
-    public int PredictReceiveDamage(int damage, IDamageable source, List<Element> elements)
+    public int PredictReceiveDamage(int damage, IDamageable source, List<ElementData> elements)
     {
         ModInt modifiedDamage = new ModInt(damage);
         modifiedDamage.elements = elements;
@@ -212,7 +212,7 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
         return modifiedDamage.GetCalculated();
     }
 
-    public int DealDamage(int damage, IDamageable target, List<Element> elements)
+    public int DealDamage(int damage, IDamageable target, List<ElementData> elements)
     {
         ModInt modifiedDamage = new ModInt(damage);
         modifiedDamage.elements = elements;
@@ -221,7 +221,7 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
         return target.ReceiveDamage(totalDamage, this, modifiedDamage.elements);
     }
 
-    public int ReceiveDamage(int damage, IDamageable source, List<Element> elements)
+    public int ReceiveDamage(int damage, IDamageable source, List<ElementData> elements)
     {
         ModInt modifiedDamage = new ModInt(damage);
         modifiedDamage.elements = elements;
@@ -233,7 +233,7 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
         return totalDamage;
     }
 
-    public int PredictHealOther(int heal, IDamageable target, List<Element> elements)
+    public int PredictHealOther(int heal, IDamageable target, List<ElementData> elements)
     {
         ModInt modifiedHeal = new ModInt(heal);
         modifiedHeal.elements = elements;
@@ -242,7 +242,7 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
         return target.PredictReceiveHeal(modifiedHeal.GetCalculated(), this, modifiedHeal.elements);
     }
 
-    public int PredictReceiveHeal(int heal, IDamageable source, List<Element> elements)
+    public int PredictReceiveHeal(int heal, IDamageable source, List<ElementData> elements)
     {
         ModInt modifiedHeal = new ModInt(heal);
         modifiedHeal.elements = elements;
@@ -253,7 +253,7 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
         return Mathf.Min(stats.CalculateMaxHP() - stats.hp, totalHeal);
     }
 
-    public int HealOther(int heal, IDamageable target, List<Element> elements)
+    public int HealOther(int heal, IDamageable target, List<ElementData> elements)
     {
         ModInt modifiedHeal = new ModInt(heal);
         modifiedHeal.elements = elements;
@@ -262,7 +262,7 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
         return target.ReceiveHeal(totalHeal, this, modifiedHeal.elements);
     }
 
-    public int ReceiveHeal(int heal, IDamageable source, List<Element> elements)
+    public int ReceiveHeal(int heal, IDamageable source, List<ElementData> elements)
     {
         ModInt modifiedHeal = new ModInt(heal);
         modifiedHeal.elements = elements;

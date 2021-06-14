@@ -29,6 +29,9 @@ public class Tile : MonoBehaviour
     [SerializeField]
     Material unwalkableMat;
 
+    [SerializeField]
+    Material inactiveMat;
+
     TileType _tileType;
     public TileType TileType
     {
@@ -55,7 +58,7 @@ public class Tile : MonoBehaviour
                 break;
                 case TileType.VISUAL_ONLY:
                 default:
-                    tileMaterial.material = defaultMat;
+                    tileMaterial.material = inactiveMat;
                 break;
             }
         }
@@ -93,6 +96,11 @@ public class Tile : MonoBehaviour
     {
         if(battleManager.curUnit == null || battleManager.curUnit.faction != Faction.ALLY)
         {
+            return;
+        }
+        if(this.TileType == TileType.PATH)
+        {
+            mapManager.ResetRenderedPath();
             return;
         }
         if(this.TileType == TileType.TARGETED)

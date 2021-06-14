@@ -9,7 +9,7 @@ public class ModInt
     public float resultMultiplier = 1f;
     public int baseAdd = 0;
     public int resultAdd = 0;
-    public List<Element> elements;
+    public List<ElementData> elements;
 
     public ModInt(int baseValue, int baseAdd = 0, int resultAdd = 0, float baseMultiplier = 1f, float resultMultiplier = 1f)
     {

@@ -17,6 +17,10 @@ public class MapManager : MonoBehaviour
 
     BattleManager battleManager;
 
+    Camera cam;
+    Ray camRay;
+    RaycastHit hit;
+
     [SerializeField]
     MapData mapData;
 
@@ -47,7 +51,20 @@ public class MapManager : MonoBehaviour
             _cellSize = value;
         }
     }
-    float tileSize = .95f;
+
+    [SerializeField]
+    float _tileSize = 2f;
+    public float tileSize
+    {
+        get
+        {
+            return _tileSize;
+        }
+        private set
+        {
+            _tileSize = value;
+        }
+    }
 
     List<GridCell> cellList = new List<GridCell>();
     List<GridCell> walkableCells = new List<GridCell>();
@@ -63,6 +80,7 @@ public class MapManager : MonoBehaviour
 
     void Awake()
     {
+        cam = Camera.main;
         if(_instance != null && _instance != this)
         {
             Destroy(this.gameObject);
@@ -94,11 +112,6 @@ public class MapManager : MonoBehaviour
         }
 
         BindEvents();
-    }
-
-    void Update()
-    {
-
     }
     
     // EVENTS
@@ -395,10 +408,18 @@ public class MapManager : MonoBehaviour
         return closestCell;
     }
 
-    public GridCell GetClosestGridCell(Vector3 targetPosition)
+    public GridCell GetClosestGridCell(Vector3 targetPosition, bool walkable = true)
     {
-        GridCell closestCell = cellList.Where(gc => gc.walkable).OrderBy(gc => Vector3.Distance(gc.realWorldPosition, targetPosition)).FirstOrDefault();
-        return closestCell;
+        if(walkable)
+        {
+            GridCell closestCell = cellList.Where(gc => gc.walkable).OrderBy(gc => Vector3.Distance(gc.realWorldPosition, targetPosition)).FirstOrDefault();
+            return closestCell;
+        }
+        else
+        {
+            GridCell closestCell = cellList.OrderBy(gc => Vector3.Distance(gc.realWorldPosition, targetPosition)).FirstOrDefault();
+            return closestCell;
+        }
     }
 
     public GridCell GetClosestGridCell(Vector3Int targetPosition, List<GridCell> customList)

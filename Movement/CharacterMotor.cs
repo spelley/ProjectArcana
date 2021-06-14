@@ -173,7 +173,7 @@ public class CharacterMotor : MonoBehaviour
         characterController.Move(targetDirection * Time.deltaTime);
     }
 
-    public void OnReceiveDamage(IDamageable source, IDamageable target, List<Element> elements, int damage)
+    public void OnReceiveDamage(IDamageable source, IDamageable target, List<ElementData> elements, int damage)
     {   
         ShowPopUp(damage.ToString(), new Color32(255, 255, 255, 255));
         if(damage > 0 && source != target)
@@ -209,7 +209,7 @@ public class CharacterMotor : MonoBehaviour
         popUpContainer.SetActive(false);
     }
 
-    public void OnReceiveHeal(IDamageable source, IDamageable target, List<Element> elements, int heal)
+    public void OnReceiveHeal(IDamageable source, IDamageable target, List<ElementData> elements, int heal)
     {
         ShowPopUp(heal.ToString(), new Color32(0, 255, 0, 255));
         if(heal > 0 && source != target)

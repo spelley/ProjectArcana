@@ -37,8 +37,8 @@ public abstract class SkillData: ScriptableObject
     }
 
     [SerializeField]
-    List<Element> _elements = new List<Element>();
-    public List<Element> elements
+    List<ElementData> _elements = new List<ElementData>();
+    public List<ElementData> elements
     {
         get
         {

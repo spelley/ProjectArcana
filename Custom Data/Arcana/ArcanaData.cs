@@ -8,5 +8,5 @@ public class ArcanaData : ScriptableObject
     public string arcanaName;
     public Sprite icon;
     public Sprite cardImage;
-    public List<Element> elements = new List<Element>();
+    public List<ElementData> elements = new List<ElementData>();
 }

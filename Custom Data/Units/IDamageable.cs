@@ -13,24 +13,24 @@ public interface IDamageable
     event Action<IDamageable, IDamageable, ModInt> OnDealDamageCalculation;
     event Action<IDamageable, IDamageable, ModInt> OnPredictReceiveDamage;
     event Action<IDamageable, IDamageable, ModInt> OnReceiveDamageCalculation;
-    event Action<IDamageable, IDamageable, List<Element>, int> OnReceiveDamage;
+    event Action<IDamageable, IDamageable, List<ElementData>, int> OnReceiveDamage;
 
     // heal events
     event Action<IDamageable, IDamageable, ModInt> OnPredictHealOther;
     event Action<IDamageable, IDamageable, ModInt> OnHealOtherCalculation;
     event Action<IDamageable, IDamageable, ModInt> OnPredictReceiveHeal;
     event Action<IDamageable, IDamageable, ModInt> OnReceiveHealCalculation;
-    event Action<IDamageable, IDamageable, List<Element>, int> OnReceiveHeal;
+    event Action<IDamageable, IDamageable, List<ElementData>, int> OnReceiveHeal;
 
     // damage methods
-    int PredictDealDamage(int damage, IDamageable target, List<Element> elements);
-    int PredictReceiveDamage(int damage, IDamageable source, List<Element> elements);
-    int DealDamage(int damage, IDamageable target, List<Element> elements);
-    int ReceiveDamage(int damage, IDamageable source, List<Element> elements);
+    int PredictDealDamage(int damage, IDamageable target, List<ElementData> elements);
+    int PredictReceiveDamage(int damage, IDamageable source, List<ElementData> elements);
+    int DealDamage(int damage, IDamageable target, List<ElementData> elements);
+    int ReceiveDamage(int damage, IDamageable source, List<ElementData> elements);
 
     // heal methods
-    int PredictHealOther(int heal, IDamageable target, List<Element> elements);
-    int PredictReceiveHeal(int heal, IDamageable source, List<Element> elements);
-    int HealOther(int heal, IDamageable target, List<Element> elements);
-    int ReceiveHeal(int heal, IDamageable source, List<Element> elements);
+    int PredictHealOther(int heal, IDamageable target, List<ElementData> elements);
+    int PredictReceiveHeal(int heal, IDamageable source, List<ElementData> elements);
+    int HealOther(int heal, IDamageable target, List<ElementData> elements);
+    int ReceiveHeal(int heal, IDamageable source, List<ElementData> elements);
 }

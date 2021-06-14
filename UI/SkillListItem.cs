@@ -16,6 +16,8 @@ public class SkillListItem : MonoBehaviour
     TextMeshProUGUI buttonText;
     [SerializeField]
     GameObject skillMeta;
+    [SerializeField]
+    GameObject elementIconPrefab;
     SkillData skill;
     UnitData unit;
     Action selectCallback;
