@@ -2,10 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using System.IO;
 
+#if UNITY_EDITOR
 [ExecuteInEditMode]
+#endif
 public class MapBuilder : MonoBehaviour
 {
     static MapBuilder _instance;
@@ -301,9 +305,11 @@ public class MapBuilder : MonoBehaviour
             // give me an updated timestamp
             mapData.lastUpdated = System.DateTime.Now.ToString();
 
+            #if UNITY_EDITOR
             EditorUtility.SetDirty(mapData);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
+            #endif
 
             Debug.Log("Assigned");
         }

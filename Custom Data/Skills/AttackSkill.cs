@@ -18,7 +18,8 @@ public class AttackSkill : SkillData
     {
         if(gridCell.occupiedBy != null)
         {
-            int baseDamage = skillCalculation.Calculate(this, unitData);
+            int matches = BattleManager.Instance.GetRiverMatches(this.elements);
+            int baseDamage = skillCalculation.Calculate(this, unitData, matches);
             unitData.DealDamage(baseDamage, gridCell.occupiedBy, this.elements);
         }
     }
@@ -36,7 +37,8 @@ public class AttackSkill : SkillData
     {
         if(target != null && IsValidTargetType(unitData, target))
         {
-            int baseDamage = skillCalculation.Calculate(this, unitData);
+            int matches = BattleManager.Instance.GetRiverMatches(this.elements);
+            int baseDamage = skillCalculation.Calculate(this, unitData, matches);
             int predictDamage = unitData.PredictDealDamage(baseDamage, target, this.elements) * (target.faction == unitData.faction ? -1 : 1);
             if(predictDamage >= target.hp)
             {

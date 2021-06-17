@@ -46,6 +46,20 @@ public class ElementData : ScriptableObject
             _icon = value;
         }
     }
+
+    [SerializeField]
+    Color _color;
+    public Color color
+    {
+        get
+        {
+            return _color;
+        }
+        private set
+        {
+            _color = value;
+        }
+    }
     
     [SerializeField]
     List<ElementData> _weaknesses = new List<ElementData>();

@@ -33,11 +33,14 @@ public class BattleManager : MonoBehaviour
     }
 
     // Events
+    // encounter loading/starting
     public event Action OnBattleManagerLoad;
+    public event Action OnEncounterAwake;
     public event Action OnEncounterStart;
     public event Action OnEncounterEnd;
     public event Action OnEncounterWon;
     public event Action OnEncounterLost;
+    // skill events
     public event Action<SkillData, UnitData, GridCell> OnSkillTarget;
     public event Action<SkillData, UnitData> OnSkillTargetCancel;
     public event Action<SkillData, GridCell, GridCell> OnSkillSelectTarget;
@@ -45,6 +48,9 @@ public class BattleManager : MonoBehaviour
     public event Action<SkillData, UnitData, List<GridCell>> OnSkillConfirm;
     public event Action<SkillData, UnitData, List<GridCell>> OnSkillExecute;
     public event Action<SkillData> OnSkillClear;
+    // arcana events
+    public event Action<List<RiverCard>> OnInitializeRiver;
+    public event Action<List<RiverCard>> OnUpdateRiver;
 
     // Encounter handling
     List<ITurnTaker> _enemies = new List<ITurnTaker>();
@@ -78,6 +84,11 @@ public class BattleManager : MonoBehaviour
     List<EncounterCondition> curEncounterWinConditions = new List<EncounterCondition>();
     [SerializeField]
     EncounterCondition defaultEncounterWinCondition;
+    public List<RiverCard> riverCards { get; private set; }
+    [SerializeField]
+    int riverSize = 5;
+    [SerializeField]
+    List<ElementData> allElements = new List<ElementData>();
     public bool inCombat { get; private set; }
     
     // Skill handling
@@ -175,6 +186,17 @@ public class BattleManager : MonoBehaviour
         inCombat = true;
 
         turnManager = new TurnManager(turnTakers);
+
+        OnEncounterAwake?.Invoke();
+
+        StartCoroutine(DelayEncounterStart(2f));
+    }
+
+    IEnumerator DelayEncounterStart(float delayTime = 2f)
+    {
+        yield return new WaitForSeconds(2f);
+
+        InitializeRiver();
         OnEncounterStart?.Invoke();
         turnManager.StartNextTurn();
     }
@@ -282,6 +304,26 @@ public class BattleManager : MonoBehaviour
 
     public void SkillClear()
     {
+        List<RiverCard> updatedRiver = new List<RiverCard>();
+        foreach(RiverCard riverCard in riverCards)
+        {
+            bool matched = false;
+            foreach(ElementData element in curSkill.elements)
+            {
+                if(riverCard.element == element)
+                {
+                    matched = true;
+                    break;
+                }
+            }
+            if(!matched) // matched cards go away
+            {
+                updatedRiver.Add(riverCard);
+            }
+        }
+        riverCards = updatedRiver;
+        RefillRiver(); // fill up any missing cards in the river
+        OnUpdateRiver?.Invoke(riverCards);
         OnSkillClear?.Invoke(curSkill);
         curSkill = null;
         curTargets.Clear();
@@ -337,5 +379,44 @@ public class BattleManager : MonoBehaviour
         Debug.Log("Battle has been lost!");
         // TODO: Actual encounter cleanup?
         OnEncounterLost?.Invoke();
+    }
+
+    void InitializeRiver()
+    {
+        List<RiverCard> initialCards = new List<RiverCard>();
+        for(int i = 0; i < riverSize; i++)
+        {
+            initialCards.Add(GetRandomRiverCard());
+        }
+        OnInitializeRiver?.Invoke(initialCards);
+        riverCards = initialCards;
+        OnUpdateRiver?.Invoke(riverCards);
+    }
+
+    RiverCard GetRandomRiverCard()
+    {
+        ElementData element = allElements[UnityEngine.Random.Range(0, allElements.Count)];
+        return new RiverCard(element, false, false);
+    }
+
+    void RefillRiver()
+    {
+        while(riverCards.Count < riverSize)
+        {
+            riverCards.Add(GetRandomRiverCard());
+        }
+    }
+
+    public int GetRiverMatches(List<ElementData> elementsToMatch)
+    {
+        int matches = 0;
+        foreach(RiverCard riverCard in riverCards)
+        {
+            if(elementsToMatch.Contains(riverCard.element))
+            {
+                matches++;
+            }
+        }
+        return matches;
     }
 }

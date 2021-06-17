@@ -6,14 +6,21 @@ using UnityEngine.SceneManagement;
 public class BattleUI : MonoBehaviour
 {
     BattleManager battleManager;
+    Animator animator;
 
     [SerializeField]
     GameObject battleMenu;
+
+    void Awake()
+    {
+        animator = GetComponent<Animator>();
+    }
 
     // Start is called before the first frame update
     void Start()
     {
         battleManager = BattleManager.Instance;
+        battleManager.OnEncounterAwake += OnEncounterAwake;
         battleManager.OnEncounterStart += OnEncounterStart;
         battleManager.OnEncounterEnd += OnEncounterEnd;
         battleManager.OnEncounterLost += OnEncounterLost;
@@ -21,6 +28,7 @@ public class BattleUI : MonoBehaviour
 
     void OnDestroy()
     {
+        battleManager.OnEncounterAwake -= OnEncounterAwake;
         battleManager.OnEncounterStart -= OnEncounterStart;
         battleManager.OnEncounterEnd -= OnEncounterEnd;
         battleManager.OnEncounterLost -= OnEncounterLost;
@@ -29,6 +37,11 @@ public class BattleUI : MonoBehaviour
     void OnEncounterLost()
     {
         SceneManager.LoadSceneAsync("GameOver", LoadSceneMode.Additive);
+    }
+
+    void OnEncounterAwake()
+    {
+        animator.SetTrigger("StartEncounter");
     }
 
     void OnEncounterStart()

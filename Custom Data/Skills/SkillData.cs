@@ -50,6 +50,20 @@ public abstract class SkillData: ScriptableObject
         }
     }
 
+    [SerializeField]
+    List<MatchType> _matchTypes = new List<MatchType>();
+    public List<MatchType> matchTypes
+    {
+        get
+        {
+            return _matchTypes;
+        }
+        private set
+        {
+            _matchTypes = value;
+        }
+    }
+
     [Header("Animation Information")]
     [SerializeField]
     BattleAnimation _castAnimation;
@@ -128,7 +142,7 @@ public abstract class SkillData: ScriptableObject
     {
         get
         {
-            return _range;
+            return _range + (matchTypes.Contains(MatchType.RANGE) ? BattleManager.Instance.GetRiverMatches(this.elements) : 0);
         }
         private set
         {
@@ -170,7 +184,8 @@ public abstract class SkillData: ScriptableObject
     {
         get
         {
-            return _areaOfEffect;
+            Debug.Log(_areaOfEffect + (matchTypes.Contains(MatchType.AREA) ? BattleManager.Instance.GetRiverMatches(this.elements) : 0));
+            return _areaOfEffect + (matchTypes.Contains(MatchType.AREA) ? BattleManager.Instance.GetRiverMatches(this.elements) : 0);
         }
         private set
         {
@@ -255,7 +270,7 @@ public abstract class SkillData: ScriptableObject
     {
         get
         {
-            return _primaryValue;
+            return _primaryValue + (matchTypes.Contains(MatchType.PRIMARY_BOOST) ? BattleManager.Instance.GetRiverMatches(this.elements) : 0);
         }
         private set
         {
@@ -269,7 +284,7 @@ public abstract class SkillData: ScriptableObject
     {
         get
         {
-            return _secondaryValue;
+            return _secondaryValue + (matchTypes.Contains(MatchType.SECONDARY_BOOST) ? BattleManager.Instance.GetRiverMatches(this.elements) : 0);;
         }
         private set
         {
@@ -283,7 +298,7 @@ public abstract class SkillData: ScriptableObject
     {
         get
         {
-            return _tertiaryValue;
+            return _tertiaryValue + (matchTypes.Contains(MatchType.TERTIARY_BOOST) ? BattleManager.Instance.GetRiverMatches(this.elements) : 0);;
         }
         private set
         {
@@ -399,7 +414,7 @@ public abstract class SkillData: ScriptableObject
             break;
             case TargetShape.CROSS:
                 offsets.Add(new Vector3Int(0, 0, 0));
-                for(int a = 1; a <= areaOfEffect; a++)
+                for(int a = 1; a <= this.areaOfEffect; a++)
                 {
                     int targetXA = a;
                     int targetXB = -a;
@@ -485,18 +500,23 @@ public abstract class SkillData: ScriptableObject
             break;
             case TargetShape.CROSS:
                 offsets.Add(new Vector3Int(0, 0, 0));
-                for(int i = 0; i <= heightTolerance; i++)
+                for(int a = 1; a <= this.areaOfEffect; a++)
                 {
-                    offsets.Add(new Vector3Int(-1, 0, i));
-                    offsets.Add(new Vector3Int(0, -1, i));
-                    offsets.Add(new Vector3Int(1, 0, i));
-                    offsets.Add(new Vector3Int(0, 1, i));
-                    if(i != 0)
+                    int targetXA = a;
+                    int targetXB = -a;
+                    for(int i = 0; i <= heightTolerance; i++)
                     {
-                        offsets.Add(new Vector3Int(-1, 0, -i));
-                        offsets.Add(new Vector3Int(0, -1, -i));
-                        offsets.Add(new Vector3Int(1, 0, -i));
-                        offsets.Add(new Vector3Int(0, 1, -i));
+                        offsets.Add(new Vector3Int(targetXA, 0, i));
+                        offsets.Add(new Vector3Int(0, targetXA, i));
+                        offsets.Add(new Vector3Int(targetXB, 0, i));
+                        offsets.Add(new Vector3Int(0, targetXB, i));
+                        if(i != 0)
+                        {
+                            offsets.Add(new Vector3Int(targetXA, 0, -i));
+                            offsets.Add(new Vector3Int(0, targetXA, -i));
+                            offsets.Add(new Vector3Int(targetXB, 0, -i));
+                            offsets.Add(new Vector3Int(0, targetXB, -i));
+                        }
                     }
                 }
             break;

@@ -5,8 +5,19 @@ using UnityEngine.SceneManagement;
 
 public class UILoader : MonoBehaviour
 {
-    void Awake()
+    void Start()
     {
+        StartCoroutine(LoadUI(5));
+    }
+
+    IEnumerator LoadUI(int delayFrames = 1)
+    {
+        int i = 0;
+        while(i < delayFrames)
+        {
+            i++;
+            yield return null;
+        }
         SceneManager.LoadSceneAsync("BattleUI", LoadSceneMode.Additive);
     }
 }

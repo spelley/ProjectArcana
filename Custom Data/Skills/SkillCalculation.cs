@@ -54,5 +54,5 @@ public abstract class SkillCalculation: ScriptableObject
         return new Vector3Int(pAV, sAV, tAV);
     }
     
-    public abstract int Calculate(SkillData skillData, UnitData unitData);
+    public abstract int Calculate(SkillData skillData, UnitData unitData, int numMatches = 0);
 }

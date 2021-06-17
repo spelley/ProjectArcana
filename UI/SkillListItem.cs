@@ -58,6 +58,21 @@ public class SkillListItem : MonoBehaviour
         if(skill != null && unit != null)
         {
             buttonText.text = skill.skillName;
+            ClearMeta();
+            foreach(ElementData element in skill.elements)
+            {
+                GameObject mGO = Instantiate(elementIconPrefab, skillMeta.transform);
+                Image mGOImage = mGO.GetComponent<Image>();
+                mGOImage.sprite = element.icon;
+                mGOImage.color = element.color;
+            }
+        }
+    }
+
+    void ClearMeta()
+    {
+        foreach(Transform child in skillMeta.transform) {
+            GameObject.Destroy(child.gameObject);
         }
     }
 }

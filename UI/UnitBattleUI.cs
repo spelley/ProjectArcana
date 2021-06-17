@@ -27,6 +27,7 @@ public class UnitBattleUI : MonoBehaviour
         battleManager.OnEncounterStart += OnEncounterStart;
         battleManager.OnEncounterEnd += OnEncounterEnd;
         battleManager.OnSkillConfirm += OnSkillConfirm;
+        battleManager.OnSkillClear += OnSkillClear;
     }
 
     void OnDestroy()
@@ -34,6 +35,7 @@ public class UnitBattleUI : MonoBehaviour
         battleManager.OnEncounterStart -= OnEncounterStart;
         battleManager.OnEncounterEnd -= OnEncounterEnd;
         battleManager.OnSkillConfirm -= OnSkillConfirm;
+        battleManager.OnSkillClear -= OnSkillClear;
         if(battleManager.turnManager != null)
         {
             battleManager.turnManager.OnTurnStart -= OnTurnStart;
@@ -63,6 +65,14 @@ public class UnitBattleUI : MonoBehaviour
     void OnSkillConfirm(SkillData skillData, UnitData unitData, List<GridCell> targets)
     {
         unitUI.SetActive(false);
+    }
+
+    void OnSkillClear(SkillData skillData)
+    {
+        if(curUnit != null && curUnit.isPlayerControlled)
+        {
+            unitUI.SetActive(true);
+        }
     }
 
     public void OnMoveButton()

@@ -27,6 +27,7 @@ public class TacticsMotor : MonoBehaviour
         battleManager = BattleManager.Instance;
         if(battleManager != null)
         {
+            battleManager.OnEncounterAwake += OnEncounterAwake;
             battleManager.OnEncounterStart += OnEncounterStart;
             battleManager.OnEncounterEnd += OnEncounterEnd;
         }
@@ -44,6 +45,7 @@ public class TacticsMotor : MonoBehaviour
             battleManager = BattleManager.Instance;
             if(battleManager != null)
             {
+                battleManager.OnEncounterAwake += OnEncounterAwake;
                 battleManager.OnEncounterStart += OnEncounterStart;
                 battleManager.OnEncounterEnd += OnEncounterEnd;
             }
@@ -54,6 +56,7 @@ public class TacticsMotor : MonoBehaviour
     {
         if(battleManager != null)
         {
+            battleManager.OnEncounterAwake -= OnEncounterAwake;
             battleManager.OnEncounterStart -= OnEncounterStart;
             battleManager.OnEncounterEnd -= OnEncounterEnd;
 
@@ -66,14 +69,16 @@ public class TacticsMotor : MonoBehaviour
         characterMotor.unitData.OnUnitTurnEnd -= OnUnitTurnEnd;
     }
 
-    public void OnEncounterStart()
+    public void OnEncounterAwake()
     {
         characterMotor.locked = true;
+        SnapToGrid();
+    }
 
+    public void OnEncounterStart()
+    {
         characterMotor.unitData.OnUnitTurnStart += OnUnitTurnStart;
         characterMotor.unitData.OnUnitTurnEnd += OnUnitTurnEnd;
-
-        SnapToGrid();
     }
 
     public void OnEncounterEnd()
@@ -230,7 +235,18 @@ public class TacticsMotor : MonoBehaviour
 
     void OnSkillClear(SkillData skillData)
     {
+        if(characterMotor.unitData.aiBrain != null)
+        {
+            StartCoroutine(DelayEndTurn());
+        }
+    }
 
+    IEnumerator DelayEndTurn()
+    {
+        yield return null;
+        yield return null;
+        yield return new WaitForSeconds(.5f);
+        battleManager.turnManager.EndTurn();
     }
 
     public void SnapToGrid()

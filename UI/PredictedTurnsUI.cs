@@ -66,7 +66,7 @@ public class PredictedTurnsUI : MonoBehaviour
 
     void ResetSprites()
     {
-        foreach (Transform child in spriteContainer) {
+        foreach(Transform child in spriteContainer) {
             GameObject.Destroy(child.gameObject);
         }
     }

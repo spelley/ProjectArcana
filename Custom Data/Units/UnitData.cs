@@ -138,6 +138,8 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
     public void StartTurn()
     {
         Debug.Log("Started turn: "+this.unitName);
+        acted = false;
+        moved = false;
         OnUnitTurnStart?.Invoke();
     }
 
@@ -294,7 +296,7 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
         {
             return false;
         }
-        ModBool boolMod = new ModBool(true);
+        ModBool boolMod = new ModBool(!acted);
         OnCalculateCanAct?.Invoke(boolMod);
 
         return boolMod.GetCalculated();
