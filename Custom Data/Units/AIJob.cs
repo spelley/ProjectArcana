@@ -130,6 +130,11 @@ struct AIJob : IJobParallelFor
                                             int score = GetScore(combatantIndexByPosition[shapeTargetPosition], skillIdx);
                                             totalScore += score;
                                         }
+                                        else if(shapeTargetPosition == walkCell)
+                                        {
+                                            int score = GetScore(originIndex, skillIdx);
+                                            totalScore += score;
+                                        }
                                     } while(skillShapes.TryGetNextValue(out shapeOffset, ref shapeIterator));
                                 }
                                 scores.Enqueue(new SkillScore(walkCell, targetPosition, skillIdx, totalScore));

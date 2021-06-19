@@ -39,6 +39,11 @@ public class RiverCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     void OnSkillTarget(SkillData skillData, UnitData unitData, GridCell originCell)
     {
+        if(riverCard.inactive)
+        {
+            return;
+        }
+        
         foreach(ElementData element in skillData.elements)
         {
             if(element == riverCard.element)

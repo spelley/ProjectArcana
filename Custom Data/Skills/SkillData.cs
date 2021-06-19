@@ -36,6 +36,36 @@ public abstract class SkillData: ScriptableObject
         }
     }
 
+    [Header("Resource Costs")]
+    [SerializeField]
+    int _hpCost;
+    public int hpCost
+    {
+        get
+        {
+            return _hpCost;
+        }
+        private set
+        {
+            _hpCost = value;
+        }
+    }
+
+    [SerializeField]
+    int _mpCost;
+    public int mpCost
+    {
+        get
+        {
+            return _mpCost;
+        }
+        private set
+        {
+            _mpCost = value;
+        }
+    }
+
+    [Header("Element Information")]
     [SerializeField]
     List<ElementData> _elements = new List<ElementData>();
     public List<ElementData> elements
@@ -184,7 +214,6 @@ public abstract class SkillData: ScriptableObject
     {
         get
         {
-            Debug.Log(_areaOfEffect + (matchTypes.Contains(MatchType.AREA) ? BattleManager.Instance.GetRiverMatches(this.elements) : 0));
             return _areaOfEffect + (matchTypes.Contains(MatchType.AREA) ? BattleManager.Instance.GetRiverMatches(this.elements) : 0);
         }
         private set
@@ -569,6 +598,11 @@ public abstract class SkillData: ScriptableObject
             return false;
         }
         return true;
+    }
+
+    public bool IsUsable(UnitData unitData)
+    {
+        return (unitData.hp > hpCost && unitData.mp >= mpCost);
     }
 
     public bool IsSelfTargeting()

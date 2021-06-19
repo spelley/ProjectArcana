@@ -73,6 +73,11 @@ public class GameManager : MonoBehaviour
     List<Vector3> spawnLocations = new List<Vector3>();
     [SerializeField]
     FormationData defaultFormation;
+    public WeaponData testWeapon;
+    public WeaponData testOffHand;
+    public EquipmentData testHelmet;
+    public EquipmentData testArmor;
+    public EquipmentData testAccessory;
 
     // Start is called before the first frame update
     void Start()
@@ -88,6 +93,14 @@ public class GameManager : MonoBehaviour
 
         GameObject mainPlayer = SpawnUnit(party[0], spawnLocations[0]);
         activePlayer = party[0];
+
+        // TODO: remove test code
+        activePlayer.equipmentBlock.Equip(testWeapon, activePlayer);
+        activePlayer.equipmentBlock.Equip(testOffHand, activePlayer, true);
+        activePlayer.equipmentBlock.Equip(testHelmet, activePlayer);
+        activePlayer.equipmentBlock.Equip(testArmor, activePlayer);
+        activePlayer.equipmentBlock.Equip(testAccessory, activePlayer);
+        activePlayer.RefreshUnit();
         StartCoroutine(SetPlayerFocus(mainPlayer));
     }
 
@@ -105,21 +118,5 @@ public class GameManager : MonoBehaviour
     {
         yield return new WaitForSeconds(.1f);
         Camera.main.GetComponent<CameraController>().SetFocus(player);
-    }
-
-    // TODO: Remove this
-    [SerializeField] StatusEffect testStatus;
-    void Update()
-    {
-        // TODO: remove test code
-        if(Input.GetKeyDown(KeyCode.P))
-        {
-            party[0].AddStatus(testStatus);
-        }
-
-        if(Input.GetKeyDown(KeyCode.L))
-        {
-            party[0].RemoveStatus(testStatus);
-        }
     }
 }

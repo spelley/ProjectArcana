@@ -52,7 +52,7 @@ public class AIBrain : ScriptableObject
         stopWatch = new Stopwatch();
         stopWatch.Start();
         // get all the data we are working with
-        skills = unitData.GetAvailableSkills();
+        skills = unitData.GetAvailableSkills(true);
         List<UnitData> combatants = BattleManager.Instance.GetCombatants();
         List<GridCell> walkableCells = MapManager.Instance.GetWalkableCells();
         walkableCells.Add(MapManager.Instance.GetCell(unitData.curPosition));

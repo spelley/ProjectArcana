@@ -13,6 +13,7 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
     public Faction faction;
     public AIBrain aiBrain;
     public StatBlock stats;
+    public EquipmentBlock equipmentBlock;
     public JobData baseJob;
     public JobData activeJob;
     public List<UnitJob> availableJobs = new List<UnitJob>();
@@ -37,6 +38,29 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
         set 
         {
             stats.hp = value;
+        }
+    }
+
+    public int maxMP
+    {
+        get
+        {
+            return stats.CalculateMaxMP();
+        }
+        set 
+        {
+            stats.maxHP = value;
+        }
+    } 
+    public int mp
+    {
+        get
+        {
+            return stats.mp;
+        }
+        set 
+        {
+            stats.mp = value;
         }
     }
 
@@ -97,9 +121,7 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
     }
 
     public List<SkillData> learnedSkills = new List<SkillData>();
-
     public Vector3Int curPosition { get; set; }
-
     public List<StatusEffect> statusEffects = new List<StatusEffect>();
 
     public event Action OnUnitTurnStart;
@@ -133,6 +155,9 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
         {
             AddStatus(curStatuses[i]);
         }
+
+        // Re-apply equipment
+        equipmentBlock.Load(this);
     }
 
     public void StartTurn()
@@ -311,8 +336,33 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
         return boolMod.GetCalculated();
     }
 
-    public List<SkillData> GetAvailableSkills()
+    public void RecalculateResources()
     {
-        return canAct ? learnedSkills : new List<SkillData>();
+        hp = Mathf.Min(hp, maxHP);
+        mp = Mathf.Min(mp, maxMP);
+    }
+
+    public void RefreshUnit()
+    {
+        hp = maxHP;
+        mp = maxMP;
+    }
+
+    public List<SkillData> GetAvailableSkills(bool filterByUsable = false)
+    {
+        List<SkillData> availableSkills = new List<SkillData>();
+        if(!canAct)
+        {
+            return availableSkills;
+        }
+
+        foreach(SkillData skill in learnedSkills)
+        {
+            if(!filterByUsable || skill.IsUsable(this))
+            {
+                availableSkills.Add(skill);
+            }
+        }
+        return availableSkills;
     }
 }

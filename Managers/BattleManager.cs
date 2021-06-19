@@ -280,6 +280,9 @@ public class BattleManager : MonoBehaviour
 
     public void SkillConfirm(SkillData skillData, UnitData unitData, List<GridCell> targets)
     {
+        unitData.hp -= skillData.hpCost;
+        unitData.mp -= skillData.mpCost;
+        
         curUnit.acted = true;
         targeting = false;
 
@@ -308,12 +311,15 @@ public class BattleManager : MonoBehaviour
         foreach(RiverCard riverCard in riverCards)
         {
             bool matched = false;
-            foreach(ElementData element in curSkill.elements)
+            if(!riverCard.locked)
             {
-                if(riverCard.element == element)
+                foreach(ElementData element in curSkill.elements)
                 {
-                    matched = true;
-                    break;
+                    if(riverCard.element == element)
+                    {
+                        matched = true;
+                        break;
+                    }
                 }
             }
             if(!matched) // matched cards go away
@@ -399,6 +405,21 @@ public class BattleManager : MonoBehaviour
         return new RiverCard(element, false, false);
     }
 
+    public void RandomizeRiver()
+    {
+        List<RiverCard> initialCards = new List<RiverCard>();
+        foreach(RiverCard riverCard in riverCards)
+        {
+            if(riverCard.inactive || riverCard.locked)
+            {
+                initialCards.Add(riverCard);
+            }
+        }
+        riverCards = initialCards;
+        RefillRiver();
+        OnUpdateRiver?.Invoke(riverCards);
+    }
+
     void RefillRiver()
     {
         while(riverCards.Count < riverSize)
@@ -412,7 +433,7 @@ public class BattleManager : MonoBehaviour
         int matches = 0;
         foreach(RiverCard riverCard in riverCards)
         {
-            if(elementsToMatch.Contains(riverCard.element))
+            if(!riverCard.inactive && elementsToMatch.Contains(riverCard.element))
             {
                 matches++;
             }

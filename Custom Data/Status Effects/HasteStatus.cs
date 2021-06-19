@@ -24,7 +24,7 @@ public class HasteStatus : StatusEffect
         }
     }
 
-    public void OnCalculateMove(ModInt modifiedMove)
+    public void OnCalculateMove(ModInt modifiedMove, Stat stat)
     {
         modifiedMove.resultMultiplier += hasteMultiplier;
     }

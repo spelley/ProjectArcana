@@ -42,8 +42,6 @@ public class RiverUI : MonoBehaviour
 
     void OnUpdateRiver(List<RiverCard> riverCards)
     {
-        Debug.Log(riverCards.Count);
-        Debug.Log("On Update");
         ClearRiver();
         for(int i = 0; i < riverCards.Count; i++)
         {

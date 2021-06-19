@@ -66,6 +66,8 @@ public class SkillListItem : MonoBehaviour
                 mGOImage.sprite = element.icon;
                 mGOImage.color = element.color;
             }
+
+            skillButton.interactable = skill.IsUsable(unit);
         }
     }
 

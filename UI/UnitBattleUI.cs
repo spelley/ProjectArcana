@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UnitBattleUI : MonoBehaviour
 {
@@ -8,6 +9,16 @@ public class UnitBattleUI : MonoBehaviour
 
     [SerializeField]
     GameObject unitUI;
+    [SerializeField]
+    GameObject unitCommandsUI;
+    [SerializeField]
+    Image portrait;
+    [SerializeField]
+    ResourceBarUI hpUI;
+    [SerializeField]
+    ResourceBarUI mpUI;
+    [SerializeField]
+    ResourceBarUI ctUI;
     [SerializeField]
     GameObject skillsWindow;
 
@@ -72,6 +83,7 @@ public class UnitBattleUI : MonoBehaviour
         if(curUnit != null && curUnit.isPlayerControlled)
         {
             unitUI.SetActive(true);
+            UpdateResources();
         }
     }
 
@@ -110,11 +122,26 @@ public class UnitBattleUI : MonoBehaviour
     void OnTurnStart(ITurnTaker turnTaker)
     {
         UnitData unitData = turnTaker as UnitData;
-        if(unitData != null && unitData.isPlayerControlled)
+
+        if(unitData == null || (!unitData.canAct && !unitData.canMove))
         {
-            MapManager.Instance.OnTravelPathEnd += OnTravelPathEnd;
-            curUnit = unitData;
-            unitUI.SetActive(true);
+            unitUI.SetActive(false);
+            return;
+        }
+
+        curUnit = unitData;
+        unitUI.SetActive(true);
+        portrait.sprite = unitData.sprite;
+        UpdateResources();
+        MapManager.Instance.OnTravelPathEnd += OnTravelPathEnd;
+
+        if(unitData.isPlayerControlled)
+        {
+            unitCommandsUI.SetActive(true);
+        }
+        else
+        {
+            unitCommandsUI.SetActive(false);
         }
     }
 
@@ -138,5 +165,13 @@ public class UnitBattleUI : MonoBehaviour
         {
             battleManager.turnManager.OnTurnStart -= OnTurnStart;
         }
+    }
+
+    void UpdateResources()
+    {
+        curUnit.RecalculateResources();
+        hpUI.UpdateResource(curUnit.hp, curUnit.maxHP);
+        mpUI.UpdateResource(curUnit.mp, curUnit.maxMP);
+        ctUI.UpdateResource(100, 100);
     }
 }
