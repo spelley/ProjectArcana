@@ -36,6 +36,25 @@ public class StatBlock
     public event Action<ModInt, Stat> OnCalculateMove;
     public event Action<ModInt, Stat> OnCalculateJump;
 
+    public bool AddExperience(int amount, UnitData unitData)
+    {
+        if(level <= 100)
+        {
+            if((experience + amount) > 100)
+            {
+                experience = 0;
+                level += 1;
+                unitData.GainedExperience(amount);
+                unitData.GainedLevel(amount);
+                return true;
+            }
+            
+            experience += amount;
+            unitData.GainedExperience(amount);
+        }
+        return false;
+    }
+
     public int CalculateMaxHP()
     {
         ModInt modifiedMaxHP = new ModInt(maxHP);

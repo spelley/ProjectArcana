@@ -60,10 +60,10 @@ public class TacticsMotor : MonoBehaviour
             battleManager.OnEncounterStart -= OnEncounterStart;
             battleManager.OnEncounterEnd -= OnEncounterEnd;
 
-            battleManager.OnSkillConfirm += OnSkillConfirm;
-            battleManager.OnSkillExecute += OnSkillExecute;
-            battleManager.OnSkillClear += OnSkillClear;
-            mapManager.OnTravelPath += OnTravelPath;
+            battleManager.OnSkillConfirm -= OnSkillConfirm;
+            battleManager.OnSkillExecute -= OnSkillExecute;
+            battleManager.OnSkillClear -= OnSkillClear;
+            mapManager.OnTravelPath -= OnTravelPath;
         }
         characterMotor.unitData.OnUnitTurnStart -= OnUnitTurnStart;
         characterMotor.unitData.OnUnitTurnEnd -= OnUnitTurnEnd;

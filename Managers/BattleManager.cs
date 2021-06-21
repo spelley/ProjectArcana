@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -333,6 +334,15 @@ public class BattleManager : MonoBehaviour
         OnSkillClear?.Invoke(curSkill);
         curSkill = null;
         curTargets.Clear();
+        
+        if(!curUnit.incapacitated)
+        {
+            // TODO: make EXP more refined
+            curUnit.stats.AddExperience(10, curUnit);
+            UnitJob unitJob = curUnit.GetUnitJob(curUnit.activeJob);
+            unitJob.AddExperience(10, curUnit);
+        }
+
         IsEncounterResolved();
     }
 
@@ -378,6 +388,7 @@ public class BattleManager : MonoBehaviour
         Debug.Log("Battle has been won!");
         // TODO: Actual encounter rewards
         OnEncounterWon?.Invoke();
+        EndEncounter();
     }
 
     public void EncounterLost()
@@ -385,6 +396,7 @@ public class BattleManager : MonoBehaviour
         Debug.Log("Battle has been lost!");
         // TODO: Actual encounter cleanup?
         OnEncounterLost?.Invoke();
+        EndEncounter();
     }
 
     void InitializeRiver()
@@ -405,9 +417,35 @@ public class BattleManager : MonoBehaviour
         return new RiverCard(element, false, false);
     }
 
+    public void FlowRiver(int numCards = 1)
+    {
+        if(numCards > 0)
+        {
+            int numFound = 0;
+            int lastRiverIndex = riverCards.Count - 1;
+            for(int i = lastRiverIndex; i >= 0; i--)
+            {
+                if(riverCards[i].locked)
+                {
+                    continue;
+                }
+                riverCards.RemoveAt(lastRiverIndex);
+                numFound++;
+                if(numFound == numCards)
+                {
+                    break;
+                }
+            }
+        }
+
+        RefillRiver();
+        OnUpdateRiver?.Invoke(riverCards);
+    }
+
     public void RandomizeRiver()
     {
         List<RiverCard> initialCards = new List<RiverCard>();
+
         foreach(RiverCard riverCard in riverCards)
         {
             if(riverCard.inactive || riverCard.locked)
@@ -424,7 +462,7 @@ public class BattleManager : MonoBehaviour
     {
         while(riverCards.Count < riverSize)
         {
-            riverCards.Add(GetRandomRiverCard());
+            riverCards.Insert(0, GetRandomRiverCard());
         }
     }
 

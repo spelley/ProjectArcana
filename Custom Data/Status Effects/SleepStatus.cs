@@ -51,7 +51,7 @@ public class SleepStatus : StatusEffect
         {
             curTimer++;
             // TODO: play animation
-            appliedTo.unitGO.GetComponent<CharacterMotor>().ShowPopUp("ZZz...", new Color32(255, 255, 255, 200));
+            appliedTo.unitGO.GetComponent<CharacterUI>().ShowPopUp("ZZz...", new Color32(255, 255, 255, 200));
             GameManager.Instance.StartCoroutine(EndTurn());
             return;
         }

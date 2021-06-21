@@ -121,6 +121,7 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
     }
 
     public List<SkillData> learnedSkills = new List<SkillData>();
+    public List<SkillData> assignedSkills = new List<SkillData>();
     public Vector3Int curPosition { get; set; }
     public List<StatusEffect> statusEffects = new List<StatusEffect>();
 
@@ -145,6 +146,31 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
 
     public event Action<StatusEffect> OnAddStatusEffect;
     public event Action<StatusEffect> OnRemoveStatusEffect;
+
+    public event Action<int> OnUnitExperience;
+    public event Action<int> OnUnitLevel;
+    public event Action<UnitJob, int> OnUnitJobExperience;
+    public event Action<UnitJob, int> OnUnitJobLevel;
+
+    public void GainedExperience(int amount)
+    {
+        OnUnitExperience?.Invoke(amount);
+    }
+
+    public void GainedLevel(int amount)
+    {
+        OnUnitLevel?.Invoke(amount);
+    }
+
+    public void GainedJobExperience(UnitJob unitJob, int amount)
+    {
+        OnUnitJobExperience?.Invoke(unitJob, amount);
+    }
+
+    public void GainedJobLevel(UnitJob unitJob, int amount)
+    {
+        OnUnitJobLevel?.Invoke(unitJob, amount);
+    }
 
     public void Load()
     {
@@ -348,6 +374,19 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
         mp = maxMP;
     }
 
+    public UnitJob GetUnitJob(JobData job)
+    {
+        foreach(UnitJob unitJob in availableJobs)
+        {
+            if(unitJob.jobData == job)
+            {
+                return unitJob;
+            }
+        }
+
+        return new UnitJob();
+    }
+
     public List<SkillData> GetAvailableSkills(bool filterByUsable = false)
     {
         List<SkillData> availableSkills = new List<SkillData>();
@@ -356,13 +395,76 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
             return availableSkills;
         }
 
-        foreach(SkillData skill in learnedSkills)
+        if(baseJob != null)
         {
-            if(!filterByUsable || skill.IsUsable(this))
+            UnitJob unitJob = GetUnitJob(baseJob);
+            if(unitJob.jobData != null)
+            {
+                foreach(JobSkill jobSkill in unitJob.jobData.skills)
+                {
+                    if(jobSkill.learnLevel <= unitJob.level)
+                    {
+                        if((!filterByUsable || jobSkill.skill.IsUsable(this)) && !availableSkills.Contains(jobSkill.skill))
+                        {
+                            availableSkills.Add(jobSkill.skill);
+                        }
+                    }
+                }
+            }
+        }
+
+        if(activeJob != null)
+        {
+            UnitJob activeUnitJob = GetUnitJob(activeJob);
+            if(activeUnitJob.jobData != null)
+            {
+                foreach(JobSkill jobSkill in activeUnitJob.jobData.skills)
+                {
+                    if(jobSkill.learnLevel <= activeUnitJob.level)
+                    {
+                        if((!filterByUsable || jobSkill.skill.IsUsable(this)) && !availableSkills.Contains(jobSkill.skill))
+                        {
+                            availableSkills.Add(jobSkill.skill);
+                        }
+                    }
+                }
+            }
+        }
+
+        foreach(SkillData skill in assignedSkills)
+        {
+            if((!filterByUsable || skill.IsUsable(this)) && !availableSkills.Contains(skill))
             {
                 availableSkills.Add(skill);
             }
         }
+        return availableSkills;
+    }
+
+    public List<SkillData> GetAttackSkills(bool filterByUsable = false)
+    {
+        List<SkillData> availableSkills = new List<SkillData>();
+        if(!canAct)
+        {
+            return availableSkills;
+        }
+
+        if(equipmentBlock.weapon != null)
+        {
+            if(equipmentBlock.weapon.weaponSkill != null && (!filterByUsable || equipmentBlock.weapon.weaponSkill.IsUsable(this)))
+            {
+                availableSkills.Add(equipmentBlock.weapon.weaponSkill);
+            }
+        }
+
+        if(equipmentBlock.offhand != null)
+        {
+            if(equipmentBlock.offhand.weaponSkill != null && (!filterByUsable || equipmentBlock.offhand.weaponSkill.IsUsable(this)))
+            {
+                availableSkills.Add(equipmentBlock.offhand.weaponSkill);
+            }
+        }
+
         return availableSkills;
     }
 }

@@ -7,15 +7,40 @@ using UnityEngine;
 public class EquipmentBlock
 {
     [SerializeField]
-    WeaponData weapon;
+    WeaponData _weapon;
+    public WeaponData weapon
+    {
+        get { return _weapon; }
+        private set { _weapon = value; }
+    }
     [SerializeField]
-    WeaponData offhand;
+    WeaponData _offhand;
+    public WeaponData offhand
+    {
+        get { return _offhand; }
+        private set { _offhand = value; }
+    }
     [SerializeField]
-    EquipmentData helmet;
+    EquipmentData _helmet;
+    public EquipmentData helmet
+    {
+        get { return _helmet; }
+        private set { _helmet = value; }
+    }
     [SerializeField]
-    EquipmentData armor;
+    EquipmentData _armor;
+    public EquipmentData armor
+    {
+        get { return _armor; }
+        private set { _armor = value; }
+    }
     [SerializeField]
-    EquipmentData accessory;
+    EquipmentData _accessory;
+    public EquipmentData accessory
+    {
+        get { return _accessory; }
+        private set { _accessory = value; }
+    }
 
     public event Action<EquipmentData, UnitData, bool> OnEquip;
     public event Action<EquipmentData, UnitData, bool> OnUnequip;

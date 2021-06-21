@@ -56,11 +56,10 @@ public class UnitBattleUI : MonoBehaviour
 
     void Update()
     {
-        if(hidingUI && Input.GetKeyDown(KeyCode.Escape))
+        // close the skill window if it is open
+        if(Input.GetKeyDown(KeyCode.Escape) && skillsWindow.activeSelf)
         {
-            unitUI.SetActive(true);
-            MapManager.Instance.ClearAllTiles();
-            hidingUI = false;
+            skillsWindow.SetActive(false);
         }
     }
 
@@ -102,7 +101,16 @@ public class UnitBattleUI : MonoBehaviour
         if(curUnit != null && curUnit.canAct)
         {
             skillsWindow.SetActive(true);
-            skillsWindow.GetComponent<SkillList>().SetData(curUnit);
+            skillsWindow.GetComponent<SkillList>().SetData(curUnit, curUnit.GetAvailableSkills());
+        }
+    }
+
+    public void OnAttackButton()
+    {
+        if(curUnit != null && curUnit.canAct)
+        {
+            skillsWindow.SetActive(true);
+            skillsWindow.GetComponent<SkillList>().SetData(curUnit, curUnit.GetAttackSkills());
         }
     }
 
@@ -161,6 +169,10 @@ public class UnitBattleUI : MonoBehaviour
 
     void OnEncounterEnd()
     {
+        unitUI.SetActive(false);
+        unitCommandsUI.SetActive(false);
+        skillsWindow.SetActive(false);
+
         if(battleManager.turnManager != null)
         {
             battleManager.turnManager.OnTurnStart -= OnTurnStart;

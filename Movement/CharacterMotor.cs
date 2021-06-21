@@ -37,10 +37,7 @@ public class CharacterMotor : MonoBehaviour
     Animator anim; // Reference to the animator component.
     Camera cam;
     CharacterController characterController;
-    [SerializeField]
-    GameObject popUpContainer;
-    [SerializeField]
-    TextMeshPro popUpText;
+    
     
     float horizontal = 0f;
     float vertical = 0f;
@@ -62,18 +59,12 @@ public class CharacterMotor : MonoBehaviour
 
     void Start()
     {
-        unitData.OnReceiveDamage += OnReceiveDamage;
-        unitData.OnReceiveHeal += OnReceiveHeal;
-        unitData.OnAddStatusEffect += OnAddStatusEffect;
-        unitData.OnRemoveStatusEffect += OnRemoveStatusEffect;
+        
     }
 
     void OnDestroy()
     {
-        unitData.OnReceiveDamage -= OnReceiveDamage;
-        unitData.OnReceiveHeal -= OnReceiveHeal;
-        unitData.OnAddStatusEffect -= OnAddStatusEffect;
-        unitData.OnRemoveStatusEffect -= OnRemoveStatusEffect;
+        
     }
 
     void Update()
@@ -171,60 +162,5 @@ public class CharacterMotor : MonoBehaviour
         targetDirection.y = verticalVelocity;
 
         characterController.Move(targetDirection * Time.deltaTime);
-    }
-
-    public void OnReceiveDamage(IDamageable source, IDamageable target, List<ElementData> elements, int damage)
-    {   
-        ShowPopUp(damage.ToString(), new Color32(255, 255, 255, 255));
-        if(damage > 0 && source != target)
-        {
-            anim.SetTrigger("ReceiveDamage");
-        }
-    }
-
-    public void ShowPopUp(string text, Color32 textColor, float timer = 1f, float fadeTimer = 0.5f)
-    {
-        StartCoroutine(PopUpCoroutine(text, textColor, timer, fadeTimer));
-    }
-
-    IEnumerator PopUpCoroutine(string text, Color32 textColor, float timer = 1f, float fadeTimer = 0.5f)
-    {
-        float curTime = 0f;
-        popUpText.faceColor = textColor;
-        popUpText.text = text;
-        popUpContainer.SetActive(true);
-        while(curTime < timer)
-        {
-            curTime += Time.deltaTime;
-            yield return null;
-        }
-        curTime = 0;
-        Color32 fadeOutTextColor = new Color32(textColor.r, textColor.g, textColor.b, 0);
-        while(curTime < fadeTimer)
-        {
-            curTime += Time.deltaTime;
-            popUpText.faceColor = Color32.Lerp(textColor, fadeOutTextColor, (curTime / fadeTimer));
-            yield return null;
-        }
-        popUpContainer.SetActive(false);
-    }
-
-    public void OnReceiveHeal(IDamageable source, IDamageable target, List<ElementData> elements, int heal)
-    {
-        ShowPopUp(heal.ToString(), new Color32(0, 255, 0, 255));
-        if(heal > 0 && source != target)
-        {
-            anim.SetTrigger("ReceiveHeal");
-        }
-    }
-
-    public void OnAddStatusEffect(StatusEffect status)
-    {
-        ShowPopUp('+'+status.statusName, new Color32(0, 255, 0, 255));
-    }
-
-    public void OnRemoveStatusEffect(StatusEffect status)
-    {
-        ShowPopUp('-'+status.statusName, new Color32(255, 0, 0, 255));
     }
 }

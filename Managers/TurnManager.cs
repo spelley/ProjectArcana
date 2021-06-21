@@ -51,7 +51,7 @@ public class TurnManager
 
     public void EndTurn()
     {
-        BattleManager.Instance.RandomizeRiver();
+        BattleManager.Instance.FlowRiver(1);
         curTurnTaker.EndTurn();
         OnTurnEnd?.Invoke(curTurnTaker);
 

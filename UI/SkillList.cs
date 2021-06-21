@@ -10,16 +10,15 @@ public class SkillList : MonoBehaviour
     [SerializeField]
     GameObject skillListItemHolder;
 
-    public void SetData(UnitData unitData)
+    public void SetData(UnitData unitData, List<SkillData> skillItems)
     {
         unit = unitData;
-        LoadItems();
+        LoadItems(skillItems);
     }
 
-    void LoadItems()
+    void LoadItems(List<SkillData> skillItems)
     {
         Clear();
-        List<SkillData> skillItems = unit.GetAvailableSkills();
         foreach(SkillData skillData in skillItems)
         {
             GameObject siGO = Instantiate(skillListItemPrefab, skillListItemHolder.transform);
