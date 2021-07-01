@@ -72,6 +72,11 @@ public class JobData: ScriptableObject
         }
     }
 
+    [SerializeField] DivinationData _divinationSkill;
+    public DivinationData divinationSkill {
+        get { return _divinationSkill; }
+    }
+
     [SerializeField]
     List<UnitJob> jobRequirements = new List<UnitJob>();
 

@@ -63,10 +63,29 @@ struct AIJob : IJobParallelFor
     public void Execute(int walkIndex)
     {
         Vector3Int walkCell = walkableArea[walkIndex];
+
+        // calculate distance score, so we play keep-away when we can
+        int distanceScore = 0;
+        for(int cIdx = 0; cIdx < combatants.Length; cIdx++)
+        {
+            Vector3Int targetPosition = combatants[cIdx];
+            if(walkCell != targetPosition)
+            {
+                if(factionsByCombatant[originPosition] != factionsByCombatant[targetPosition])
+                {
+                    distanceScore += ManhattanDistance(originPosition, targetPosition);
+                }
+            }
+        }
         
         for(int skillIdx = 0; skillIdx < skills.Length; skillIdx++)
         {
             SkillStruct skill = skills[skillIdx];
+
+            if(skill.actionType == ActionType.MOVE && walkIndex != 0)
+            {
+                continue;
+            }
 
             // these simply use Manhattan distance to let us know if they are within range and thus are targetable
             // single targets make their own individual score, while "ALL" gets the tally of hitting everyone in range
@@ -93,13 +112,13 @@ struct AIJob : IJobParallelFor
                         }
                         else
                         {
-                            scores.Enqueue(new SkillScore(walkCell, targetPosition, skillIdx, GetScore(cIdx, skillIdx)));
+                            scores.Enqueue(new SkillScore(walkCell, targetPosition, skillIdx, GetScore(cIdx, skillIdx), distanceScore));
                         }
                     }
                 }
                 if(skill.targetShape == TargetShape.ALL && totalScore > 0)
                 {
-                    scores.Enqueue(new SkillScore(walkCell, allTarget, skillIdx, totalScore));
+                    scores.Enqueue(new SkillScore(walkCell, allTarget, skillIdx, totalScore, distanceScore));
                 }
             }
             else if(skill.rangeType == RangeType.AREA)
@@ -137,7 +156,7 @@ struct AIJob : IJobParallelFor
                                         }
                                     } while(skillShapes.TryGetNextValue(out shapeOffset, ref shapeIterator));
                                 }
-                                scores.Enqueue(new SkillScore(walkCell, targetPosition, skillIdx, totalScore));
+                                scores.Enqueue(new SkillScore(walkCell, targetPosition, skillIdx, totalScore, distanceScore));
                             }
                         } while(targetableAreasByCombatantSkill.TryGetNextValue(out offset, ref iterator));
                     }
@@ -196,7 +215,7 @@ struct AIJob : IJobParallelFor
                         }
                         else
                         {
-                            scores.Enqueue(new SkillScore(walkCell, targetPosition, skillIdx, GetScore(cIdx, skillIdx)));
+                            scores.Enqueue(new SkillScore(walkCell, targetPosition, skillIdx, GetScore(cIdx, skillIdx), distanceScore));
                         }
                     }
                 }
@@ -205,19 +224,19 @@ struct AIJob : IJobParallelFor
                 {
                     if(northScore > 0)
                     {
-                        scores.Enqueue(new SkillScore(walkCell, allTargetNorth, skillIdx, northScore));
+                        scores.Enqueue(new SkillScore(walkCell, allTargetNorth, skillIdx, northScore, distanceScore));
                     }
                     if(southScore > 0)
                     {
-                        scores.Enqueue(new SkillScore(walkCell, allTargetSouth, skillIdx, southScore));
+                        scores.Enqueue(new SkillScore(walkCell, allTargetSouth, skillIdx, southScore, distanceScore));
                     }
                     if(eastScore > 0)
                     {
-                        scores.Enqueue(new SkillScore(walkCell, allTargetEast, skillIdx, eastScore));
+                        scores.Enqueue(new SkillScore(walkCell, allTargetEast, skillIdx, eastScore, distanceScore));
                     }
                     if(westScore > 0)
                     {
-                        scores.Enqueue(new SkillScore(walkCell, allTargetWest, skillIdx, westScore));
+                        scores.Enqueue(new SkillScore(walkCell, allTargetWest, skillIdx, westScore, distanceScore));
                     }
                 }
             }

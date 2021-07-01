@@ -57,7 +57,7 @@ public class SkillListItem : MonoBehaviour
     {
         if(skill != null && unit != null)
         {
-            buttonText.text = skill.skillName;
+            buttonText.text = GetActionTypeText() + " " + skill.skillName + GetCostString();
             ClearMeta();
             foreach(ElementData element in skill.elements)
             {
@@ -69,6 +69,50 @@ public class SkillListItem : MonoBehaviour
 
             skillButton.interactable = skill.IsUsable(unit);
         }
+    }
+
+    string GetActionTypeText()
+    {
+        if(skill == null)
+        {
+            return "[-]";
+        }
+        if(skill.actionType == ActionType.MOVE)
+        {
+            return "[M]";
+        }
+        if(skill.actionType == ActionType.STANDARD)
+        {
+            return "[S]";
+        }
+        if(skill.actionType == ActionType.BONUS)
+        {
+            return "[B]";
+        }
+        return "[F]";
+    }
+
+    string GetCostString()
+    {
+        string output = "";
+        if(skill == null)
+        {
+            return output;
+        }
+        if(skill.hpCost > 0)
+        {
+            output += " - HP: -" + skill.hpCost;
+            if(skill.mpCost > 0)
+            {
+                output += ", MP: " + skill.mpCost;
+            }
+        }
+        else if(skill.mpCost > 0)
+        {
+            output += " - MP: " + skill.mpCost;
+        }
+
+        return output;
     }
 
     void ClearMeta()

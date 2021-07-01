@@ -30,6 +30,8 @@ public class GameManager : MonoBehaviour
 
             Instantiate(mapManagerPrefab);
             _mapManager = MapManager.Instance;
+
+            playerInventory = new Inventory();
         }
     }
 
@@ -71,6 +73,9 @@ public class GameManager : MonoBehaviour
     List<UnitData> curPlayers = new List<UnitData>();
     [SerializeField]
     List<Vector3> spawnLocations = new List<Vector3>();
+
+    Inventory playerInventory;
+
     [SerializeField]
     FormationData defaultFormation;
     public WeaponData testWeapon;
@@ -95,11 +100,19 @@ public class GameManager : MonoBehaviour
         activePlayer = party[0];
 
         // TODO: remove test code
-        activePlayer.equipmentBlock.Equip(testWeapon, activePlayer);
-        activePlayer.equipmentBlock.Equip(testOffHand, activePlayer, true);
-        activePlayer.equipmentBlock.Equip(testHelmet, activePlayer);
-        activePlayer.equipmentBlock.Equip(testArmor, activePlayer);
-        activePlayer.equipmentBlock.Equip(testAccessory, activePlayer);
+        playerInventory.AddItem(testWeapon, true);
+        playerInventory.AddItem(testOffHand, true);
+        playerInventory.AddItem(testHelmet, true);
+        playerInventory.AddItem(testArmor, true);
+        playerInventory.AddItem(testAccessory, true);
+
+        
+        playerInventory.EquipFromInventory(testWeapon, activePlayer);
+        playerInventory.EquipFromInventory(testOffHand, activePlayer, true);
+        playerInventory.EquipFromInventory(testHelmet, activePlayer);
+        playerInventory.EquipFromInventory(testArmor, activePlayer);
+        playerInventory.EquipFromInventory(testAccessory, activePlayer);
+
         activePlayer.RefreshUnit();
         StartCoroutine(SetPlayerFocus(mainPlayer));
     }

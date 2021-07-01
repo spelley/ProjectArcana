@@ -16,11 +16,43 @@ public class HealSkill : SkillData
 
     public override void ExecutePerTarget(UnitData unitData, GridCell gridCell)
     {
-        if(gridCell.occupiedBy != null)
+        UnitData target = gridCell.occupiedBy;
+        if(target != null)
         {
-            int baseHeal = skillCalculation.Calculate(this, unitData);
-            unitData.HealOther(baseHeal, gridCell.occupiedBy, this.elements);
+            if(IsHit(GetHitChance(unitData, target, unitData.faction == target.faction)))
+            {
+                int matches = BattleManager.Instance.GetRiverMatches(this.elements);
+                int baseHeal = skillCalculation.Calculate(this, unitData, matches);
+                unitData.HealOther(baseHeal, target, this.elements);
+                HandlePush(unitData, target);
+            }
+            else
+            {
+                target.Miss();
+            }
         }
+    }
+
+    public override SkillPreview GetPreview(UnitData unitData, GridCell targetCell)
+    {
+        UnitData target = targetCell.occupiedBy;
+        if(target != null)
+        {
+            int matches = BattleManager.Instance.GetRiverMatches(this.elements);
+            int baseHeal = skillCalculation.Calculate(this, unitData, matches);
+            int predictHeal = unitData.PredictHealOther(baseHeal, target, this.elements);
+            string output = predictHeal >= 0 ? "+"+predictHeal.ToString()+"HP" : "-"+predictHeal.ToString()+"HP";
+            if(push != 0)
+            {
+                output += "\nPush "+push.ToString();
+            }
+
+            int toHit = GetHitChance(unitData, target, unitData.faction == target.faction);
+
+            return new SkillPreview(output, toHit);
+        }
+
+        return new SkillPreview("No Effect", 0);
     }
 
     public override int GetSkillScore(UnitData unitData, GridCell gridCell)
@@ -36,8 +68,14 @@ public class HealSkill : SkillData
     {
         if(target != null && IsValidTargetType(unitData, target))
         {
-            int baseHeal = skillCalculation.Calculate(this, unitData);
-            return unitData.PredictHealOther(baseHeal, target, this.elements) * (target.faction == unitData.faction ? 1 : -1);
+            int matches = BattleManager.Instance.GetRiverMatches(this.elements);
+            int baseHeal = skillCalculation.Calculate(this, unitData, matches);
+            int toHit = unitData.GetHitChance(this.hitChance, target, this.elements);
+            int predictHeal = unitData.PredictHealOther(baseHeal, target, this.elements) * (target.faction == unitData.faction ? 1 : -1);
+
+            predictHeal = toHit == 0 ? 0 : Mathf.RoundToInt(predictHeal * (toHit / 100f));
+
+            return predictHeal;
         }
         return 0;
     }

@@ -8,5 +8,6 @@ public enum MatchType
     AREA,
     PRIMARY_BOOST,
     SECONDARY_BOOST,
-    TERTIARY_BOOST
+    TERTIARY_BOOST,
+    HIT_CHANCE
 }

@@ -390,6 +390,83 @@ public class MapManager : MonoBehaviour
         cachedPaths.Clear();
     }
 
+    public GridCell GetForcedMovement(Vector3Int pushOriginPosition, Vector3Int pushTargetPosition, int distance = 1, int maxHeightDiff = 100)
+    {
+        if(pushOriginPosition == pushTargetPosition || distance == 0)
+        {
+            return GetCell(pushTargetPosition);
+        }
+
+        int distMod = distance > 0 ? 1 : -1;
+
+        int xDistance = Mathf.Abs(pushOriginPosition.x - pushTargetPosition.x);
+        int yDistance = Mathf.Abs(pushOriginPosition.y - pushTargetPosition.y);
+
+        Vector3Int modVector = Vector3Int.zero;
+        if(xDistance > yDistance)
+        {
+            modVector = (pushOriginPosition.x < pushTargetPosition.x) ? new Vector3Int(distMod, 0, 0) : new Vector3Int(-distMod, 0, 0);
+        }
+        else if(yDistance > xDistance)
+        {
+            modVector = (pushOriginPosition.y < pushTargetPosition.y) ? new Vector3Int(0, distMod, 0) : new Vector3Int(0, -distMod, 0);
+        }
+        else
+        {
+            // TODO: pick one at random, instead of defaulting to X
+            modVector = (pushOriginPosition.x < pushTargetPosition.x) ? new Vector3Int(distMod, 0, 0) : new Vector3Int(-distMod, 0, 0);
+        }
+
+        Vector3Int lastValidPosition = pushTargetPosition;
+        Vector3Int checkPosition = pushTargetPosition;
+        for(int move = 1; move <= Mathf.Abs(distance); move++)
+        {
+            checkPosition += modVector;
+            if(CellInBounds(checkPosition.x, checkPosition.y, checkPosition.z))
+            {
+                GridCell checkCell = GetCell(checkPosition);
+                if(checkCell == null)
+                {
+                    for(int h = 1; h <= maxHeightDiff; h++)
+                    {
+                        Vector3Int heightPosition = new Vector3Int(checkPosition.x, checkPosition.y, checkPosition.z - h);
+                        if(!CellInBounds(heightPosition.x, heightPosition.y, heightPosition.z))
+                        {
+                            return GetCell(lastValidPosition);
+                        }
+                        
+                        GridCell heightCell = GetCell(heightPosition);
+                        if(heightCell == null)
+                        {
+                            continue;
+                        }
+                        if(heightCell.buildNoNeighbours)
+                        {
+                            return GetCell(lastValidPosition);
+                        }
+                        if(heightCell.walkable)
+                        {
+                            return heightCell;
+                        }
+                    }
+                    return GetCell(lastValidPosition);
+                }
+                else if(checkCell.buildNoNeighbours || !checkCell.walkable || checkCell.occupiedBy != null)
+                {
+                    return GetCell(lastValidPosition);
+                }
+
+                lastValidPosition = checkCell.position;
+            }
+            else
+            {
+                return GetCell(lastValidPosition);
+            }
+        }
+
+        return GetCell(lastValidPosition);
+    }
+
     public GridCell GetClosestUnoccupiedGridCell(Vector3Int targetPosition, UnitData unitData)
     {
         GridCell closestCell = cellList

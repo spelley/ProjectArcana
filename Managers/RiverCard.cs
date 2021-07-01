@@ -1,4 +1,4 @@
-public struct RiverCard
+public class RiverCard
 {
     public ElementData element;
     public bool locked;

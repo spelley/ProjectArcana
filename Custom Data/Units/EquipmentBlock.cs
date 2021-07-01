@@ -69,16 +69,17 @@ public class EquipmentBlock
         }
     }
 
-    public void Equip(EquipmentData equipment, UnitData unitData, bool offhandSlot = false, bool invokeEvents = true)
+    public EquipmentData Equip(EquipmentData equipment, UnitData unitData, bool offhandSlot = false, bool invokeEvents = true)
     {
         WeaponData weaponData = equipment as WeaponData;
+        EquipmentData unequipped = null;
         if(weaponData != null)
         {
             if(offhandSlot)
             {
                 if(offhand != null)
                 {
-                    Unequip(offhand, unitData, offhandSlot);
+                    unequipped = Unequip(offhand, unitData, offhandSlot);
                 }
                 offhand = weaponData;
             }
@@ -86,7 +87,7 @@ public class EquipmentBlock
             {
                 if(weapon != null)
                 {
-                    Unequip(weapon, unitData, offhandSlot);
+                    unequipped = Unequip(weapon, unitData, offhandSlot);
                 }
                 weapon = weaponData;
             }     
@@ -98,21 +99,21 @@ public class EquipmentBlock
                 case EquipmentSlot.HELMET:
                     if(helmet != null)
                     {
-                        Unequip(helmet, unitData, offhandSlot);
+                        unequipped = Unequip(helmet, unitData, offhandSlot);
                     }
                     helmet = equipment;
                 break;
                 case EquipmentSlot.ARMOR:
                     if(armor != null)
                     {
-                        Unequip(armor, unitData, offhandSlot);
+                        unequipped = Unequip(armor, unitData, offhandSlot);
                     }
                     armor = equipment;
                 break;
                 case EquipmentSlot.ACCESSORY:
                     if(accessory != null)
                     {
-                        Unequip(accessory, unitData, offhandSlot);
+                        unequipped = Unequip(accessory, unitData, offhandSlot);
                     }
                     accessory = equipment;
                 break;
@@ -124,9 +125,11 @@ public class EquipmentBlock
         {
             OnEquip?.Invoke(equipment, unitData, offhandSlot);
         }
+
+        return unequipped;
     }
 
-    public void Unequip(EquipmentData equipment, UnitData unitData, bool offhandSlot = false)
+    public EquipmentData Unequip(EquipmentData equipment, UnitData unitData, bool offhandSlot = false)
     {
         switch(equipment.equipmentSlot)
         {
@@ -156,5 +159,6 @@ public class EquipmentBlock
         }
 
         OnUnequip?.Invoke(equipment, unitData, offhandSlot);
+        return equipment;
     }
 }

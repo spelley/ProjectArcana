@@ -146,6 +146,7 @@ public class AIBrain : ScriptableObject
 
         int maxScore = 0;
         int maxScoreSkillIndex = -1;
+        int maxDistanceScore = 0;
         Vector3Int resultWalk = Vector3Int.zero;
         Vector3Int resultTarget = Vector3Int.zero;
 
@@ -154,10 +155,11 @@ public class AIBrain : ScriptableObject
             while(scores.Count > 0)
             {
                 SkillScore skillScore = scores.Dequeue();
-                if(skillScore.score > maxScore)
+                if((skillScore.score > maxScore) || (skillScore.score == maxScore && skillScore.distanceScore > maxDistanceScore))
                 {
                     maxScore = skillScore.score;
                     maxScoreSkillIndex = skillScore.skillIndex;
+                    maxDistanceScore = skillScore.distanceScore;
                     resultWalk = skillScore.origin;
                     resultTarget = skillScore.target;
                 }

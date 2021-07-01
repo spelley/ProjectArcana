@@ -82,6 +82,7 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
     }
     public bool moved { get; set; }
     public bool acted { get; set; }
+    public bool usedBonus { get; set; }
     public bool canAct
     {
         get
@@ -95,6 +96,14 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
         get
         {
             return CalculateCanMove();
+        }
+    }
+
+    public bool canUseBonus
+    {
+        get
+        {
+            return CalculateCanUseBonus();
         }
     }
     
@@ -119,7 +128,11 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
             _sprite = value;
         }
     }
-
+    public DivinationData divinationSkill {
+        get {
+            return baseJob.divinationSkill;
+        }
+    }
     public List<SkillData> learnedSkills = new List<SkillData>();
     public List<SkillData> assignedSkills = new List<SkillData>();
     public Vector3Int curPosition { get; set; }
@@ -139,13 +152,19 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
     public event Action<IDamageable, IDamageable, ModInt> OnPredictReceiveHeal;
     public event Action<IDamageable, IDamageable, ModInt> OnReceiveHealCalculation;
     public event Action<IDamageable, IDamageable, List<ElementData>, int> OnReceiveHeal;
+
+    public event Action<UnitData, UnitData, ModFloat> OnCalculateHitChance;
+    public event Action OnUnitMiss;
     
     public event Action<ModBool> OnCalculateIsIncapacitated;
     public event Action<ModBool> OnCalculateCanMove;
     public event Action<ModBool> OnCalculateCanAct;
+    public event Action<ModBool> OnCalculateCanUseBonus;
 
     public event Action<StatusEffect> OnAddStatusEffect;
     public event Action<StatusEffect> OnRemoveStatusEffect;
+    
+    public event Action<GridCell, Action<Vector3Int>> OnUnitPush;
 
     public event Action<int> OnUnitExperience;
     public event Action<int> OnUnitLevel;
@@ -191,6 +210,7 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
         Debug.Log("Started turn: "+this.unitName);
         acted = false;
         moved = false;
+        usedBonus = false;
         OnUnitTurnStart?.Invoke();
     }
 
@@ -245,6 +265,32 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
             }
         }
         return false;
+    }
+
+    public int GetHitChance(float baseHitChance, UnitData target, List<ElementData> elements, bool ignoreEvasion = false)
+    {
+        ModFloat modifiedHitChance = new ModFloat(baseHitChance);
+        modifiedHitChance.elements = elements;
+        OnCalculateHitChance?.Invoke(this, target, modifiedHitChance);
+
+        int evadeChance = ignoreEvasion ? 0 : target.stats.GetByStat(Stat.EVASION);
+
+        return Mathf.RoundToInt(Mathf.Clamp(modifiedHitChance.GetCalculated() - evadeChance, 0, 100f));
+    }
+
+    public void Miss()
+    {
+        OnUnitMiss?.Invoke();
+    }
+
+    public void PushTo(GridCell targetCell)
+    {
+        OnUnitPush?.Invoke(targetCell, PushComplete);
+    }
+
+    public void PushComplete(Vector3Int targetPosition)
+    {
+        MapManager.Instance.UpdateUnitPosition(targetPosition, this);
     }
 
     public int PredictDealDamage(int damage, IDamageable target, List<ElementData> elements)
@@ -349,6 +395,18 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
         }
         ModBool boolMod = new ModBool(!acted);
         OnCalculateCanAct?.Invoke(boolMod);
+
+        return boolMod.GetCalculated();
+    }
+
+    bool CalculateCanUseBonus()
+    {
+        if(incapacitated)
+        {
+            return false;
+        }
+        ModBool boolMod = new ModBool(!usedBonus);
+        OnCalculateCanUseBonus?.Invoke(boolMod);
 
         return boolMod.GetCalculated();
     }

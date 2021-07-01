@@ -6,6 +6,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "WeaponData", menuName = "Custom Data/Items/Weapon Data")]
 public class WeaponData: EquipmentData
 {
+    [Header("Weapon Information")]
     [SerializeField]
     SkillData _weaponSkill;
     public SkillData weaponSkill 

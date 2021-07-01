@@ -38,6 +38,13 @@ public abstract class SkillData: ScriptableObject
 
     [Header("Resource Costs")]
     [SerializeField]
+    ActionType _actionType;
+    public ActionType actionType
+    {
+        get { return _actionType; }
+        private set { _actionType = value; }
+    }
+    [SerializeField]
     int _hpCost;
     public int hpCost
     {
@@ -50,8 +57,6 @@ public abstract class SkillData: ScriptableObject
             _hpCost = value;
         }
     }
-
-    [SerializeField]
     int _mpCost;
     public int mpCost
     {
@@ -124,6 +129,20 @@ public abstract class SkillData: ScriptableObject
     }
     
     [Header("Targeting Information")]
+    [SerializeField, Range(0f, 100f)]
+    float _hitChance = 100f;
+    public float hitChance
+    {
+        get
+        {
+            return _hitChance + (5f * (matchTypes.Contains(MatchType.HIT_CHANCE) ? BattleManager.Instance.GetRiverMatches(this.elements) : 0));
+        }
+        private set
+        {
+            _hitChance = value;
+        }
+    }
+
     [SerializeField]
     TargetType _targetType;
     public TargetType targetType
@@ -219,6 +238,35 @@ public abstract class SkillData: ScriptableObject
         private set
         {
             _areaOfEffect = value;
+        }
+    }
+
+    [SerializeField]
+    int _push = 0;
+    public int push
+    {
+        get
+        {
+            return _push;
+        }
+
+        private set
+        {
+            _push = value;
+        }
+    }
+
+    [SerializeField]
+    bool _pushFromTarget;
+    public bool pushFromTarget
+    {
+        get
+        {
+            return _pushFromTarget;
+        }
+        private set
+        {
+            _pushFromTarget = value;
         }
     }
 
@@ -327,11 +375,32 @@ public abstract class SkillData: ScriptableObject
     {
         get
         {
-            return _tertiaryValue + (matchTypes.Contains(MatchType.TERTIARY_BOOST) ? BattleManager.Instance.GetRiverMatches(this.elements) : 0);;
+            return _tertiaryValue + (matchTypes.Contains(MatchType.TERTIARY_BOOST) ? BattleManager.Instance.GetRiverMatches(this.elements) : 0);
         }
         private set
         {
             _tertiaryValue = value;
+        }
+    }
+
+    public List<UnitData> executedOn = new List<UnitData>();
+
+    public int GetHitChance(UnitData source, UnitData target, bool ignoreEvasion = false)
+    {
+        return source.GetHitChance(this.hitChance, target, this.elements);
+    }
+
+    public bool IsHit(int hitChance)
+    {
+        return UnityEngine.Random.Range(0, 100) <= hitChance;
+    }
+
+    public void HandlePush(UnitData source, UnitData target)
+    {
+        if(push != 0)
+        {
+            GridCell targetCell = MapManager.Instance.GetForcedMovement(source.curPosition, target.curPosition, push);
+            target.PushTo(targetCell);
         }
     }
 
@@ -602,7 +671,22 @@ public abstract class SkillData: ScriptableObject
 
     public bool IsUsable(UnitData unitData)
     {
-        return (unitData.hp > hpCost && unitData.mp >= mpCost);
+        if(unitData.hp > hpCost && unitData.mp >= mpCost)
+        {
+            if(actionType == ActionType.MOVE && unitData.canMove)
+            {
+                return true;
+            }
+            else if(actionType == ActionType.STANDARD && unitData.canAct)
+            {
+                return true;
+            }
+            else if(actionType == ActionType.BONUS && unitData.canUseBonus)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     public bool IsSelfTargeting()
@@ -630,9 +714,11 @@ public abstract class SkillData: ScriptableObject
 
     public abstract int GetSkillScore(UnitData unitData, UnitData targetUnit);
 
+    public abstract SkillPreview GetPreview(UnitData unitData, GridCell target);
+
     public SkillStruct GetSkillStruct()
     {
-        return new SkillStruct(range, areaOfEffect, heightTolerance, GetShapeRangeExtension(), rangeType, targetType, targetShape);
+        return new SkillStruct(range, areaOfEffect, heightTolerance, GetShapeRangeExtension(), rangeType, targetType, targetShape, actionType);
     }
 
     public void ResolveSkill()

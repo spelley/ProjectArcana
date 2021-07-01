@@ -32,7 +32,7 @@ public class CharacterUI : MonoBehaviour
         characterMotor = GetComponent<CharacterMotor>();
         anim = GetComponent<Animator>();
         cameraController = Camera.main.GetComponent<CameraController>();
-
+        characterMotor.unitData.OnUnitMiss += OnUnitMiss;
         characterMotor.unitData.OnReceiveDamage += OnReceiveDamage;
         characterMotor.unitData.OnReceiveHeal += OnReceiveHeal;
         characterMotor.unitData.OnAddStatusEffect += OnAddStatusEffect;
@@ -45,6 +45,7 @@ public class CharacterUI : MonoBehaviour
 
     void OnDestroy()
     {
+        characterMotor.unitData.OnUnitMiss -= OnUnitMiss;
         characterMotor.unitData.OnReceiveDamage -= OnReceiveDamage;
         characterMotor.unitData.OnReceiveHeal -= OnReceiveHeal;
         characterMotor.unitData.OnAddStatusEffect -= OnAddStatusEffect;
@@ -61,6 +62,11 @@ public class CharacterUI : MonoBehaviour
         {
             StartCoroutine(PopUpCoroutine());
         }
+    }
+
+    public void OnUnitMiss()
+    {
+        ShowPopUp("Miss!", new Color32(255, 255, 255, 255));
     }
 
     public void OnReceiveDamage(IDamageable source, IDamageable target, List<ElementData> elements, int damage)

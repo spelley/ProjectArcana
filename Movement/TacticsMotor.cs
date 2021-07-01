@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -79,6 +80,7 @@ public class TacticsMotor : MonoBehaviour
     {
         characterMotor.unitData.OnUnitTurnStart += OnUnitTurnStart;
         characterMotor.unitData.OnUnitTurnEnd += OnUnitTurnEnd;
+        characterMotor.unitData.OnUnitPush += OnUnitPush;
     }
 
     public void OnEncounterEnd()
@@ -87,6 +89,7 @@ public class TacticsMotor : MonoBehaviour
 
         characterMotor.unitData.OnUnitTurnStart -= OnUnitTurnStart;
         characterMotor.unitData.OnUnitTurnEnd -= OnUnitTurnEnd;
+        characterMotor.unitData.OnUnitPush -= OnUnitPush;
 
         mapManager.ClearAllTiles();
     }
@@ -139,7 +142,12 @@ public class TacticsMotor : MonoBehaviour
             yield return new WaitForSeconds(.2f);
             battleManager.SkillSelectTarget(instruction.skill, instruction.targetCell);
             yield return new WaitForSeconds(.5f);
+            battleManager.SkillPreview(instruction.skill, characterMotor.unitData, mapManager.GetTargetedCells());
             battleManager.SkillConfirm(instruction.skill, characterMotor.unitData, mapManager.GetTargetedCells());
+        }
+        else
+        {
+            StartCoroutine(DelayEndTurn());
         }
     }
 
@@ -249,6 +257,29 @@ public class TacticsMotor : MonoBehaviour
         battleManager.turnManager.EndTurn();
     }
 
+    void OnUnitPush(GridCell gridCell, Action<Vector3Int> callback)
+    {
+        StartCoroutine(PushCoroutine(gridCell, .5f, callback));
+    }
+
+    IEnumerator PushCoroutine(GridCell gridCell, float lerpDuration, Action<Vector3Int> callback)
+    {
+        // TODO: push animation
+        float timeElapsed = 0;
+        Vector3 startPosition = this.transform.position;
+
+        while (timeElapsed < lerpDuration)
+        {
+            this.transform.position = Vector3.Lerp(startPosition, gridCell.realWorldPosition, timeElapsed / lerpDuration);
+            timeElapsed += Time.deltaTime;
+
+            yield return null;
+        }
+        
+        this.transform.position = gridCell.realWorldPosition;
+        callback?.Invoke(gridCell.position);
+    }
+
     public void SnapToGrid()
     {
         GridCell closestCell = mapManager.GetClosestGridCell(this.transform.position);
@@ -262,7 +293,7 @@ public class TacticsMotor : MonoBehaviour
 
     public void OnMouseEnter()
     {
-        if(battleManager.curUnit == null || battleManager.curUnit.faction != Faction.ALLY)
+        if(battleManager.curUnit == null || battleManager.curUnit.faction != Faction.ALLY || battleManager.previewingSkill)
         {
             return;
         }
@@ -298,7 +329,7 @@ public class TacticsMotor : MonoBehaviour
             {
                 unitData = GameObject.FindWithTag("Player").GetComponent<CharacterMotor>().unitData;
             }
-            battleManager.SkillConfirm(battleManager.curSkill, unitData, mapManager.GetTargetedCells());
+            battleManager.SkillPreview(battleManager.curSkill, unitData, mapManager.GetTargetedCells());
         }
     }
 
@@ -310,7 +341,7 @@ public class TacticsMotor : MonoBehaviour
             return;
         }
 
-        if(Input.GetKeyDown(KeyCode.Escape) && battleManager.targeting && battleManager.curSkill != null && !isMoving)
+        if(Input.GetKeyDown(KeyCode.Escape) && battleManager.targeting && battleManager.curSkill != null && !isMoving && !battleManager.previewingSkill)
         {
             battleManager.SkillTargetCancel(battleManager.curSkill, characterMotor.unitData);
         }

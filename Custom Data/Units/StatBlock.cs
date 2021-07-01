@@ -17,14 +17,22 @@ public class StatBlock
     public int tp;
 
     [Header("Core Stats")]
+    [Range(1, 100)]
     public int body;
+    [Range(1, 100)]
     public int mind;
+    [Range(1, 100)]
     public int spirit;
+    [Range(1, 50)]
     public int speed;
 
     [Header("Movement")]
+    [Range(0, 20)]
     public int move;
+    [Range(0, 20)]
     public int jump;
+    [Range(-100, 100)]
+    public int evasion;
 
     public event Action<ModInt, Stat> OnCalculateMaxHP;
     public event Action<ModInt, Stat> OnCalculateMaxMP;
@@ -35,6 +43,7 @@ public class StatBlock
     public event Action<ModInt, Stat> OnCalculateSpeed;
     public event Action<ModInt, Stat> OnCalculateMove;
     public event Action<ModInt, Stat> OnCalculateJump;
+    public event Action<ModInt, Stat> OnCalculateEvasion;
 
     public bool AddExperience(int amount, UnitData unitData)
     {
@@ -109,6 +118,12 @@ public class StatBlock
         OnCalculateJump?.Invoke(modifiedJump, Stat.JUMP);
         return modifiedJump.GetCalculated();
     }
+    public int CalculateEvasion()
+    {
+        ModInt modifiedEvasion = new ModInt(evasion);
+        OnCalculateEvasion?.Invoke(modifiedEvasion, Stat.EVASION);
+        return modifiedEvasion.GetCalculated();
+    }
 
     public int GetByStat(Stat stat)
     {
@@ -138,6 +153,8 @@ public class StatBlock
                 return CalculateMove();
             case Stat.JUMP:
                 return CalculateJump();
+            case Stat.EVASION:
+                return CalculateEvasion();
             case Stat.LEVEL:
                 return level;
             case Stat.WEAPON_ATTACK:
@@ -177,6 +194,9 @@ public class StatBlock
             case Stat.JUMP:
                 OnCalculateJump += callback;
             break;
+            case Stat.EVASION:
+                OnCalculateEvasion += callback;
+            break;
         }
     }
 
@@ -207,6 +227,9 @@ public class StatBlock
             break;
             case Stat.JUMP:
                 OnCalculateJump -= callback;
+            break;
+            case Stat.EVASION:
+                OnCalculateEvasion -= callback;
             break;
         }
     }

@@ -11,17 +11,50 @@ public class AttackSkill : SkillData
         foreach(GridCell gridCell in targets)
         {
             ExecutePerTarget(unitData, gridCell);
+            executedOn.Add(unitData);
         }
+        executedOn.Clear();
     }
 
     public override void ExecutePerTarget(UnitData unitData, GridCell gridCell)
     {
-        if(gridCell.occupiedBy != null)
+        UnitData target = gridCell.occupiedBy;
+        if(target != null && !executedOn.Contains(target))
+        {
+            if(IsHit(GetHitChance(unitData, target, false)))
+            {
+                int matches = BattleManager.Instance.GetRiverMatches(this.elements);
+                int baseDamage = skillCalculation.Calculate(this, unitData, matches);
+                unitData.DealDamage(baseDamage, target, this.elements);
+                HandlePush(unitData, target);
+            }
+            else
+            {
+                target.Miss();
+            }
+        }
+    }
+
+    public override SkillPreview GetPreview(UnitData unitData, GridCell targetCell)
+    {
+        UnitData target = targetCell.occupiedBy;
+        if(target != null)
         {
             int matches = BattleManager.Instance.GetRiverMatches(this.elements);
             int baseDamage = skillCalculation.Calculate(this, unitData, matches);
-            unitData.DealDamage(baseDamage, gridCell.occupiedBy, this.elements);
+            int predictDamage = unitData.PredictDealDamage(baseDamage, target, this.elements);
+            int toHit = GetHitChance(unitData, target, false);
+
+            string output = predictDamage >= 0 ? predictDamage.ToString()+" Damage" : "+"+predictDamage.ToString()+"HP";
+            if(push != 0)
+            {
+                output += "\nPush "+push.ToString();
+            }
+
+            return new SkillPreview(output, toHit);
         }
+
+        return new SkillPreview("No Effect", 0);
     }
 
     public override int GetSkillScore(UnitData unitData, GridCell gridCell)
@@ -39,12 +72,16 @@ public class AttackSkill : SkillData
         {
             int matches = BattleManager.Instance.GetRiverMatches(this.elements);
             int baseDamage = skillCalculation.Calculate(this, unitData, matches);
-            int predictDamage = unitData.PredictDealDamage(baseDamage, target, this.elements) * (target.faction == unitData.faction ? -1 : 1);
+            int predictDamage = unitData.PredictDealDamage(baseDamage, target, this.elements);
+            int toHit = unitData.GetHitChance(this.hitChance, target, this.elements);
+
+            predictDamage = toHit == 0 ? 0 : Mathf.RoundToInt(predictDamage * (toHit / 100f));
+
             if(predictDamage >= target.hp)
             {
                 return predictDamage * 4;
             }
-            return predictDamage;
+            return predictDamage * (target.faction == unitData.faction ? -2 : 1);
         }
         return 0;
     }

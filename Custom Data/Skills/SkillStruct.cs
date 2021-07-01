@@ -7,8 +7,16 @@ public struct SkillStruct
     public RangeType rangeType;
     public TargetType targetType;
     public TargetShape targetShape;
+    public ActionType actionType;
 
-    public SkillStruct(int range, int areaOfEffect, int heightTolerance, int rangeBoost, RangeType rangeType, TargetType targetType, TargetShape targetShape)
+    public SkillStruct(int range, 
+                        int areaOfEffect, 
+                        int heightTolerance, 
+                        int rangeBoost, 
+                        RangeType rangeType, 
+                        TargetType targetType, 
+                        TargetShape targetShape,
+                        ActionType actionType)
     {
         this.range = range;
         this.areaOfEffect = areaOfEffect;
@@ -17,5 +25,6 @@ public struct SkillStruct
         this.rangeType = rangeType;
         this.targetType = targetType;
         this.targetShape = targetShape;
+        this.actionType = actionType;
     }
 }

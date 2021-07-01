@@ -10,6 +10,7 @@ public interface ITurnTaker
     int speed { get; }
     bool moved { get; set; }
     bool acted { get; set; }
+    bool usedBonus { get; set; }
     Sprite sprite { get; set; }
 
     bool canMove { get; }

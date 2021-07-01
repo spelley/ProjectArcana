@@ -46,10 +46,16 @@ public class BattleManager : MonoBehaviour
     public event Action<SkillData, UnitData> OnSkillTargetCancel;
     public event Action<SkillData, GridCell, GridCell> OnSkillSelectTarget;
     public event Action<SkillData, GridCell, GridCell> OnSkillSelectTargetCancel;
+    public event Action<SkillData, UnitData, List<GridCell>> OnSkillPreview;
+    public event Action OnSkillPreviewCancel;
     public event Action<SkillData, UnitData, List<GridCell>> OnSkillConfirm;
     public event Action<SkillData, UnitData, List<GridCell>> OnSkillExecute;
     public event Action<SkillData> OnSkillClear;
     // arcana events
+    public event Action<DivinationData, UnitData> OnDivinationTarget;
+    public event Action<DivinationData, UnitData> OnDivinationTargetCancel;
+    public event Action<DivinationData, UnitData, List<RiverCard>> OnDivinationConfirm;
+    public event Action<DivinationData> OnDivinationClear;
     public event Action<List<RiverCard>> OnInitializeRiver;
     public event Action<List<RiverCard>> OnUpdateRiver;
 
@@ -93,7 +99,13 @@ public class BattleManager : MonoBehaviour
     public bool inCombat { get; private set; }
     
     // Skill handling
+    public bool previewingSkill { get; private set; }
     public SkillData curSkill { get; private set; }
+
+    // Divination handling
+    public DivinationData curDivination { get; private set; }
+    public List<RiverCard> curDivinationTargets = new List<RiverCard>();
+
     public UnitData curUnit
     {
         get
@@ -279,16 +291,42 @@ public class BattleManager : MonoBehaviour
         OnSkillSelectTargetCancel?.Invoke(skillData, originCell, targetCell);
     }
 
+    public void SkillPreview(SkillData skillData, UnitData unitData, List<GridCell> targets)
+    {
+        curSkill = skillData;
+        curTargets = targets;
+        previewingSkill = true;
+        OnSkillPreview?.Invoke(skillData, unitData, targets);
+    }
+
+    public void SkillPreviewCancel()
+    {
+        if(previewingSkill)
+        {
+            OnSkillPreviewCancel?.Invoke();
+            previewingSkill = false;
+        }
+    }
+
     public void SkillConfirm(SkillData skillData, UnitData unitData, List<GridCell> targets)
     {
+        previewingSkill = false;
         unitData.hp -= skillData.hpCost;
         unitData.mp -= skillData.mpCost;
         
-        curUnit.acted = true;
+        switch(skillData.actionType)
+        {
+            case ActionType.MOVE:
+                curUnit.moved = true;
+            break;
+            case ActionType.STANDARD:
+                curUnit.acted = true;
+            break;
+            case ActionType.BONUS:
+                curUnit.usedBonus = true;
+            break;
+        }
         targeting = false;
-
-        curSkill = skillData;
-        curTargets = targets;
         OnSkillConfirm?.Invoke(skillData, unitData, targets);
     }
 
@@ -308,6 +346,7 @@ public class BattleManager : MonoBehaviour
 
     public void SkillClear()
     {
+        previewingSkill = false;
         List<RiverCard> updatedRiver = new List<RiverCard>();
         foreach(RiverCard riverCard in riverCards)
         {
@@ -344,6 +383,41 @@ public class BattleManager : MonoBehaviour
         }
 
         IsEncounterResolved();
+    }
+
+    public void DivinationTarget(DivinationData divinationData)
+    {
+        curDivination = divinationData;
+        OnDivinationTarget?.Invoke(divinationData, curUnit);
+    }
+
+    public void DivinationTargetCancel(DivinationData divinationData)
+    {
+        curDivination = null;
+        OnDivinationTargetCancel?.Invoke(divinationData, curUnit);
+    }
+
+    public void DivinationConfirm(DivinationData divinationData, List<RiverCard> selectedRiverCards)
+    {
+        curUnit.usedBonus = true;
+        curDivinationTargets.AddRange(selectedRiverCards);
+        if(curDivination.executeAnimation != null)
+        {
+            GameObject skillAnimGO = Instantiate(curDivination.executeAnimation);
+            skillAnimGO.GetComponent<DivinationAnimation>().SetDivination(curDivination, curUnit, selectedRiverCards);
+        }
+        else
+        {
+            curDivination.Execute(curUnit, selectedRiverCards);
+        }
+        OnDivinationConfirm?.Invoke(divinationData, curUnit, selectedRiverCards);
+    }
+
+    public void DivinationClear()
+    {
+        OnDivinationClear?.Invoke(curDivination);
+        curDivination = null;
+        curDivinationTargets.Clear();
     }
 
     public bool IsEncounterResolved()

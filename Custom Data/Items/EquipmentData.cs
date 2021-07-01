@@ -6,6 +6,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "EquipmentData", menuName = "Custom Data/Items/Equipment Data")]
 public class EquipmentData: ItemData
 {
+    [Header("Equipment Information")]
     [SerializeField]
     EquipmentSlot _equipmentSlot;
     public EquipmentSlot equipmentSlot

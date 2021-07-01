@@ -18,5 +18,6 @@ public enum Stat
     JUMP,
     WEAPON_ATTACK,
     WEAPON_OFFHAND_ATTACK,
-    LEVEL
+    LEVEL,
+    EVASION
 }

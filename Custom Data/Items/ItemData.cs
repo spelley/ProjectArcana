@@ -6,6 +6,12 @@ using UnityEngine;
 public abstract class ItemData: ScriptableObject
 {
     [SerializeField]
+    [Header("Unique ID")]
+    int _itemID;
+    public int itemID { get { return _itemID; } }
+
+    [Header("Basic Information")]
+    [SerializeField]
     string _itemName;
     public string itemName
     {

@@ -78,7 +78,7 @@ public class Tile : MonoBehaviour
 
     public void OnMouseEnter()
     {
-        if(battleManager.curUnit == null || battleManager.curUnit.faction != Faction.ALLY)
+        if(battleManager.curUnit == null || battleManager.curUnit.faction != Faction.ALLY || battleManager.previewingSkill)
         {
             return;
         }
@@ -131,7 +131,7 @@ public class Tile : MonoBehaviour
             {
                 unitData = GameObject.FindWithTag("Player").GetComponent<CharacterMotor>().unitData;
             }
-            battleManager.SkillConfirm(battleManager.curSkill, unitData, mapManager.GetTargetedCells());
+            battleManager.SkillPreview(battleManager.curSkill, unitData, mapManager.GetTargetedCells());
         }
     }
 }
