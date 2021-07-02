@@ -64,6 +64,10 @@ public class RiverUI : MonoBehaviour
         divinationInstructionText.gameObject.SetActive(true);
         divinationInstructionText.text = divinationData.instructionsText;
         divinationConfirmButton.gameObject.SetActive(true);
+        if(divinationData.minSelection > 0)
+        {
+            divinationConfirmButton.interactable = false;
+        }
         targeting = true;
     }
 
@@ -93,7 +97,7 @@ public class RiverUI : MonoBehaviour
         targetedCards.Clear();
     }
 
-    void OnDivinationConfirmButton()
+    public void OnDivinationConfirmButton()
     {
         battleManager.DivinationConfirm(battleManager.curDivination, targetedCards);
     }
@@ -104,9 +108,35 @@ public class RiverUI : MonoBehaviour
         for(int i = 0; i < riverCards.Count; i++)
         {
             GameObject rcGO = Instantiate(riverCardPrefab, riverListContainer.transform);
-            rcGO.GetComponent<RiverCardUI>().SetData(riverCards[i]);
+            rcGO.GetComponent<RiverCardUI>().SetData(riverCards[i], SelectCard);
         }
         myRiver = riverCards;
+    }
+
+    public void SelectCard(RiverCard riverCard, RiverCardUI riverCardUI)
+    {
+        if(battleManager.divinationTargeting)
+        {
+            if(!targetedCards.Contains(riverCard) && targetedCards.Count < battleManager.curDivination.maxSelection)
+            {
+                targetedCards.Add(riverCard);
+                riverCardUI.Highlight();
+            }
+            else if(targetedCards.Contains(riverCard))
+            {
+                targetedCards.Remove(riverCard);
+                riverCardUI.Unhighlight();            
+            }
+
+            if(targetedCards.Count >= battleManager.curDivination.minSelection && targetedCards.Count <= battleManager.curDivination.maxSelection)
+            {
+                divinationConfirmButton.interactable = true;
+            }
+            else
+            {
+                divinationConfirmButton.interactable = false;
+            }
+        }
     }
 
     void ClearRiver()

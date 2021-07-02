@@ -105,6 +105,7 @@ public class BattleManager : MonoBehaviour
     // Divination handling
     public DivinationData curDivination { get; private set; }
     public List<RiverCard> curDivinationTargets = new List<RiverCard>();
+    public bool divinationTargeting { get; private set; }
 
     public UnitData curUnit
     {
@@ -388,17 +389,20 @@ public class BattleManager : MonoBehaviour
     public void DivinationTarget(DivinationData divinationData)
     {
         curDivination = divinationData;
+        divinationTargeting = true;
         OnDivinationTarget?.Invoke(divinationData, curUnit);
     }
 
     public void DivinationTargetCancel(DivinationData divinationData)
     {
         curDivination = null;
+        divinationTargeting = false;
         OnDivinationTargetCancel?.Invoke(divinationData, curUnit);
     }
 
     public void DivinationConfirm(DivinationData divinationData, List<RiverCard> selectedRiverCards)
     {
+        divinationTargeting = false;
         curUnit.usedBonus = true;
         curDivinationTargets.AddRange(selectedRiverCards);
         if(curDivination.executeAnimation != null)
@@ -503,7 +507,7 @@ public class BattleManager : MonoBehaviour
                 {
                     continue;
                 }
-                riverCards.RemoveAt(lastRiverIndex);
+                riverCards.RemoveAt(i);
                 numFound++;
                 if(numFound == numCards)
                 {

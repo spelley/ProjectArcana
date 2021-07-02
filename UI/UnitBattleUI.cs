@@ -28,6 +28,8 @@ public class UnitBattleUI : MonoBehaviour
     [SerializeField]
     Image portrait;
     [SerializeField]
+    TextMeshProUGUI unitName;
+    [SerializeField]
     ResourceBarUI hpUI;
     [SerializeField]
     ResourceBarUI mpUI;
@@ -45,6 +47,8 @@ public class UnitBattleUI : MonoBehaviour
     GameObject targetUI;
     [SerializeField]
     Image targetPortrait;
+    [SerializeField]
+    TextMeshProUGUI targetName;
     [SerializeField]
     ResourceBarUI targetHPUI;
     [SerializeField]
@@ -292,6 +296,7 @@ public class UnitBattleUI : MonoBehaviour
 
         curUnit = unitData;
         portrait.sprite = unitData.sprite;
+        unitName.text = unitData.unitName;
         divinationCommandText.text = unitData.divinationSkill.divinationName;
         UpdateResources();
         MapManager.Instance.OnTravelPathEnd += OnTravelPathEnd;
@@ -332,6 +337,7 @@ public class UnitBattleUI : MonoBehaviour
     void UpdateTargetWindow(UnitData target)
     {
         targetPortrait.sprite = target.sprite;
+        targetName.text = target.unitName;
         target.RecalculateResources();
         targetHPUI.UpdateResource(target.hp, target.maxHP);
         targetMPUI.UpdateResource(target.mp, target.maxMP);

@@ -57,8 +57,19 @@ public class TurnManager
 
         if(!BattleManager.Instance.IsEncounterResolved())
         {
-            StartNextTurn();
+            BattleManager.Instance.StartCoroutine(DelayStartNextTurn(2));
         }
+    }
+
+    IEnumerator DelayStartNextTurn(int delayFrames)
+    {
+        int countdown = delayFrames;
+        while(countdown > 0)
+        {
+            countdown--;
+            yield return null;
+        }
+        StartNextTurn();
     }
 
     ITurnTaker GetNextTurn()

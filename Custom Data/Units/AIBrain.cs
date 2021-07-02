@@ -196,6 +196,10 @@ public class AIBrain : ScriptableObject
         {
             callbackAction.Invoke(new AIInstruction(MapManager.Instance.GetCell(resultWalk), skills[maxScoreSkillIndex], MapManager.Instance.GetCell(resultTarget)));
         }
+
+        skills.Clear();
+        unit = null;
+        callbackAction = null;
     }
 
     public IEnumerator WaitForExecution(Action callback)

@@ -1,13 +1,15 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-public class RiverCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+public class RiverCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler
 {
     Animator animator;
     RiverCard riverCard;
+    Action<RiverCard, RiverCardUI> selectCardCallback;
     [SerializeField]
     Outline outline;
     [SerializeField]
@@ -16,6 +18,10 @@ public class RiverCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     Color defaultOutlineColor;
     [SerializeField]
     Color highlightOutlineColor;
+    [SerializeField]
+    GameObject lockIcon;
+    [SerializeField]
+    GameObject deactivatedIcon;
 
     public bool highlighted { get; private set; }
 
@@ -48,32 +54,64 @@ public class RiverCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         {
             if(element == riverCard.element)
             {
-                highlighted = true;
-                animator.SetBool("Highlighted", true);
+                Highlight();
                 break;
             }
         }
+    }
+
+    public void Highlight()
+    {
+        highlighted = true;
+        animator.SetBool("Highlighted", true);
+    }
+
+    public void Unhighlight()
+    {
+        highlighted = false;
+        animator.SetBool("Highlighted", false);
     }
 
     void OnSkillTargetCancel(SkillData skillData, UnitData unitData)
     {
         if(highlighted)
         {
-            highlighted = false;
-            animator.SetBool("Highlighted", false);
+            Unhighlight();
         }
     }
 
-    public void SetData(RiverCard newCard)
+    public void SetData(RiverCard newCard, Action<RiverCard, RiverCardUI> callback)
     {
         riverCard = newCard;
+        selectCardCallback = callback;
         icon.sprite = riverCard.element.icon;
         icon.color = riverCard.element.color;
+        if(riverCard.locked)
+        {
+            lockIcon.SetActive(true);
+        }
+        else
+        {
+            lockIcon.SetActive(false);
+        }
+        if(riverCard.inactive)
+        {
+            deactivatedIcon.SetActive(true);
+        }
+        else
+        {
+            deactivatedIcon.SetActive(false);
+        }
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
         outline.effectColor = highlightOutlineColor;
+    }
+
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        selectCardCallback?.Invoke(riverCard, this);
     }
 
     public void OnPointerExit(PointerEventData eventData)

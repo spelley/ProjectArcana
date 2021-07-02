@@ -78,6 +78,7 @@ public class Tile : MonoBehaviour
 
     public void OnMouseEnter()
     {
+        Debug.Log(gridCell.position);
         if(battleManager.curUnit == null || battleManager.curUnit.faction != Faction.ALLY || battleManager.previewingSkill)
         {
             return;

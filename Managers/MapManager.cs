@@ -279,7 +279,7 @@ public class MapManager : MonoBehaviour
         Faction faction = unitData.faction;
 
         ClearWalkabilityTiles();
-        GridCell startingCell = GetClosestGridCell(start);
+        GridCell startingCell = grid[unitData.curPosition.x, unitData.curPosition.y, unitData.curPosition.z]; // GetClosestGridCell(start);
         CalculateWalkableZone(startingCell.position, move, jump, faction);
         if(render)
         {
@@ -381,9 +381,9 @@ public class MapManager : MonoBehaviour
 
     void ResetWalkableZoneCalculations()
     {
-        foreach(GridCell gridCell in cellList)
+        for(int i = 0; i < cellList.Count; i++)
         {
-            gridCell.ResetCalculations();
+            cellList[i].ResetCalculations();
         }
 
         walkableCells.Clear();
