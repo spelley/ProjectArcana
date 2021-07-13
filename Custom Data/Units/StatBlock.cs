@@ -13,8 +13,8 @@ public class StatBlock
     public int hp;
     public int maxMP;
     public int mp;
-    public int maxTP;
-    public int tp;
+    public int maxSP;
+    public int sp;
 
     [Header("Core Stats")]
     [Range(1, 100)]
@@ -36,7 +36,6 @@ public class StatBlock
 
     public event Action<ModInt, Stat> OnCalculateMaxHP;
     public event Action<ModInt, Stat> OnCalculateMaxMP;
-    public event Action<ModInt, Stat> OnCalculateMaxTP;
     public event Action<ModInt, Stat> OnCalculateBody;
     public event Action<ModInt, Stat> OnCalculateMind;
     public event Action<ModInt, Stat> OnCalculateSpirit;
@@ -75,12 +74,6 @@ public class StatBlock
         ModInt modifiedMaxMP = new ModInt(maxMP);
         OnCalculateMaxMP?.Invoke(modifiedMaxMP, Stat.MAX_MP);
         return modifiedMaxMP.GetCalculated();
-    }
-    public int CalculateMaxTP()
-    {
-        ModInt modifiedMaxTP = new ModInt(maxTP);
-        OnCalculateMaxTP?.Invoke(modifiedMaxTP, Stat.MAX_TP);
-        return modifiedMaxTP.GetCalculated();
     }
     public int CalculateBody()
     {
@@ -137,10 +130,10 @@ public class StatBlock
                 return CalculateMaxMP();
             case Stat.MP:
                 return mp;
-            case Stat.MAX_TP:
-                return CalculateMaxTP();
-            case Stat.TP:
-                return tp;
+            case Stat.MAX_SP:
+                return maxSP;
+            case Stat.SP:
+                return sp;
             case Stat.BODY:
                 return CalculateBody();
             case Stat.MIND:

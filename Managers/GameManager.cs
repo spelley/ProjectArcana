@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -74,7 +75,7 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     List<Vector3> spawnLocations = new List<Vector3>();
 
-    Inventory playerInventory;
+    public Inventory playerInventory { get; private set; }
 
     [SerializeField]
     FormationData defaultFormation;
@@ -84,6 +85,8 @@ public class GameManager : MonoBehaviour
     public EquipmentData testArmor;
     public EquipmentData testAccessory;
 
+    public event Action OnGameManagerLoaded;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -91,6 +94,7 @@ public class GameManager : MonoBehaviour
         for(int i = 0; i < curPlayers.Count; i++)
         {
             UnitData playerData = Instantiate(curPlayers[i]);
+            playerData.Load();
             party.Add(playerData);
         }
 
@@ -105,7 +109,21 @@ public class GameManager : MonoBehaviour
         playerInventory.AddItem(testHelmet, true);
         playerInventory.AddItem(testArmor, true);
         playerInventory.AddItem(testAccessory, true);
-
+        playerInventory.AddItem(testWeapon, true);
+        playerInventory.AddItem(testOffHand, true);
+        playerInventory.AddItem(testHelmet, true);
+        playerInventory.AddItem(testArmor, true);
+        playerInventory.AddItem(testAccessory, true);
+        playerInventory.AddItem(testWeapon, true);
+        playerInventory.AddItem(testOffHand, true);
+        playerInventory.AddItem(testHelmet, true);
+        playerInventory.AddItem(testArmor, true);
+        playerInventory.AddItem(testAccessory, true);
+        playerInventory.AddItem(testWeapon, true);
+        playerInventory.AddItem(testOffHand, true);
+        playerInventory.AddItem(testHelmet, true);
+        playerInventory.AddItem(testArmor, true);
+        playerInventory.AddItem(testAccessory, true);
         
         playerInventory.EquipFromInventory(testWeapon, activePlayer);
         playerInventory.EquipFromInventory(testOffHand, activePlayer, true);
@@ -114,7 +132,14 @@ public class GameManager : MonoBehaviour
         playerInventory.EquipFromInventory(testAccessory, activePlayer);
 
         activePlayer.RefreshUnit();
-        StartCoroutine(SetPlayerFocus(mainPlayer));
+
+        StartCoroutine(DelayedInvoke());
+    }
+
+    IEnumerator DelayedInvoke()
+    {
+        yield return null;
+        OnGameManagerLoaded?.Invoke();
     }
 
     public GameObject SpawnUnit(UnitData unitData, Vector3 spawnPosition)
@@ -125,11 +150,5 @@ public class GameManager : MonoBehaviour
         unitGO.GetComponent<CharacterMotor>().unitData = unitData;
         unitData.unitGO = unitGO;
         return unitGO;
-    }
-
-    IEnumerator SetPlayerFocus(GameObject player)
-    {
-        yield return new WaitForSeconds(.1f);
-        Camera.main.GetComponent<CameraController>().SetFocus(player);
     }
 }

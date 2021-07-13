@@ -6,8 +6,11 @@ using UnityEngine;
 using Unity.Jobs;
 using Unity.Collections;
 
-public abstract class SkillData: ScriptableObject
+public abstract class SkillData: ScriptableObject, IAssignableSkill
 {
+    [SerializeField] string _skillID;
+    public string skillID { get { return _skillID; } }
+
     [SerializeField]
     string _skillName;
     public string skillName
@@ -15,12 +18,11 @@ public abstract class SkillData: ScriptableObject
         get
         {
             return _skillName;
-        } 
-        private set
-        {
-            _skillName = value;
         }
     }
+
+    [SerializeField] int _tpCost;
+    public int spCost { get { return _tpCost; } }
 
     [SerializeField]
     string _description;

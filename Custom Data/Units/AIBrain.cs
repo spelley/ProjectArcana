@@ -135,9 +135,7 @@ public class AIBrain : ScriptableObject
 
         jobHandle = aiJob.Schedule(walkablePositions.Length, 8);
 
-        //GameManager.Instance.StartCoroutine(WaitForExecution(FinishAI));
-
-        FinishAI();
+        GameManager.Instance.StartCoroutine(WaitForExecution(FinishAI));
     }
 
     public void FinishAI()

@@ -18,6 +18,8 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
     public JobData activeJob;
     public List<UnitJob> availableJobs = new List<UnitJob>();
 
+    bool loaded = false;
+
     public int maxHP
     {
         get
@@ -133,8 +135,8 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
             return baseJob.divinationSkill;
         }
     }
-    public List<SkillData> learnedSkills = new List<SkillData>();
-    public List<SkillData> assignedSkills = new List<SkillData>();
+    [SerializeField] List<SkillData> learnedSkills = new List<SkillData>();
+    [SerializeField] List<SkillData> assignedSkills = new List<SkillData>();
     public Vector3Int curPosition { get; set; }
     public List<StatusEffect> statusEffects = new List<StatusEffect>();
 
@@ -193,6 +195,11 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
 
     public void Load()
     {
+        if(loaded)
+        {
+            return;
+        }
+
         // Re-apply statuses
         List<StatusEffect> curStatuses = new List<StatusEffect>(statusEffects);
         statusEffects.Clear();
@@ -203,6 +210,8 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
 
         // Re-apply equipment
         equipmentBlock.Load(this);
+        activeJob.Load(this);
+        loaded = true;
     }
 
     public void StartTurn()
@@ -445,22 +454,18 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
         return new UnitJob();
     }
 
-    public List<SkillData> GetAvailableSkills(bool filterByUsable = false)
+    public List<SkillData> GetJobSkills(bool filterByUsable = false)
     {
         List<SkillData> availableSkills = new List<SkillData>();
-        if(!canAct)
-        {
-            return availableSkills;
-        }
 
-        if(baseJob != null)
+        if(activeJob != null)
         {
-            UnitJob unitJob = GetUnitJob(baseJob);
-            if(unitJob.jobData != null)
+            UnitJob activeUnitJob = GetUnitJob(activeJob);
+            if(activeUnitJob.jobData != null)
             {
-                foreach(JobSkill jobSkill in unitJob.jobData.skills)
+                foreach(JobSkill jobSkill in activeUnitJob.jobData.skills)
                 {
-                    if(jobSkill.learnLevel <= unitJob.level)
+                    if(jobSkill.learnLevel <= activeUnitJob.level)
                     {
                         if((!filterByUsable || jobSkill.skill.IsUsable(this)) && !availableSkills.Contains(jobSkill.skill))
                         {
@@ -469,6 +474,17 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
                     }
                 }
             }
+        }
+
+        return availableSkills;
+    }
+
+    public List<SkillData> GetAvailableSkills(bool filterByUsable = false)
+    {
+        List<SkillData> availableSkills = new List<SkillData>();
+        if(!canAct)
+        {
+            return availableSkills;
         }
 
         if(activeJob != null)
@@ -524,5 +540,41 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
         }
 
         return availableSkills;
+    }
+
+    public List<SkillData> GetLearnedSkills()
+    {
+        return learnedSkills;
+    }
+
+    public List<SkillData> GetAssignedSkills()
+    {
+        return assignedSkills;
+    }
+
+    public void LearnSkill(SkillData skillData)
+    {
+        learnedSkills.Add(skillData);
+    }
+
+    public bool AssignSkill(SkillData skillData)
+    {
+        if((stats.maxSP - stats.sp) >= skillData.spCost)
+        {
+            stats.sp += skillData.spCost;
+            assignedSkills.Add(skillData);
+            return true;
+        }
+
+        return false;
+    }
+
+    public void UnassignSkill(SkillData skillData)
+    {
+        if(assignedSkills.Contains(skillData))
+        {
+            assignedSkills.Remove(skillData);
+            stats.sp -= skillData.spCost;
+        }
     }
 }

@@ -147,6 +147,9 @@ public class EquipmentBlock
                     }
                 }
             break;
+            case EquipmentSlot.OFFHAND:
+                offhand = null;
+            break;
             case EquipmentSlot.HELMET:
                 helmet = null;
             break;
@@ -157,7 +160,8 @@ public class EquipmentBlock
                 accessory = null;
             break;
         }
-
+        equipment.Unequip(unitData);
+        unitData.RecalculateResources();
         OnUnequip?.Invoke(equipment, unitData, offhandSlot);
         return equipment;
     }
