@@ -4,6 +4,12 @@ using UnityEngine;
 
 public class MenuManager : MonoBehaviour
 {
+    public enum MenuState {
+        EQUIPMENT,
+        SKILLS,
+        JOB
+    }
+    public MenuState curState {get; private set;}
     [SerializeField] ProfileUI profileUI;
     [SerializeField] CurrentJobUI currentJobUI;
     [SerializeField] WeaponViewUI weaponViewUI;
@@ -24,8 +30,42 @@ public class MenuManager : MonoBehaviour
     {
         if(gameManager.party.Count > 0 && gameManager.party[unitIndex] != null)
         {
-            ChangeUnit(gameManager.party[unitIndex]);
+            ChangeUnit(gameManager.party[unitIndex], false);
+            SetState(MenuState.EQUIPMENT);
         }
+    }
+
+    public void SetState(MenuState newState)
+    {
+        switch(newState)
+        {
+            case MenuState.EQUIPMENT:
+                profileUI.gameObject.SetActive(true);
+                currentJobUI.gameObject.SetActive(false);
+                weaponViewUI.gameObject.SetActive(true);
+                equipmentInventoryUI.gameObject.SetActive(true);
+                skillListUI.gameObject.SetActive(false);
+                jobListUI.gameObject.SetActive(false);
+            break;
+            case MenuState.SKILLS:
+                profileUI.gameObject.SetActive(true);
+                currentJobUI.gameObject.SetActive(false);
+                weaponViewUI.gameObject.SetActive(false);
+                equipmentInventoryUI.gameObject.SetActive(false);
+                skillListUI.gameObject.SetActive(true);
+                jobListUI.gameObject.SetActive(false);
+            break;
+            case MenuState.JOB:
+                profileUI.gameObject.SetActive(true);
+                currentJobUI.gameObject.SetActive(true);
+                weaponViewUI.gameObject.SetActive(false);
+                equipmentInventoryUI.gameObject.SetActive(false);
+                skillListUI.gameObject.SetActive(false);
+                jobListUI.gameObject.SetActive(true);
+            break;
+        }
+        curState = newState;
+        UpdateUI();
     }
 
     void Update()
@@ -58,7 +98,7 @@ public class MenuManager : MonoBehaviour
         }
     }
 
-    void ChangeUnit(UnitData newUnit)
+    void ChangeUnit(UnitData newUnit, bool updateUI = true)
     {
         if(curUnit != null)
         {
@@ -72,17 +112,30 @@ public class MenuManager : MonoBehaviour
         curUnit.equipmentBlock.OnUnequip += OnEquipChange;
         gameManager.playerInventory.OnInventoryChange += OnInventoryChange;
 
-        UpdateUI();
+        if(updateUI)
+        {
+            UpdateUI();
+        }
     }
 
     void UpdateUI()
     {
         profileUI.SetUnitData(curUnit);
-        currentJobUI.SetUnitData(curUnit);
-        weaponViewUI.SetUnitData(gameManager.playerInventory, curUnit);
-        equipmentInventoryUI.SetInventory(gameManager.playerInventory, curUnit);
-        skillListUI.SetData(curUnit);
-        jobListUI.SetData(curUnit);
+
+        switch(curState)
+        {
+            case MenuState.EQUIPMENT:
+                weaponViewUI.SetUnitData(gameManager.playerInventory, curUnit);
+                equipmentInventoryUI.SetInventory(gameManager.playerInventory, curUnit);
+            break;
+            case MenuState.SKILLS:
+                skillListUI.SetData(curUnit);
+            break;
+            case MenuState.JOB:
+                currentJobUI.SetUnitData(curUnit);
+                jobListUI.SetData(curUnit);
+            break;
+        }
     }
 
     public void OnEquipChange(EquipmentData equipment, UnitData unitData, bool offhand = false)
