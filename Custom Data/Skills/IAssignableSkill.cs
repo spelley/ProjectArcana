@@ -1,6 +1,6 @@
 public interface IAssignableSkill
 {
-    string skillID { get; }
+    string id { get; }
     string skillName { get; }
     int spCost { get; }
 }

@@ -5,68 +5,68 @@ using UnityEngine;
 public abstract class DivinationData : ScriptableObject
 {
     [Header("Basic Information")]
-    [SerializeField] int _divinationID;
-    public int divinationID {
-        get { return _divinationID; }
-    }
+    [SerializeField] protected string _id;
+    public string id { get { return _id; } }
 
-    [SerializeField] string _divinationName;
+    string _loadType = "Divination";
+    public virtual string loadType { get { return _loadType; } }
+
+    [SerializeField] protected string _divinationName;
     public string divinationName {
         get { return _divinationName; }
         private set { _divinationName = value; }
     }
 
-    [SerializeField] string _description;
+    [SerializeField] protected string _description;
     public string description {
         get { return _description; }
         private set { _description = value; }
     }
 
     [Header("Targeting Information")]
-    [SerializeField] RiverSelectType _riverSelectType;
+    [SerializeField] protected RiverSelectType _riverSelectType;
     public RiverSelectType riverSelectType {
         get { return _riverSelectType; }
         private set { _riverSelectType = value; }
     }
 
-    [SerializeField, Range(0, 5)] int _minSelection;
+    [SerializeField, Range(0, 5)] protected int _minSelection;
     public int minSelection {
         get { return _minSelection; }
     }
 
-    [SerializeField, Range(0, 5)] int _maxSelection;
+    [SerializeField, Range(0, 5)] protected int _maxSelection;
     public int maxSelection {
         get { return _maxSelection; }
     }
 
-    [SerializeField] bool _lockSelections;
+    [SerializeField] protected bool _lockSelections;
     public bool lockSelections {
         get { return _lockSelections; }
     }
 
-    [SerializeField] bool _unlockSelections;
+    [SerializeField] protected bool _unlockSelections;
     public bool unlockSelections {
         get { return _unlockSelections; }
     }
 
-    [SerializeField] bool _deactivateSelections;
+    [SerializeField] protected bool _deactivateSelections;
     public bool deactivateSelections {
         get { return _deactivateSelections; }
     }
 
-    [SerializeField] bool _activateSelections;
+    [SerializeField] protected bool _activateSelections;
     public bool activateSelections {
         get { return _activateSelections; }
     }
 
-    [SerializeField] string _instructionsText;
+    [SerializeField] protected string _instructionsText;
     public string instructionsText {
         get { return _instructionsText; }
     }
 
     [Header("Animation Information")]
-    [SerializeField]
-    BattleAnimation _castAnimation;
+    [SerializeField] protected BattleAnimation _castAnimation;
     public BattleAnimation castAnimation
     { 
         get
@@ -79,8 +79,7 @@ public abstract class DivinationData : ScriptableObject
         }
     }
 
-    [SerializeField]
-    GameObject _executeAnimation;
+    [SerializeField] protected GameObject _executeAnimation;
     public GameObject executeAnimation
     {
         get

@@ -10,6 +10,9 @@ public abstract class ItemData: ScriptableObject
     int _itemID;
     public int itemID { get { return _itemID; } }
 
+    string _loadType = "Item";
+    public virtual string loadType { get { return _loadType; } }
+
     [Header("Basic Information")]
     [SerializeField]
     string _itemName;

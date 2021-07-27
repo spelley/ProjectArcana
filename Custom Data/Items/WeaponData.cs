@@ -6,6 +6,9 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "WeaponData", menuName = "Custom Data/Items/Weapon Data")]
 public class WeaponData: EquipmentData
 {
+    string _loadWeaponType = "Weapon";
+    public override string loadType { get { return _loadWeaponType; } }
+
     [Header("Weapon Information")]
     [SerializeField]
     SkillData _weaponSkill;
@@ -37,5 +40,10 @@ public class WeaponData: EquipmentData
     {
         get { return _offhandOnly; }
         private set { _offhandOnly = value; }
+    }
+
+    public void GetWeaponSaveData()
+    {
+
     }
 }

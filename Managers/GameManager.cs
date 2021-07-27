@@ -151,4 +151,15 @@ public class GameManager : MonoBehaviour
         unitData.unitGO = unitGO;
         return unitGO;
     }
+
+    void Update()
+    {
+        if(Input.GetKeyDown(KeyCode.F5))
+        {
+            activePlayer.arcana.GetSaveData();
+            curFormation.GetSaveData();
+            activePlayer.equipmentBlock.helmet.GetEquipmentSaveData();
+            activePlayer.activeJob.GetSaveData();
+        }
+    }
 }

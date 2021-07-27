@@ -5,6 +5,9 @@ using UnityEngine;
 
 public abstract class SkillCalculation: ScriptableObject
 {
+    [SerializeField] string _id;
+    public string id { get { return _id; } }
+
     [SerializeField]
     string _calculationName;
     public string calculationName

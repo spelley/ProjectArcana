@@ -6,10 +6,12 @@ using UnityEngine;
 using Unity.Jobs;
 using Unity.Collections;
 
-public abstract class SkillData: ScriptableObject, IAssignableSkill
+public abstract class SkillData: ScriptableObject, IAssignableSkill, ILoadable<SkillSaveData>
 {
-    [SerializeField] string _skillID;
-    public string skillID { get { return _skillID; } }
+    [SerializeField] string _id;
+    public string id { get { return _id; } }
+    string _loadType = "Default Skill";
+    public string loadType { get { return _loadType; } }
 
     [SerializeField]
     string _skillName;
@@ -726,5 +728,21 @@ public abstract class SkillData: ScriptableObject, IAssignableSkill
     public void ResolveSkill()
     {
         BattleManager.Instance.SkillClear();
+    }
+
+    public SkillSaveData GetSaveData()
+    {
+        SkillSaveData saveData = new SkillSaveData();
+        saveData.id = _id;
+        saveData.loadType = loadType;
+        return saveData;
+    }
+
+    public bool LoadFromSaveData(SkillSaveData saveData)
+    {
+        _id = saveData.ID;
+        _loadType = saveData.loadType;
+
+        return true;
     }
 }

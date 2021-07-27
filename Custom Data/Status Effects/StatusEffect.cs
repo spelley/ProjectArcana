@@ -4,6 +4,8 @@ using UnityEngine;
 
 public abstract class StatusEffect : ScriptableObject
 {
+    [SerializeField] string _statusID;
+    public string statusID { get { return _statusID; } }
     public string statusName;
     public Sprite statusIcon;
 

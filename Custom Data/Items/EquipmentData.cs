@@ -6,6 +6,9 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "EquipmentData", menuName = "Custom Data/Items/Equipment Data")]
 public class EquipmentData: ItemData
 {
+    string _loadEquipmentType = "Equipment";
+    public override string loadType { get { return _loadEquipmentType; } }
+
     [Header("Equipment Information")]
     [SerializeField]
     EquipmentSlot _equipmentSlot;
@@ -104,5 +107,26 @@ public class EquipmentData: ItemData
     {
         equippedUnit = null;
         UnbindEvents(unitData);
+    }
+
+    public EquipmentSaveData GetEquipmentSaveData()
+    {
+        EquipmentSaveData saveData = new EquipmentSaveData();
+        saveData.id = itemID.ToString();
+        saveData.loadType = loadType;
+        saveData.name = itemName;
+        saveData.description = description;
+        saveData.equipmentSlot = (int)equipmentSlot;
+        saveData.statBonuses = bonusStats;
+
+        saveData.statusEffectIDs = new string[equipStatusEffects.Count];
+        for(int i = 0; i < equipStatusEffects.Count; i++)
+        {
+            saveData.statusEffectIDs[i] = equipStatusEffects[i].statusID;
+        }
+
+        Debug.Log(JsonUtility.ToJson(saveData));
+
+        return saveData;
     }
 }

@@ -4,20 +4,13 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "JobData", menuName = "Custom Data/Job Data")]
-public class JobData: ScriptableObject
+public class JobData: ScriptableObject, ILoadable<JobSaveData>
 {
-    [SerializeField] string _jobID;
-    public string jobID 
-    {
-        get 
-        {
-            return _jobID;
-        }
-        private set 
-        {
-            _jobID = value;
-        }
-    }
+    [SerializeField] string _id;
+    public string id { get { return _id; } }
+
+    string _loadType = "Class";
+    public string loadType { get { return _loadType; } }
 
     [SerializeField] string _jobName;
     public string jobName 
@@ -173,5 +166,76 @@ public class JobData: ScriptableObject
                 modInt.baseAdd = baseEvasion;
             break;
         }
+    }
+
+    public JobSaveData GetSaveData()
+    {
+        JobSaveData saveData = new JobSaveData();
+        saveData.id = id;
+        saveData.loadType = "Job";
+        saveData.name = jobName;
+        saveData.description = description;
+        saveData.iconPath = (icon != null) ? icon.name : "";
+        saveData.hpMultiplier = Mathf.RoundToInt(hpMult * 100);
+        saveData.mpMultiplier = Mathf.RoundToInt(mpMult * 100);
+        saveData.bodyMultiplier = Mathf.RoundToInt(bodyMult * 100);
+        saveData.mindMultiplier = Mathf.RoundToInt(mindMult * 100);
+        saveData.spiritMultiplier = Mathf.RoundToInt(spiritMult * 100);
+        saveData.speedMultiplier = Mathf.RoundToInt(speedMult * 100);
+        saveData.baseMove = baseMove;
+        saveData.baseJump = baseJump;
+        saveData.baseEvasion = baseEvasion;
+
+        saveData.jobSkillIDs = new List<JobSkillSaveData>();
+        foreach(JobSkill jobSkill in skills)
+        {
+            saveData.jobSkillIDs.Add(jobSkill.GetSaveData());
+        }
+
+        saveData.jobRequirements = new List<UnitJobSaveData>();
+        foreach(UnitJob unitJob in jobRequirements)
+        {
+            saveData.jobRequirements.Add(unitJob.GetSaveData());
+        }
+
+        Debug.Log(JsonUtility.ToJson(saveData));
+
+        return saveData;
+    }
+
+    public bool LoadFromSaveData(JobSaveData saveData)
+    {
+        _id = saveData.id;
+        _loadType = saveData.loadType;
+        _jobName = saveData.name;
+        _description = saveData.description;
+        _icon = Resources.Load<Sprite>("Arcana/Icons/"+saveData.iconPath);
+        _hpMult = saveData.hpMultiplier * .01f;
+        _mpMult = saveData.mpMultiplier * .01f;
+        _bodyMult = saveData.bodyMultiplier * .01f;
+        _mindMult = saveData.mindMultiplier * .01f;
+        _spiritMult = saveData.spiritMultiplier * .01f;
+        _speedMult = saveData.speedMultiplier * .01f;
+        _baseMove = saveData.baseMove;
+        _baseJump = saveData.baseJump;
+        _baseEvasion = saveData.baseEvasion;
+
+        jobRequirements.Clear();
+        foreach(UnitJobSaveData unitJobSaveData in saveData.jobRequirements)
+        {
+            JobData jobRequirementData = SaveDataLoader.Instance.GetJobData(unitJobSaveData.id);
+            if(jobRequirementData == null)
+            {
+                continue;
+            }
+
+            UnitJob unitJob = new UnitJob();
+            unitJob.level = unitJobSaveData.level;
+            unitJob.experience = unitJobSaveData.experience;
+            unitJob.jobData = jobRequirementData;
+            jobRequirements.Add(unitJob);
+        }
+
+        return true;
     }
 }

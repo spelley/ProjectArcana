@@ -3,8 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "Formation Data", menuName = "Custom Data/Formation", order = 1)]
-public class FormationData : ScriptableObject
+public class FormationData : ScriptableObject, ILoadable<FormationSaveData>
 {
+    [SerializeField] string _id;
+    public string id { get { return _id; } }
+    string _loadType = "Formation";
+    public string loadType { get { return _loadType; } }
+
     [SerializeField]
     string _formationName;
     public string formationName
@@ -59,5 +64,34 @@ public class FormationData : ScriptableObject
         {
             _offsets = value;
         }
+    }
+
+    public FormationSaveData GetSaveData()
+    {
+        FormationSaveData saveData = new FormationSaveData();
+        saveData.id = id;
+        saveData.loadType = loadType;
+        saveData.name = formationName;
+        saveData.description = description;
+        saveData.imagePath = (image != null) ? image.name : "";
+        saveData.offsets = new SimpleVector3Int[offsets.Length];
+
+        for(int i = 0; i < offsets.Length; i++)
+        {
+            saveData.offsets[i] = new SimpleVector3Int(offsets[i].x, offsets[i].y, offsets[i].z);
+        }
+        Debug.Log(JsonUtility.ToJson(saveData));
+        return saveData;
+    }
+
+    public bool LoadFromSaveData(FormationSaveData saveData)
+    {
+        _id = saveData.id;
+        _loadType = saveData.loadType;
+        _formationName = saveData.name;
+        _description = saveData.description;
+        _image = Resources.Load<Sprite>("Formations/Icons/"+saveData.imagePath);
+        Debug.Log(saveData.offsets);
+        return true;
     }
 }

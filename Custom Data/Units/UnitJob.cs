@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 [Serializable]
 public struct UnitJob
@@ -23,5 +24,24 @@ public struct UnitJob
             unitData.GainedJobExperience(this, amount);
         }
         return false;
+    }
+
+    public UnitJobSaveData GetSaveData()
+    {
+        UnitJobSaveData saveData = new UnitJobSaveData();
+        saveData.level = level;
+        saveData.experience = experience;
+        Debug.Log("UnitJob: "+jobData.id + " / " + jobData.jobName);
+        saveData.id = jobData.id;
+
+        return saveData;
+    }
+
+    public bool LoadFromSaveData(UnitJobSaveData saveData)
+    {
+        level = saveData.level;
+        experience = saveData.experience;
+        
+        return true;
     }
 }

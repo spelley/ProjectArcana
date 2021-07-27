@@ -1,3 +1,6 @@
+using System;
+
+[Serializable]
 public class RiverCard
 {
     public ElementData element;
