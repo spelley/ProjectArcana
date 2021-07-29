@@ -11,6 +11,7 @@ using Unity.Jobs;
 [CreateAssetMenu(fileName = "AIBrain", menuName = "Custom Data/AI Brain Data", order = 1)]
 public class AIBrain : ScriptableObject
 {
+    public string id;
     public string brainName;
     public string description;
 
@@ -99,14 +100,14 @@ public class AIBrain : ScriptableObject
                 if(cIdx == 0)
                 {
                     skillsStruct[skillIdx] = skill.GetSkillStruct();
-                    List<Vector3Int> shapeOffsets = skill.GetTargetShape();
+                    List<Vector3Int> shapeOffsets = SkillTargetShape.GetTargetShape(skill);
                     for(int shapeIdx = 0; shapeIdx < shapeOffsets.Count; shapeIdx++)
                     {
                         skillShapes.Add(skillIdx, shapeOffsets[shapeIdx]);
                     }
                 }
                 // get all the valid targetable areas around this combatant
-                List<Vector3Int> offsets = skill.GetTargetOffsets(combatant.curPosition);
+                List<Vector3Int> offsets = SkillOffsets.GetTargetOffsets(skill, combatant.curPosition);
                 for(int oIdx = 0; oIdx < offsets.Count; oIdx++)
                 {
                     targetableAreasByCombatantSkill.Add(index, offsets[oIdx]);

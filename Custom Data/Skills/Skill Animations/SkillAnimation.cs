@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class SkillAnimation : MonoBehaviour
 {
+    public string id;
     SkillData skillData;
     UnitData unitData;
     List<GridCell> targets = new List<GridCell>();

@@ -2,39 +2,31 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "Flow Divination", menuName = "Custom Data/Divinations/Flow Divination", order = 1)]
-public class FlowRiverDivination : DivinationData
+[CreateAssetMenu(fileName = "Randomize Divination", menuName = "Custom Data/Divinations/Randomize Divination", order = 1)]
+public class RandomizeRiverDivination : DivinationData
 {
-    string _flowLoadType = "Flow";
-    public override string loadType { get { return _flowLoadType; } }
-
-    [SerializeField, Range(1, 5)] int _flowAmount;
-    public int flowAmount {
-        get { return _flowAmount; }
-    }
-
+    string _randomizeLoadType = "Randomize";
+    public override string loadType { get { return _randomizeLoadType; } }
+    
     public override void Execute(UnitData unitData, List<RiverCard> selectedRiverCards)
     {
         HandleCardStates(selectedRiverCards);
-        BattleManager.Instance.FlowRiver(flowAmount);
+        BattleManager.Instance.RandomizeRiver();
     }
 
     public override DivinationSaveData GetSaveData()
     {
         DivinationSaveData saveData = base.GetSaveData();
         saveData.loadType = loadType;
-        saveData.flowAmount = _flowAmount;
 
         Debug.Log(JsonUtility.ToJson(saveData));
-
+        
         return saveData;
     }
 
     public override bool LoadFromSaveData(DivinationSaveData saveData)
     {
         base.LoadFromSaveData(saveData);
-        Debug.Log(saveData.ToString());
-        _flowAmount = saveData.flowAmount;
 
         return true;
     }

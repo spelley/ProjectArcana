@@ -165,4 +165,37 @@ public class EquipmentBlock
         OnUnequip?.Invoke(equipment, unitData, offhandSlot);
         return equipment;
     }
+
+    public EquipmentBlockSaveData GetSaveData()
+    {
+        EquipmentBlockSaveData saveData = new EquipmentBlockSaveData();
+        if(weapon != null)
+        {
+            saveData.weaponID = weapon.itemID.ToString();
+        }
+        if(offhand != null)
+        {
+            saveData.offhandID = offhand.itemID.ToString();
+        }
+        if(helmet != null)
+        {
+            saveData.helmetID = helmet.itemID.ToString();
+        }
+        if(armor != null)
+        {
+            saveData.armorID = armor.itemID.ToString();
+        }
+        if(accessory != null)
+        {
+            saveData.accessoryID = accessory.itemID.ToString();
+        }
+
+        return saveData;
+    }
+
+    public bool LoadFromSaveData(EquipmentBlockSaveData saveData)
+    {
+        
+        return true;
+    }
 }

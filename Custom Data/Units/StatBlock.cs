@@ -226,4 +226,47 @@ public class StatBlock
             break;
         }
     }
+
+    public StatBlockSaveData GetSaveData()
+    {
+        StatBlockSaveData saveData = new StatBlockSaveData();
+        saveData.level = level;
+        saveData.experience = experience;
+        saveData.maxHP = maxHP;
+        saveData.hp = hp;
+        saveData.maxMP = maxMP;
+        saveData.mp = mp;
+        saveData.maxSP = maxSP;
+        saveData.sp = sp;
+        saveData.body = body;
+        saveData.mind = mind;
+        saveData.spirit = spirit;
+        saveData.speed = speed;
+        saveData.move = move;
+        saveData.jump = jump;
+        saveData.evasion = evasion;
+
+        return saveData;
+    }
+
+    public bool LoadFromSaveData(StatBlockSaveData saveData)
+    {
+        level = saveData.level;
+        experience = saveData.experience;
+        maxHP = saveData.maxHP;
+        hp = saveData.hp;
+        maxMP = saveData.maxMP;
+        mp = saveData.mp;
+        maxSP = saveData.maxSP;
+        sp = saveData.sp;
+        body = saveData.body;
+        mind = saveData.mind;
+        spirit = saveData.spirit;
+        speed = saveData.speed;
+        move = saveData.move;
+        jump = saveData.jump;
+        evasion = saveData.evasion;
+
+        return true;
+    }
 }

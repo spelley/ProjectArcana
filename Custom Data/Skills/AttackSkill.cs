@@ -6,6 +6,8 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "AttackSkill", menuName = "Custom Data/Skill Data/Attack Skill", order = 1)]
 public class AttackSkill : SkillData
 {
+    string _attackLoadType = "Attack Skill";
+    public override string loadType { get { return _attackLoadType; } }
     public override void Execute(UnitData unitData, List<GridCell> targets)
     {
         foreach(GridCell gridCell in targets)
@@ -84,5 +86,13 @@ public class AttackSkill : SkillData
             return predictDamage * (target.faction == unitData.faction ? -2 : 1);
         }
         return 0;
+    }
+
+    public override SkillSaveData GetSaveData()
+    {
+        SkillSaveData saveData = base.GetSaveData();
+        saveData.loadType = loadType;
+
+        return saveData;
     }
 }

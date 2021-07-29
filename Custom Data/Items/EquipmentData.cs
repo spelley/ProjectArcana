@@ -122,7 +122,7 @@ public class EquipmentData: ItemData
         saveData.statusEffectIDs = new string[equipStatusEffects.Count];
         for(int i = 0; i < equipStatusEffects.Count; i++)
         {
-            saveData.statusEffectIDs[i] = equipStatusEffects[i].statusID;
+            saveData.statusEffectIDs[i] = equipStatusEffects[i].id;
         }
 
         Debug.Log(JsonUtility.ToJson(saveData));

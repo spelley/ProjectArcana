@@ -31,7 +31,6 @@ public struct UnitJob
         UnitJobSaveData saveData = new UnitJobSaveData();
         saveData.level = level;
         saveData.experience = experience;
-        Debug.Log("UnitJob: "+jobData.id + " / " + jobData.jobName);
         saveData.id = jobData.id;
 
         return saveData;
@@ -41,6 +40,7 @@ public struct UnitJob
     {
         level = saveData.level;
         experience = saveData.experience;
+        jobData = SaveDataLoader.Instance.GetJobData(saveData.id);
         
         return true;
     }

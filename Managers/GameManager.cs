@@ -100,7 +100,7 @@ public class GameManager : MonoBehaviour
 
         curFormation = defaultFormation;
 
-        GameObject mainPlayer = SpawnUnit(party[0], spawnLocations[0]);
+        GameObject mainPlayer = SpawnUnit(party[0], spawnLocations[0], true);
         activePlayer = party[0];
 
         // TODO: remove test code
@@ -142,12 +142,16 @@ public class GameManager : MonoBehaviour
         OnGameManagerLoaded?.Invoke();
     }
 
-    public GameObject SpawnUnit(UnitData unitData, Vector3 spawnPosition)
+    public GameObject SpawnUnit(UnitData unitData, Vector3 spawnPosition, bool isPlayerControlled = false)
     {
         unitData.Load();
 
         GameObject unitGO = Instantiate(unitData.unitModel, spawnPosition, Quaternion.identity);
         unitGO.GetComponent<CharacterMotor>().unitData = unitData;
+        if(isPlayerControlled)
+        {
+            unitGO.tag = "Player";
+        }
         unitData.unitGO = unitGO;
         return unitGO;
     }

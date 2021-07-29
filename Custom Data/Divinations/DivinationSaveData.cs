@@ -19,4 +19,5 @@ public class DivinationSaveData : ISaveData
     public string instructionsText;
     public int castAnimation;
     public string executeAnimation;
+    public int flowAmount;
 }

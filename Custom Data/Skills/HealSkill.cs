@@ -6,6 +6,8 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "HealSkill", menuName = "Custom Data/Skill Data/HealSkill", order = 1)]
 public class HealSkill : SkillData
 {
+    string _healLoadType = "Heal Skill";
+    public override string loadType { get { return _healLoadType; } }
     public override void Execute(UnitData unitData, List<GridCell> targets)
     {
         foreach(GridCell gridCell in targets)
@@ -78,5 +80,13 @@ public class HealSkill : SkillData
             return predictHeal;
         }
         return 0;
+    }
+
+    public override SkillSaveData GetSaveData()
+    {
+        SkillSaveData saveData = base.GetSaveData();
+        saveData.loadType = loadType;
+
+        return saveData;
     }
 }

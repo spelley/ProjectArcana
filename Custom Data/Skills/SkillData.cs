@@ -6,15 +6,14 @@ using UnityEngine;
 using Unity.Jobs;
 using Unity.Collections;
 
-public abstract class SkillData: ScriptableObject, IAssignableSkill, ILoadable<SkillSaveData>
+public class SkillData: ScriptableObject, IAssignableSkill, ILoadable<SkillSaveData>
 {
     [SerializeField] string _id;
     public string id { get { return _id; } }
     string _loadType = "Default Skill";
-    public string loadType { get { return _loadType; } }
+    public virtual string loadType { get { return _loadType; } }
 
-    [SerializeField]
-    string _skillName;
+    [SerializeField] string _skillName;
     public string skillName
     { 
         get
@@ -23,11 +22,10 @@ public abstract class SkillData: ScriptableObject, IAssignableSkill, ILoadable<S
         }
     }
 
-    [SerializeField] int _tpCost;
-    public int spCost { get { return _tpCost; } }
+    [SerializeField] int _spCost;
+    public int spCost { get { return _spCost; } }
 
-    [SerializeField]
-    string _description;
+    [SerializeField] string _description;
     public string description
     { 
         get
@@ -41,15 +39,14 @@ public abstract class SkillData: ScriptableObject, IAssignableSkill, ILoadable<S
     }
 
     [Header("Resource Costs")]
-    [SerializeField]
-    ActionType _actionType;
+    [SerializeField] ActionType _actionType;
     public ActionType actionType
     {
         get { return _actionType; }
         private set { _actionType = value; }
     }
-    [SerializeField]
-    int _hpCost;
+
+    [SerializeField] int _hpCost;
     public int hpCost
     {
         get
@@ -61,7 +58,7 @@ public abstract class SkillData: ScriptableObject, IAssignableSkill, ILoadable<S
             _hpCost = value;
         }
     }
-    int _mpCost;
+    [SerializeField] int _mpCost;
     public int mpCost
     {
         get
@@ -75,8 +72,7 @@ public abstract class SkillData: ScriptableObject, IAssignableSkill, ILoadable<S
     }
 
     [Header("Element Information")]
-    [SerializeField]
-    List<ElementData> _elements = new List<ElementData>();
+    [SerializeField] List<ElementData> _elements = new List<ElementData>();
     public List<ElementData> elements
     {
         get
@@ -89,8 +85,7 @@ public abstract class SkillData: ScriptableObject, IAssignableSkill, ILoadable<S
         }
     }
 
-    [SerializeField]
-    List<MatchType> _matchTypes = new List<MatchType>();
+    [SerializeField] List<MatchType> _matchTypes = new List<MatchType>();
     public List<MatchType> matchTypes
     {
         get
@@ -104,8 +99,7 @@ public abstract class SkillData: ScriptableObject, IAssignableSkill, ILoadable<S
     }
 
     [Header("Animation Information")]
-    [SerializeField]
-    BattleAnimation _castAnimation;
+    [SerializeField] BattleAnimation _castAnimation;
     public BattleAnimation castAnimation
     { 
         get
@@ -118,8 +112,7 @@ public abstract class SkillData: ScriptableObject, IAssignableSkill, ILoadable<S
         }
     }
 
-    [SerializeField]
-    GameObject _executeAnimation;
+    [SerializeField] GameObject _executeAnimation;
     public GameObject executeAnimation
     {
         get
@@ -133,8 +126,7 @@ public abstract class SkillData: ScriptableObject, IAssignableSkill, ILoadable<S
     }
     
     [Header("Targeting Information")]
-    [SerializeField, Range(0f, 100f)]
-    float _hitChance = 100f;
+    [SerializeField, Range(0f, 100f)] float _hitChance = 100f;
     public float hitChance
     {
         get
@@ -147,8 +139,7 @@ public abstract class SkillData: ScriptableObject, IAssignableSkill, ILoadable<S
         }
     }
 
-    [SerializeField]
-    TargetType _targetType;
+    [SerializeField] TargetType _targetType;
     public TargetType targetType
     {
         get
@@ -161,8 +152,7 @@ public abstract class SkillData: ScriptableObject, IAssignableSkill, ILoadable<S
         }
     }
 
-    [SerializeField]
-    TargetShape _targetShape;
+    [SerializeField] TargetShape _targetShape;
     public TargetShape targetShape
     {
         get
@@ -175,8 +165,7 @@ public abstract class SkillData: ScriptableObject, IAssignableSkill, ILoadable<S
         }
     }
 
-    [SerializeField]
-    RangeType _rangeType;
+    [SerializeField] RangeType _rangeType;
     public RangeType rangeType
     {
         get
@@ -189,8 +178,7 @@ public abstract class SkillData: ScriptableObject, IAssignableSkill, ILoadable<S
         }
     }
 
-    [SerializeField]
-    int _range;
+    [SerializeField] int _range;
     public int range
     {
         get
@@ -203,8 +191,7 @@ public abstract class SkillData: ScriptableObject, IAssignableSkill, ILoadable<S
         }
     }
 
-    [SerializeField]
-    int _height;
+    [SerializeField] int _height;
     public int height
     {
         get
@@ -217,8 +204,7 @@ public abstract class SkillData: ScriptableObject, IAssignableSkill, ILoadable<S
         }
     }
 
-    [SerializeField]
-    int _heightTolerance;
+    [SerializeField] int _heightTolerance;
     public int heightTolerance
     {
         get
@@ -231,8 +217,7 @@ public abstract class SkillData: ScriptableObject, IAssignableSkill, ILoadable<S
         }
     }
 
-    [SerializeField]
-    int _areaOfEffect;
+    [SerializeField] int _areaOfEffect;
     public int areaOfEffect
     {
         get
@@ -245,8 +230,7 @@ public abstract class SkillData: ScriptableObject, IAssignableSkill, ILoadable<S
         }
     }
 
-    [SerializeField]
-    int _push = 0;
+    [SerializeField] int _push = 0;
     public int push
     {
         get
@@ -260,8 +244,7 @@ public abstract class SkillData: ScriptableObject, IAssignableSkill, ILoadable<S
         }
     }
 
-    [SerializeField]
-    bool _pushFromTarget;
+    [SerializeField] bool _pushFromTarget;
     public bool pushFromTarget
     {
         get
@@ -274,8 +257,7 @@ public abstract class SkillData: ScriptableObject, IAssignableSkill, ILoadable<S
         }
     }
 
-    [SerializeField]
-    bool _requireUnitTarget = true;
+    [SerializeField] bool _requireUnitTarget = true;
     public bool requireUnitTarget
     {
         get
@@ -289,8 +271,7 @@ public abstract class SkillData: ScriptableObject, IAssignableSkill, ILoadable<S
     }
 
     [Header("Skill Calculation Information")]
-    [SerializeField]
-    SkillCalculation _skillCalculation;
+    [SerializeField] SkillCalculation _skillCalculation;
     public SkillCalculation skillCalculation
     {
         get
@@ -303,8 +284,7 @@ public abstract class SkillData: ScriptableObject, IAssignableSkill, ILoadable<S
         }
     }
 
-    [SerializeField]
-    Stat _primaryAttribute;
+    [SerializeField] Stat _primaryAttribute;
     public Stat primaryAttribute
     {
         get
@@ -317,8 +297,7 @@ public abstract class SkillData: ScriptableObject, IAssignableSkill, ILoadable<S
         }
     }
 
-    [SerializeField]
-    Stat _secondaryAttribute;
+    [SerializeField] Stat _secondaryAttribute;
     public Stat secondaryAttribute
     {
         get
@@ -331,8 +310,7 @@ public abstract class SkillData: ScriptableObject, IAssignableSkill, ILoadable<S
         }
     }
 
-    [SerializeField]
-    Stat _tertiaryAttribute;
+    [SerializeField] Stat _tertiaryAttribute;
     public Stat tertiaryAttribute
     {
         get
@@ -345,8 +323,7 @@ public abstract class SkillData: ScriptableObject, IAssignableSkill, ILoadable<S
         }
     }
 
-    [SerializeField]
-    int _primaryValue;
+    [SerializeField] int _primaryValue;
     public int primaryValue
     {
         get
@@ -359,8 +336,7 @@ public abstract class SkillData: ScriptableObject, IAssignableSkill, ILoadable<S
         }
     }
 
-    [SerializeField]
-    int _secondaryValue;
+    [SerializeField] int _secondaryValue;
     public int secondaryValue
     {
         get
@@ -373,8 +349,7 @@ public abstract class SkillData: ScriptableObject, IAssignableSkill, ILoadable<S
         }
     }
 
-    [SerializeField]
-    int _tertiaryValue;
+    [SerializeField] int _tertiaryValue;
     public int tertiaryValue
     {
         get
@@ -406,234 +381,6 @@ public abstract class SkillData: ScriptableObject, IAssignableSkill, ILoadable<S
             GridCell targetCell = MapManager.Instance.GetForcedMovement(source.curPosition, target.curPosition, push);
             target.PushTo(targetCell);
         }
-    }
-
-    void TryAddOffset(Vector3Int targetPosition, Vector3Int offset, List<Vector3Int> offsets)
-    {
-        if(MapManager.Instance.CheckIfTargetable(targetPosition.x + offset.x, targetPosition.y + offset.y, targetPosition.z + offset.z))
-        {
-            offsets.Add(offset);
-        }
-    }
-
-    public List<Vector3Int> GetTargetOffsets(Vector3Int targetPosition)
-    {
-        List<Vector3Int> offsets = new List<Vector3Int>();
-        switch(targetShape)
-        {
-            case TargetShape.SINGLE:
-                TryAddOffset(targetPosition, new Vector3Int(0, 0, 0), offsets);
-            break;
-            case TargetShape.ALL:
-                if(rangeType == RangeType.LINE)
-                {
-                    TryAddOffset(targetPosition, new Vector3Int(0, 0, 0), offsets);
-                    for(int r = 1; r < range; r++)
-                    {
-                        for(int h = 0; h <= heightTolerance; h++)
-                        {
-                            TryAddOffset(targetPosition, new Vector3Int(r, 0, h), offsets);
-                            TryAddOffset(targetPosition, new Vector3Int(-r, 0, h), offsets);
-                            TryAddOffset(targetPosition, new Vector3Int(0, r, h), offsets);
-                            TryAddOffset(targetPosition, new Vector3Int(0, -r, h), offsets);
-                            if(h > 0)
-                            {
-                                TryAddOffset(targetPosition, new Vector3Int(r, 0, -h), offsets);
-                                TryAddOffset(targetPosition, new Vector3Int(-r, 0, -h), offsets);
-                                TryAddOffset(targetPosition, new Vector3Int(0, r, -h), offsets);
-                                TryAddOffset(targetPosition, new Vector3Int(0, -r, -h), offsets);
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    // we don't use offsets for "ALL" target shapes
-                    TryAddOffset(targetPosition, new Vector3Int(0, 0, 0), offsets);
-                }
-            break;
-            case TargetShape.CROSS:
-                TryAddOffset(targetPosition, new Vector3Int(0, 0, 0), offsets);
-                for(int a = 1; a <= areaOfEffect; a++)
-                {
-                    int targetXA = a;
-                    int targetXB = -a;
-                    for(int i = 0; i <= heightTolerance; i++)
-                    {
-                        TryAddOffset(targetPosition, new Vector3Int(targetXA, 0, i), offsets);
-                        TryAddOffset(targetPosition, new Vector3Int(0, targetXA, i), offsets);
-                        TryAddOffset(targetPosition, new Vector3Int(targetXB, 0, i), offsets);
-                        TryAddOffset(targetPosition, new Vector3Int(0, targetXB, i), offsets);
-                        if(i != 0)
-                        {
-                            TryAddOffset(targetPosition, new Vector3Int(targetXA, 0, -i), offsets);
-                            TryAddOffset(targetPosition, new Vector3Int(0, targetXA, -i), offsets);
-                            TryAddOffset(targetPosition, new Vector3Int(targetXB, 0, -i), offsets);
-                            TryAddOffset(targetPosition, new Vector3Int(0, targetXB, -i), offsets);
-                        }
-                    }
-                }
-            break;
-        }
-        return offsets;
-    }
-
-    public List<Vector3Int> GetTargetShape()
-    {
-        List<Vector3Int> offsets = new List<Vector3Int>();
-        switch(targetShape)
-        {
-            case TargetShape.SINGLE:
-                offsets.Add(new Vector3Int(0, 0, 0));
-            break;
-            case TargetShape.ALL:
-                if(rangeType == RangeType.LINE)
-                {
-                    offsets.Add(new Vector3Int(0, 0, 0));
-                    for(int r = 1; r < range; r++)
-                    {
-                        for(int h = 0; h <= heightTolerance; h++)
-                        {
-                            offsets.Add(new Vector3Int(r, 0, h));
-                            offsets.Add(new Vector3Int(-r, 0, h));
-                            offsets.Add(new Vector3Int(0, r, h));
-                            offsets.Add(new Vector3Int(0, -r, h));
-                            if(h > 0)
-                            {
-                                offsets.Add(new Vector3Int(r, 0, -h));
-                                offsets.Add(new Vector3Int(-r, 0, -h));
-                                offsets.Add(new Vector3Int(0, r, -h));
-                                offsets.Add(new Vector3Int(0, -r, -h));
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    // we don't use offsets for "ALL" target shapes
-                    offsets.Add(new Vector3Int(0, 0, 0));
-                }
-            break;
-            case TargetShape.CROSS:
-                offsets.Add(new Vector3Int(0, 0, 0));
-                for(int a = 1; a <= this.areaOfEffect; a++)
-                {
-                    int targetXA = a;
-                    int targetXB = -a;
-                    for(int i = 0; i <= heightTolerance; i++)
-                    {
-                        offsets.Add(new Vector3Int(targetXA, 0, i));
-                        offsets.Add(new Vector3Int(0, targetXA, i));
-                        offsets.Add(new Vector3Int(targetXB, 0, i));
-                        offsets.Add(new Vector3Int(0, targetXB, i));
-                        if(i != 0)
-                        {
-                            offsets.Add(new Vector3Int(targetXA, 0, -i));
-                            offsets.Add(new Vector3Int(0, targetXA, -i));
-                            offsets.Add(new Vector3Int(targetXB, 0, -i));
-                            offsets.Add(new Vector3Int(0, targetXB, -i));
-                        }
-                    }
-                }
-            break;
-        }
-        return offsets;
-    }
-
-    public List<Vector3Int> GetTargetShape(GridCell originCell, GridCell targetCell, List<GridCell> targetableArea)
-    {
-        List<Vector3Int> offsets = new List<Vector3Int>();
-        switch(targetShape)
-        {
-            case TargetShape.SINGLE:
-                offsets.Add(new Vector3Int(0, 0, 0));
-            break;
-            case TargetShape.ALL:
-                if(rangeType == RangeType.LINE)
-                {
-                    if(IsSelfTargeting())
-                    {
-                        offsets.Add(originCell.position - targetCell.position);
-                    }
-                    foreach(GridCell gridCell in targetableArea)
-                    {
-                        if(Mathf.Abs(gridCell.position.z - originCell.position.z) > heightTolerance)
-                        {
-                            continue;
-                        }
-
-                        if(targetCell.position.x > originCell.position.x
-                            && targetCell.position.y == originCell.position.y
-                            && gridCell.position.y == originCell.position.y
-                            && gridCell.position.x > originCell.position.x)
-                        {
-                            offsets.Add(new Vector3Int(gridCell.position.x - targetCell.position.x, 0, gridCell.position.z - targetCell.position.z));
-                        }
-                        else if(targetCell.position.x < originCell.position.x 
-                            && targetCell.position.y == originCell.position.y
-                            && gridCell.position.y == originCell.position.y 
-                            && gridCell.position.x < originCell.position.x)
-                        {
-                            offsets.Add(new Vector3Int(gridCell.position.x - targetCell.position.x, 0, gridCell.position.z - targetCell.position.z));
-                        }
-                        else if(targetCell.position.y > originCell.position.y
-                            && targetCell.position.x == originCell.position.x
-                            && gridCell.position.x == originCell.position.x 
-                            && gridCell.position.y > originCell.position.y)
-                        {
-                            offsets.Add(new Vector3Int(0, gridCell.position.y - targetCell.position.y, gridCell.position.z - targetCell.position.z));
-                        }
-                        else if(targetCell.position.y < originCell.position.y
-                            && targetCell.position.x == originCell.position.x
-                            && gridCell.position.x == originCell.position.x
-                            && gridCell.position.y < originCell.position.y)
-                        {
-                            offsets.Add(new Vector3Int(0, gridCell.position.y - targetCell.position.y, gridCell.position.z - targetCell.position.z));
-                        }
-                    }
-                }
-                else
-                {
-                    foreach(GridCell gridCell in targetableArea)
-                    {
-                        offsets.Add(gridCell.position - targetCell.position);
-                    }
-                }
-            break;
-            case TargetShape.CROSS:
-                offsets.Add(new Vector3Int(0, 0, 0));
-                for(int a = 1; a <= this.areaOfEffect; a++)
-                {
-                    int targetXA = a;
-                    int targetXB = -a;
-                    for(int i = 0; i <= heightTolerance; i++)
-                    {
-                        offsets.Add(new Vector3Int(targetXA, 0, i));
-                        offsets.Add(new Vector3Int(0, targetXA, i));
-                        offsets.Add(new Vector3Int(targetXB, 0, i));
-                        offsets.Add(new Vector3Int(0, targetXB, i));
-                        if(i != 0)
-                        {
-                            offsets.Add(new Vector3Int(targetXA, 0, -i));
-                            offsets.Add(new Vector3Int(0, targetXA, -i));
-                            offsets.Add(new Vector3Int(targetXB, 0, -i));
-                            offsets.Add(new Vector3Int(0, targetXB, -i));
-                        }
-                    }
-                }
-            break;
-        }
-
-        if(!IsSelfTargeting())
-        {
-            Vector3Int selfOffset = originCell.position - targetCell.position;
-            int idx = offsets.IndexOf(selfOffset);
-            if(idx > -1)
-            {
-                offsets.RemoveAt(idx);
-            }
-        }
-        return offsets;
     }
 
     public int GetShapeRangeExtension()
@@ -702,46 +449,137 @@ public abstract class SkillData: ScriptableObject, IAssignableSkill, ILoadable<S
         return selfTargeting.Contains(targetType);
     }
 
-    public void Initiate(UnitData unitData)
+    public virtual void Execute(UnitData unitData, List<GridCell> targets) {}
+
+    public virtual void ExecutePerTarget(UnitData unitData, GridCell gridCell) {}
+
+    public virtual int GetSkillScore(UnitData unitData, GridCell gridCell)
     {
-        // TODO: implement default initiate
+        return 0;
     }
-    public void Cancel(UnitData unitData)
+
+    public virtual int GetSkillScore(UnitData unitData, UnitData targetUnit)
     {
-        // TODO: implement default cancel
+        return 0;
     }
-    public abstract void Execute(UnitData unitData, List<GridCell> targets);
 
-    public abstract void ExecutePerTarget(UnitData unitData, GridCell gridCell);
+    public virtual SkillPreview GetPreview(UnitData unitData, GridCell target)
+    {
+        return new SkillPreview("No Effect", 0);
+    }
 
-    public abstract int GetSkillScore(UnitData unitData, GridCell gridCell);
-
-    public abstract int GetSkillScore(UnitData unitData, UnitData targetUnit);
-
-    public abstract SkillPreview GetPreview(UnitData unitData, GridCell target);
-
-    public SkillStruct GetSkillStruct()
+    public virtual SkillStruct GetSkillStruct()
     {
         return new SkillStruct(range, areaOfEffect, heightTolerance, GetShapeRangeExtension(), rangeType, targetType, targetShape, actionType);
     }
 
-    public void ResolveSkill()
+    public virtual void ResolveSkill()
     {
         BattleManager.Instance.SkillClear();
     }
 
-    public SkillSaveData GetSaveData()
+    public virtual SkillSaveData GetSaveData()
     {
         SkillSaveData saveData = new SkillSaveData();
         saveData.id = _id;
         saveData.loadType = loadType;
+        saveData.name = _skillName;
+        saveData.description = _description;
+        saveData.spCost = _spCost;
+        saveData.actionType = _actionType.ToString();
+        saveData.hpCost = _hpCost;
+        saveData.mpCost = _mpCost;
+        
+        saveData.elementIDs = new string[_elements.Count];
+        for(int i = 0; i < _elements.Count; i++)
+        {
+            saveData.elementIDs[i] = elements[i].id;
+        }
+
+        saveData.matchTypes = new string[_matchTypes.Count];
+        for(int i = 0; i < _matchTypes.Count; i++)
+        {
+            saveData.matchTypes[i] = _matchTypes[i].ToString();
+        }
+        saveData.castAnimation = _castAnimation.ToString();
+        
+        if(_executeAnimation != null)
+        {
+            saveData.executeAnimation = _executeAnimation.GetComponent<SkillAnimation>().id;
+        }
+
+        saveData.hitChance = Mathf.RoundToInt(_hitChance);
+        saveData.targetType = _targetType.ToString();
+        saveData.targetShape = _targetShape.ToString();
+        saveData.rangeType = _rangeType.ToString();
+        saveData.range = _range;
+        saveData.height = _height;
+        saveData.heightTolerance = _heightTolerance;
+        saveData.areaOfEffect = _areaOfEffect;
+        saveData.push = _push;
+        saveData.pushFromTarget = _pushFromTarget;
+        saveData.requireUnitTarget = _requireUnitTarget;
+        saveData.skillCalculation = skillCalculation.id;
+        saveData.primaryAttribute = _primaryAttribute.ToString();
+        saveData.secondaryAttribute = _secondaryAttribute.ToString();
+        saveData.tertiaryAttribute = _tertiaryAttribute.ToString();
+        saveData.primaryValue = _primaryValue;
+        saveData.secondaryValue = _secondaryValue;
+        saveData.tertiaryValue = _tertiaryValue;
         return saveData;
     }
 
-    public bool LoadFromSaveData(SkillSaveData saveData)
+    public virtual bool LoadFromSaveData(SkillSaveData saveData)
     {
         _id = saveData.ID;
-        _loadType = saveData.loadType;
+        _skillName = saveData.name;
+        _description = saveData.description;
+        _spCost = saveData.spCost;
+        _actionType = (ActionType)System.Enum.Parse(typeof(ActionType), saveData.actionType);
+        _hpCost = saveData.hpCost;
+        _mpCost = saveData.mpCost;
+
+        _elements.Clear();
+        for(int i = 0; i < saveData.elementIDs.Length; i++)
+        {
+            ElementData element = SaveDataLoader.Instance.GetElementData(saveData.elementIDs[i]);
+            if(element != null)
+            {
+                _elements.Add(element);
+            }
+        }
+
+        _matchTypes.Clear();
+        for(int i = 0; i < saveData.matchTypes.Length; i++)
+        {
+            _matchTypes.Add((MatchType)System.Enum.Parse(typeof(MatchType), saveData.matchTypes[i]));
+        }
+
+        _castAnimation = (BattleAnimation)System.Enum.Parse(typeof(BattleAnimation), saveData.castAnimation);
+
+        if(saveData.executeAnimation != "")
+        {
+            _executeAnimation = SaveDataLoader.Instance.GetExecuteAnimation(saveData.executeAnimation);
+        }
+
+        _hitChance = saveData.hitChance;
+        _targetType = (TargetType)System.Enum.Parse(typeof(TargetType), saveData.targetType);
+        _targetShape = (TargetShape)System.Enum.Parse(typeof(TargetShape), saveData.targetShape);
+        _rangeType = (RangeType)System.Enum.Parse(typeof(RangeType), saveData.rangeType);
+        _range = saveData.range;
+        _height = saveData.height;
+        _heightTolerance = saveData.heightTolerance;
+        _areaOfEffect = saveData.areaOfEffect;
+        _push = saveData.push;
+        _pushFromTarget = saveData.pushFromTarget;
+        _requireUnitTarget = saveData.requireUnitTarget;
+        _skillCalculation = SaveDataLoader.Instance.GetSkillCalculation(saveData.skillCalculation);
+        _primaryAttribute = (Stat)System.Enum.Parse(typeof(Stat), saveData.primaryAttribute);
+        _secondaryAttribute = (Stat)System.Enum.Parse(typeof(Stat), saveData.secondaryAttribute);
+        _tertiaryAttribute = (Stat)System.Enum.Parse(typeof(Stat), saveData.tertiaryAttribute);
+        _primaryValue = saveData.primaryValue;
+        _secondaryValue = saveData.secondaryValue;
+        _tertiaryValue = saveData.tertiaryValue;
 
         return true;
     }

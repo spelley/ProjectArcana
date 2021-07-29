@@ -235,7 +235,7 @@ public class MapManager : MonoBehaviour
             return targetedArea;
         }
 
-        List<Vector3Int> offsets = skillData.GetTargetShape(originCell, targetCell, targetableCells);
+        List<Vector3Int> offsets = SkillTargetShape.GetTargetShape(skillData, originCell, targetCell, targetableCells);
         foreach(Vector3Int offset in offsets)
         {
             if(CheckIfTargetable(targetCell.position.x + offset.x, targetCell.position.y + offset.y, targetCell.position.z + offset.z))

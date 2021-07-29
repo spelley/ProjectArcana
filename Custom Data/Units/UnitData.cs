@@ -4,19 +4,34 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "UnitData", menuName = "Custom Data/Unit Data", order = 2)]
-public class UnitData : ScriptableObject, ITurnTaker, IDamageable
+public class UnitData : ScriptableObject, ITurnTaker, IDamageable, ILoadable<UnitSaveData>
 {
-    public string unitName;
-    public ArcanaData arcana;
-    public GameObject unitModel;
+    [SerializeField] string _id;
+    public string id { get { return _id; } }
+    string _loadType = "Unit";
+    public virtual string loadType { get { return _loadType; } }
+    
+    [SerializeField] string _unitName;
+    public string unitName { get { return _unitName; } } 
+    [SerializeField] ArcanaData _arcana;
+    public ArcanaData arcana { get { return _arcana; } }
+    [SerializeField] GameObject _unitModel;
+    public GameObject unitModel { get { return _unitModel; } }
     public GameObject unitGO { get; set; }
-    public Faction faction;
-    public AIBrain aiBrain;
-    public StatBlock stats;
-    public EquipmentBlock equipmentBlock;
-    public JobData baseJob;
-    public JobData activeJob;
-    public List<UnitJob> availableJobs = new List<UnitJob>();
+    [SerializeField] Faction _faction;
+    public Faction faction { get { return _faction; } }
+    [SerializeField] AIBrain _aiBrain;
+    public AIBrain aiBrain { get { return _aiBrain; } }
+    [SerializeField] StatBlock _stats;
+    public StatBlock stats { get { return _stats; } }
+    [SerializeField] EquipmentBlock _equipmentBlock;
+    public EquipmentBlock equipmentBlock { get { return _equipmentBlock; } }
+    [SerializeField] JobData _baseJob;
+    public JobData baseJob { get { return _baseJob; } }
+    [SerializeField] JobData _activeJob;
+    public JobData activeJob { get { return _activeJob; } set { _activeJob = value; } }
+    [SerializeField] List<UnitJob> _availableJobs = new List<UnitJob>();
+    public List<UnitJob> availableJobs { get { return _availableJobs; } }
 
     bool loaded = false;
 
@@ -132,7 +147,7 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
     }
     public DivinationData divinationSkill {
         get {
-            return baseJob.divinationSkill;
+            return activeJob.divinationSkill;
         }
     }
     [SerializeField] List<SkillData> learnedSkills = new List<SkillData>();
@@ -230,6 +245,10 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
 
     public void AddStatus(StatusEffect statusEffect)
     {
+        if(statusEffect == null)
+        {
+            return;
+        }
         if(!HasStatus(statusEffect))
         {
             StatusEffect status = Instantiate(statusEffect);
@@ -576,5 +595,120 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable
             assignedSkills.Remove(skillData);
             stats.sp -= skillData.spCost;
         }
+    }
+
+    public UnitSaveData GetSaveData()
+    {
+        UnitSaveData saveData = new UnitSaveData();
+        saveData.id = _id;
+        saveData.name = _unitName;
+        saveData.arcanaID = _arcana.id;
+        saveData.unitModelID = _unitModel.GetComponent<UnitModel>().id;
+        saveData.faction = _faction.ToString();
+        if(_aiBrain != null)
+        {
+            saveData.aiBrainID = _aiBrain.id;
+        }
+        saveData.statBlock = _stats.GetSaveData();
+        saveData.equipmentBlock = _equipmentBlock.GetSaveData();
+        saveData.baseJobID = _baseJob.id;
+        saveData.activeJobID = _activeJob.id;
+
+        saveData.availableJobs = new UnitJobSaveData[_availableJobs.Count];
+        for(int i = 0; i < _availableJobs.Count; i++)
+        {
+            saveData.availableJobs[i] = _availableJobs[i].GetSaveData();
+        }
+
+        saveData.ct = ct;
+        saveData.moved = moved;
+        saveData.acted = acted;
+        saveData.usedBonus = usedBonus;
+        saveData.spritePath = _sprite.name;
+
+        saveData.learnedSkillIDs = new string[learnedSkills.Count];
+        for(int i = 0; i < learnedSkills.Count; i++)
+        {
+            saveData.learnedSkillIDs[i] = learnedSkills[i].id;
+        }
+
+        saveData.assignedSkillIDs = new string[assignedSkills.Count];
+        for(int i = 0; i < assignedSkills.Count; i++)
+        {
+            saveData.assignedSkillIDs[i] = assignedSkills[i].id;
+        }
+
+        saveData.curPosition = new SimpleVector3Int(curPosition.x, curPosition.y, curPosition.z);
+        
+        saveData.statusEffectIDs = new string[statusEffects.Count];
+        for(int i = 0; i < statusEffects.Count; i++)
+        {
+            saveData.statusEffectIDs[i] = statusEffects[i].id;
+        }
+        
+        return saveData;
+    }
+
+    public bool LoadFromSaveData(UnitSaveData saveData)
+    {
+        _id = saveData.id;
+        _unitName = saveData.name;
+        _arcana = SaveDataLoader.Instance.GetArcanaData(saveData.arcanaID);
+        _unitModel = SaveDataLoader.Instance.GetUnitModel(saveData.unitModelID);
+        _faction = (Faction)System.Enum.Parse(typeof(Faction), saveData.faction);
+        if(saveData.aiBrainID != "")
+        {
+            _aiBrain = SaveDataLoader.Instance.GetAIBrain(saveData.aiBrainID);
+        }
+        _stats.LoadFromSaveData(saveData.statBlock);
+        _equipmentBlock.LoadFromSaveData(saveData.equipmentBlock);
+        _baseJob = SaveDataLoader.Instance.GetJobData(saveData.baseJobID);
+        _activeJob = SaveDataLoader.Instance.GetJobData(saveData.activeJobID);
+        
+        _availableJobs.Clear();
+        foreach(UnitJobSaveData unitJobSaveData in saveData.availableJobs)
+        {
+            UnitJob unitJob = new UnitJob();
+            unitJob.LoadFromSaveData(unitJobSaveData);
+            _availableJobs.Add(unitJob);
+        }
+
+        ct = saveData.ct;
+        moved = saveData.moved;
+        acted = saveData.acted;
+        usedBonus = saveData.usedBonus;
+        _sprite = Resources.Load<Sprite>("Units/Portraits/" + saveData.spritePath);
+        learnedSkills.Clear();
+        foreach(string skillID in saveData.learnedSkillIDs)
+        {
+            SkillData skill = SaveDataLoader.Instance.GetSkillData(skillID);
+            if(skill != null)
+            {
+                learnedSkills.Add(skill);
+            }
+        }
+
+        assignedSkills.Clear();
+        foreach(string skillID in saveData.assignedSkillIDs)
+        {
+            SkillData skill = SaveDataLoader.Instance.GetSkillData(skillID);
+            if(skill != null)
+            {
+                assignedSkills.Add(skill);
+            }
+        }
+
+        curPosition = new Vector3Int(saveData.curPosition.x, saveData.curPosition.y, saveData.curPosition.z);
+        
+        foreach(string statusID in saveData.statusEffectIDs)
+        {
+            StatusEffect statusEffect = SaveDataLoader.Instance.GetStatusEffect(statusID);
+            if(statusEffect != null)
+            {
+                statusEffects.Add(Instantiate(statusEffect));
+            }
+        }
+
+        return true;
     }
 }
