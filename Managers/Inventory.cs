@@ -7,21 +7,21 @@ using UnityEngine;
 [Serializable]
 public class Inventory
 {
-    Dictionary<int, InventoryQuantity> _items = new Dictionary<int, InventoryQuantity>();
-    Dictionary<int, InventoryQuantity> _equipment = new Dictionary<int, InventoryQuantity>();
+    Dictionary<string, InventoryQuantity> _items = new Dictionary<string, InventoryQuantity>();
+    Dictionary<string, InventoryQuantity> _equipment = new Dictionary<string, InventoryQuantity>();
 
     public event Action<InventoryQuantity> OnInventoryChange;
 
     public void EquipFromInventory(EquipmentData itemData, UnitData unit, bool offhand = false)
     {
-        EquipFromInventory(itemData.itemID, unit, offhand);
+        EquipFromInventory(itemData.id, unit, offhand);
     }
 
-    public void EquipFromInventory(int itemID, UnitData unit, bool offhand = false)
+    public void EquipFromInventory(string id, UnitData unit, bool offhand = false)
     {
-        if(_equipment.ContainsKey(itemID))
+        if(_equipment.ContainsKey(id))
         {
-            InventoryQuantity quant = _equipment[itemID];
+            InventoryQuantity quant = _equipment[id];
             if(quant.quantity > 0)
             {
                 EquipmentData unequipped = unit.equipmentBlock.Equip(quant.itemData as EquipmentData, unit, offhand);
@@ -43,7 +43,7 @@ public class Inventory
     public List<ItemData> GetEquipment()
     {
         List<ItemData> equipmentList = new List<ItemData>();
-        foreach(KeyValuePair<int, InventoryQuantity> item in _items)
+        foreach(KeyValuePair<string, InventoryQuantity> item in _items)
         {
             equipmentList.Add(item.Value.itemData as EquipmentData);
         }
@@ -54,7 +54,7 @@ public class Inventory
     public List<ItemData> GetEquipment(EquipmentSlot slot)
     {
         List<ItemData> equipmentList = new List<ItemData>();
-        foreach(KeyValuePair<int, InventoryQuantity> item in _items)
+        foreach(KeyValuePair<string, InventoryQuantity> item in _items)
         {
             EquipmentData equip = item.Value.itemData as EquipmentData;
             if(equip.equipmentSlot == slot)
@@ -69,7 +69,7 @@ public class Inventory
     public List<InventoryQuantity> GetEquipmentQuantities()
     {
         List<InventoryQuantity> equipmentList = new List<InventoryQuantity>();
-        foreach(KeyValuePair<int, InventoryQuantity> item in _equipment)
+        foreach(KeyValuePair<string, InventoryQuantity> item in _equipment)
         {
             equipmentList.Add(item.Value);
         }
@@ -80,7 +80,7 @@ public class Inventory
     public List<InventoryQuantity> GetEquipmentQuantities(EquipmentSlot slot)
     {
         List<InventoryQuantity> equipmentList = new List<InventoryQuantity>();
-        foreach(KeyValuePair<int, InventoryQuantity> item in _equipment)
+        foreach(KeyValuePair<string, InventoryQuantity> item in _equipment)
         {
             EquipmentData equip = item.Value.itemData as EquipmentData;
             if(equip.equipmentSlot == slot)
@@ -92,15 +92,15 @@ public class Inventory
         return equipmentList;
     }
 
-    public InventoryQuantity CheckItem(int itemID, bool equipment = false)
+    public InventoryQuantity CheckItem(string id, bool equipment = false)
     {
-        if(!equipment && _items.ContainsKey(itemID))
+        if(!equipment && _items.ContainsKey(id))
         {
-            return _items[itemID];
+            return _items[id];
         }
-        else if(equipment && _equipment.ContainsKey(itemID))
+        else if(equipment && _equipment.ContainsKey(id))
         {
-            return _equipment[itemID];
+            return _equipment[id];
         }
 
         return new InventoryQuantity(null, -1, -1);
@@ -108,82 +108,130 @@ public class Inventory
 
     public void AddItem(ItemData itemData, bool equipment = false)
     {
-        if(!equipment && _items.ContainsKey(itemData.itemID))
+        if(!equipment && _items.ContainsKey(itemData.id))
         {
-            _items[itemData.itemID] = new InventoryQuantity(itemData, 
-                                                            _items[itemData.itemID].quantity + 1, 
-                                                            _items[itemData.itemID].numEquipped);
-            OnInventoryChange?.Invoke(_items[itemData.itemID]);
+            _items[itemData.id] = new InventoryQuantity(itemData, 
+                                                            _items[itemData.id].quantity + 1, 
+                                                            _items[itemData.id].numEquipped);
+            OnInventoryChange?.Invoke(_items[itemData.id]);
         }
-        else if(equipment && _equipment.ContainsKey(itemData.itemID))
+        else if(equipment && _equipment.ContainsKey(itemData.id))
         {
-            _equipment[itemData.itemID] = new InventoryQuantity(itemData, 
-                                                                _equipment[itemData.itemID].quantity + 1, 
-                                                                _equipment[itemData.itemID].numEquipped);
-            OnInventoryChange?.Invoke(_equipment[itemData.itemID]);
+            _equipment[itemData.id] = new InventoryQuantity(itemData, 
+                                                                _equipment[itemData.id].quantity + 1, 
+                                                                _equipment[itemData.id].numEquipped);
+            OnInventoryChange?.Invoke(_equipment[itemData.id]);
         }
         else if(!equipment)
         {
-            _items.Add(itemData.itemID, new InventoryQuantity(itemData, 1, 0));
-            OnInventoryChange?.Invoke(_items[itemData.itemID]);
+            _items.Add(itemData.id, new InventoryQuantity(itemData, 1, 0));
+            OnInventoryChange?.Invoke(_items[itemData.id]);
         }
         else
         {
-            _equipment.Add(itemData.itemID, new InventoryQuantity(itemData, 1, 0));
-            OnInventoryChange?.Invoke(_equipment[itemData.itemID]);
+            _equipment.Add(itemData.id, new InventoryQuantity(itemData, 1, 0));
+            OnInventoryChange?.Invoke(_equipment[itemData.id]);
         }
     }
 
     public void RemoveItem(ItemData itemData, bool equipment = false)
     {
-        if(!equipment && _items.ContainsKey(itemData.itemID))
+        if(!equipment && _items.ContainsKey(itemData.id))
         {
-            InventoryQuantity quant = _items[itemData.itemID];
+            InventoryQuantity quant = _items[itemData.id];
             if(quant.quantity <= 1 && quant.numEquipped == 0)
             {
-                _items.Remove(itemData.itemID);
-                OnInventoryChange?.Invoke(_items[itemData.itemID]);
+                _items.Remove(itemData.id);
+                OnInventoryChange?.Invoke(_items[itemData.id]);
             }
             else
             {
-                _items[itemData.itemID] = new InventoryQuantity(itemData, quant.quantity - 1, quant.numEquipped);
+                _items[itemData.id] = new InventoryQuantity(itemData, quant.quantity - 1, quant.numEquipped);
             }
         }
-        else if(equipment && _equipment.ContainsKey(itemData.itemID))
+        else if(equipment && _equipment.ContainsKey(itemData.id))
         {
-            InventoryQuantity quant = _equipment[itemData.itemID];
+            InventoryQuantity quant = _equipment[itemData.id];
             if(quant.quantity <= 1 && quant.numEquipped == 0)
             {
-                _equipment.Remove(itemData.itemID);
+                _equipment.Remove(itemData.id);
                 OnInventoryChange?.Invoke(new InventoryQuantity(itemData, 0, 0));
             }
             else
             {
-                _equipment[itemData.itemID] = new InventoryQuantity(itemData, quant.quantity - 1, quant.numEquipped);
-                OnInventoryChange?.Invoke(_equipment[itemData.itemID]);
+                _equipment[itemData.id] = new InventoryQuantity(itemData, quant.quantity - 1, quant.numEquipped);
+                OnInventoryChange?.Invoke(_equipment[itemData.id]);
             }
         }
     }
 
     void MoveFromInventoryToEquip(EquipmentData equipmentData)
     {
-        if(_equipment.ContainsKey(equipmentData.itemID))
+        if(_equipment.ContainsKey(equipmentData.id))
         {
-            _equipment[equipmentData.itemID] = new InventoryQuantity(equipmentData, 
-                                                                    _equipment[equipmentData.itemID].quantity - 1, 
-                                                                    _equipment[equipmentData.itemID].numEquipped + 1);
-            OnInventoryChange?.Invoke(_equipment[equipmentData.itemID]);
+            _equipment[equipmentData.id] = new InventoryQuantity(equipmentData, 
+                                                                    _equipment[equipmentData.id].quantity - 1, 
+                                                                    _equipment[equipmentData.id].numEquipped + 1);
+            OnInventoryChange?.Invoke(_equipment[equipmentData.id]);
         }
     }
 
     void MoveFromEquipToInventory(EquipmentData equipmentData)
     {
-        if(_equipment.ContainsKey(equipmentData.itemID))
+        if(_equipment.ContainsKey(equipmentData.id))
         {
-            _equipment[equipmentData.itemID] = new InventoryQuantity(equipmentData, 
-                                                                    _equipment[equipmentData.itemID].quantity + 1, 
-                                                                    _equipment[equipmentData.itemID].numEquipped - 1);
-            OnInventoryChange?.Invoke(_equipment[equipmentData.itemID]);
+            _equipment[equipmentData.id] = new InventoryQuantity(equipmentData, 
+                                                                    _equipment[equipmentData.id].quantity + 1, 
+                                                                    _equipment[equipmentData.id].numEquipped - 1);
+            OnInventoryChange?.Invoke(_equipment[equipmentData.id]);
         }
+    }
+
+    public InventorySaveData GetSaveData()
+    {
+        InventorySaveData saveData = new InventorySaveData();
+
+        saveData.items = new InventoryQuantitySaveData[_items.Count];
+        int i = 0;
+        foreach(KeyValuePair<string, InventoryQuantity> invQuantity in _items)
+        {
+            saveData.items[i] = invQuantity.Value.GetSaveData();
+            i++;
+        }
+        
+        saveData.equipment = new InventoryQuantitySaveData[_equipment.Count];
+        i = 0;
+        foreach(KeyValuePair<string, InventoryQuantity> invQuantity in _equipment)
+        {
+            saveData.equipment[i] = invQuantity.Value.GetSaveData();
+            i++;
+        }
+
+        return saveData;
+    }
+
+    public bool LoadFromSaveData(InventorySaveData saveData)
+    {
+        _items.Clear();
+        foreach(InventoryQuantitySaveData itemQuantity in saveData.items)
+        {
+            ItemData itemData = SaveDataLoader.Instance.GetItemData(itemQuantity.itemID);
+            if(itemData != null)
+            {
+                _items.Add(itemData.id, new InventoryQuantity(itemData, itemQuantity.quantity, itemQuantity.numEquipped));
+            }
+        }
+
+        _equipment.Clear();
+        foreach(InventoryQuantitySaveData itemQuantity in saveData.equipment)
+        {
+            ItemData itemData = SaveDataLoader.Instance.GetItemData(itemQuantity.itemID);
+            if(itemData != null)
+            {
+                _equipment.Add(itemData.id, new InventoryQuantity(itemData, itemQuantity.quantity, itemQuantity.numEquipped));
+            }
+        }
+
+        return true;
     }
 }

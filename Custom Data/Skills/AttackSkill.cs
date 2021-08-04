@@ -13,7 +13,6 @@ public class AttackSkill : SkillData
         foreach(GridCell gridCell in targets)
         {
             ExecutePerTarget(unitData, gridCell);
-            executedOn.Add(unitData);
         }
         executedOn.Clear();
     }
@@ -23,6 +22,7 @@ public class AttackSkill : SkillData
         UnitData target = gridCell.occupiedBy;
         if(target != null && !executedOn.Contains(target))
         {
+            executedOn.Add(target);
             if(IsHit(GetHitChance(unitData, target, false)))
             {
                 int matches = BattleManager.Instance.GetRiverMatches(this.elements);

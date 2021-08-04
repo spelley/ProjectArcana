@@ -10,4 +10,14 @@ public struct InventoryQuantity
         this.quantity = quantity;
         this.numEquipped = numEquipped;
     }
+
+    public InventoryQuantitySaveData GetSaveData()
+    {
+        InventoryQuantitySaveData saveData = new InventoryQuantitySaveData();
+        saveData.itemID = itemData.id;
+        saveData.quantity = quantity;
+        saveData.numEquipped = numEquipped;
+
+        return saveData;
+    }
 }

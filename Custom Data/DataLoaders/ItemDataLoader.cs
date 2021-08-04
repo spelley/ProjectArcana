@@ -4,16 +4,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DataLoader<T, U> where T : UnityEngine.Object, ILoadable<U>, new() where U : ISaveData
+public class ItemDataLoader
 {
-    Dictionary<string, T> dataDictionary = new Dictionary<string, T>();
-    Dictionary<string, U> preloadDataDictionary = new Dictionary<string, U>();
+    Dictionary<string, ItemData> dataDictionary = new Dictionary<string, ItemData>();
+    Dictionary<string, ItemSaveData> preloadDataDictionary = new Dictionary<string, ItemSaveData>();
 
-    List<T> defaultData = new List<T>();
+    List<ItemData> defaultData = new List<ItemData>();
     string folderName;
     List<InstalledMod> installedMods = new List<InstalledMod>();
 
-    public DataLoader(List<T> defaultData, 
+    public ItemDataLoader(List<ItemData> defaultData, 
                       string folderName, 
                       List<InstalledMod> installedMods)
     {
@@ -22,10 +22,10 @@ public class DataLoader<T, U> where T : UnityEngine.Object, ILoadable<U>, new() 
         this.installedMods = installedMods;
     }
 
-    public void Preload(List<T> typePrefabs)
+    public void Preload(List<ItemData> typePrefabs)
     {
         // add the default data
-        foreach(T data in defaultData)
+        foreach(ItemData data in defaultData)
         {
             dataDictionary[data.id] = data;
             Debug.Log(data.id);
@@ -48,16 +48,26 @@ public class DataLoader<T, U> where T : UnityEngine.Object, ILoadable<U>, new() 
                         if(Path.GetExtension(filepath).ToLower() == ".json")
                         {
                             string json = File.ReadAllText(filepath);
-                            U saveData = JsonUtility.FromJson<U>(json);
+                            ItemSaveData saveData = JsonUtility.FromJson<ItemSaveData>(json);
+
+                            switch(saveData.loadType)
+                            {
+                                case "Equipment":
+                                    saveData = JsonUtility.FromJson<EquipmentSaveData>(json);
+                                break;
+                                case "Weapon":
+                                    saveData = JsonUtility.FromJson<WeaponSaveData>(json);
+                                break;
+                            }
 
                             // this is new custom data, make a new container for it
                             if(!dataDictionary.ContainsKey(key))
                             {
-                                foreach(T typePrefab in typePrefabs)
+                                foreach(ItemData typePrefab in typePrefabs)
                                 {
                                     if(typePrefab.loadType == saveData.LoadType)
                                     {
-                                        T data = UnityEngine.Object.Instantiate(typePrefab);
+                                        ItemData data = UnityEngine.Object.Instantiate(typePrefab);
                                         dataDictionary[saveData.ID] = data;
                                         Debug.Log("Custom element: "+key+" / "+data.loadType);
                                         break;
@@ -78,7 +88,7 @@ public class DataLoader<T, U> where T : UnityEngine.Object, ILoadable<U>, new() 
 
     public void Populate()
     {
-        foreach(KeyValuePair<string, U> saveDataPair in preloadDataDictionary)
+        foreach(KeyValuePair<string, ItemSaveData> saveDataPair in preloadDataDictionary)
         {
             if(dataDictionary.ContainsKey(saveDataPair.Key))
             {
@@ -87,7 +97,7 @@ public class DataLoader<T, U> where T : UnityEngine.Object, ILoadable<U>, new() 
         }
     }
 
-    public T GetData(string id)
+    public ItemData GetData(string id)
     {
         if(dataDictionary.ContainsKey(id))
         {

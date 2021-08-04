@@ -11,7 +11,7 @@ public class EquipmentData: ItemData
 
     [Header("Equipment Information")]
     [SerializeField]
-    EquipmentSlot _equipmentSlot;
+    protected EquipmentSlot _equipmentSlot;
     public EquipmentSlot equipmentSlot
     {
         get { return _equipmentSlot; }
@@ -19,7 +19,7 @@ public class EquipmentData: ItemData
     }
 
     [SerializeField]
-    List<StatBonus> _bonusStats = new List<StatBonus>();
+    protected List<StatBonus> _bonusStats = new List<StatBonus>();
     public List<StatBonus> bonusStats
     {
         get { return _bonusStats; }
@@ -27,7 +27,7 @@ public class EquipmentData: ItemData
     }
 
     [SerializeField]
-    List<StatusEffect> _equipStatusEffects = new List<StatusEffect>();
+    protected List<StatusEffect> _equipStatusEffects = new List<StatusEffect>();
     public List<StatusEffect> equipStatusEffects
     {
         get { return _equipStatusEffects; }
@@ -109,14 +109,14 @@ public class EquipmentData: ItemData
         UnbindEvents(unitData);
     }
 
-    public EquipmentSaveData GetEquipmentSaveData()
+    public override ItemSaveData GetSaveData()
     {
         EquipmentSaveData saveData = new EquipmentSaveData();
-        saveData.id = itemID.ToString();
+        saveData.id = id.ToString();
         saveData.loadType = loadType;
         saveData.name = itemName;
         saveData.description = description;
-        saveData.equipmentSlot = (int)equipmentSlot;
+        saveData.equipmentSlot = equipmentSlot.ToString();
         saveData.statBonuses = bonusStats;
 
         saveData.statusEffectIDs = new string[equipStatusEffects.Count];
@@ -128,5 +128,28 @@ public class EquipmentData: ItemData
         Debug.Log(JsonUtility.ToJson(saveData));
 
         return saveData;
+    }
+
+    public override bool LoadFromSaveData(ItemSaveData baseSaveData)
+    {
+        EquipmentSaveData saveData = (EquipmentSaveData) baseSaveData;
+        _id = saveData.id;
+        _loadType = saveData.loadType;
+        _description = saveData.description;
+        _itemName = saveData.name;
+        _equipmentSlot = (EquipmentSlot)System.Enum.Parse(typeof(EquipmentSlot), saveData.equipmentSlot);
+        _bonusStats = saveData.statBonuses;
+
+        _equipStatusEffects.Clear();
+        foreach(string statusEffectID in saveData.statusEffectIDs)
+        {
+            StatusEffect status = SaveDataLoader.Instance.GetStatusEffect(statusEffectID);
+            if(status != null)
+            {
+                equipStatusEffects.Add(status);
+            }
+        }
+
+        return true;
     }
 }

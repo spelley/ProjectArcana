@@ -624,7 +624,10 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable, ILoadable<Uni
         saveData.moved = moved;
         saveData.acted = acted;
         saveData.usedBonus = usedBonus;
-        saveData.spritePath = _sprite.name;
+
+        if(_sprite != null) {
+            saveData.spritePath = _sprite.name;
+        }
 
         saveData.learnedSkillIDs = new string[learnedSkills.Count];
         for(int i = 0; i < learnedSkills.Count; i++)
@@ -643,7 +646,10 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable, ILoadable<Uni
         saveData.statusEffectIDs = new string[statusEffects.Count];
         for(int i = 0; i < statusEffects.Count; i++)
         {
-            saveData.statusEffectIDs[i] = statusEffects[i].id;
+            if(statusEffects[i] != null)
+            {
+                saveData.statusEffectIDs[i] = statusEffects[i].id;
+            }
         }
         
         return saveData;

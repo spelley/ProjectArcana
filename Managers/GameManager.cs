@@ -160,10 +160,7 @@ public class GameManager : MonoBehaviour
     {
         if(Input.GetKeyDown(KeyCode.F5))
         {
-            activePlayer.arcana.GetSaveData();
-            curFormation.GetSaveData();
-            activePlayer.equipmentBlock.helmet.GetEquipmentSaveData();
-            activePlayer.activeJob.GetSaveData();
+            Debug.Log(activePlayer.equipmentBlock.helmet.GetSaveData());
         }
     }
 }

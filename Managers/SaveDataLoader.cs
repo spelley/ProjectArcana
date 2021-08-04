@@ -32,6 +32,7 @@ public class SaveDataLoader : MonoBehaviour
             DEFAULT_FORMATIONS_FOLDER = DEFAULT_DATA_FOLDER + "/Formations/";
             DEFAULT_ARCANA_FOLDER = DEFAULT_DATA_FOLDER + "/Arcana/";
             DEFAULT_DIVINATION_FOLDER = DEFAULT_DATA_FOLDER + "/Divinations/";
+            DEFAULT_ITEMS_FOLDER = DEFAULT_DATA_FOLDER + "/Items/";
             DEFAULT_UNITS_FOLDER = DEFAULT_DATA_FOLDER + "/Units/";
 
             MOD_FOLDER = Application.persistentDataPath + "/Mods/";
@@ -44,6 +45,7 @@ public class SaveDataLoader : MonoBehaviour
             folders.Add(DEFAULT_FORMATIONS_FOLDER);
             folders.Add(DEFAULT_ARCANA_FOLDER);
             folders.Add(DEFAULT_DIVINATION_FOLDER);
+            folders.Add(DEFAULT_ITEMS_FOLDER);
             folders.Add(DEFAULT_UNITS_FOLDER);
 
             DontDestroyOnLoad(this.gameObject);
@@ -66,6 +68,7 @@ public class SaveDataLoader : MonoBehaviour
     public string DEFAULT_ELEMENTS_FOLDER { get; private set; }
     public string DEFAULT_ARCANA_FOLDER { get; private set; }
     public string DEFAULT_DIVINATION_FOLDER { get; private set; }
+    public string DEFAULT_ITEMS_FOLDER { get; private set; }
     public string DEFAULT_UNITS_FOLDER { get; private set; }
     public string MOD_FOLDER { get; private set; }
 
@@ -80,6 +83,7 @@ public class SaveDataLoader : MonoBehaviour
     [SerializeField] List<ArcanaData> defaultArcana = new List<ArcanaData>();
     [SerializeField] List<DivinationData> defaultDivinations = new List<DivinationData>();
     [SerializeField] List<UnitData> defaultUnits = new List<UnitData>();
+    [SerializeField] List<ItemData> defaultItems = new List<ItemData>();
 
     [Header("Prefab Data")]
     [SerializeField] List<ElementData> elementPrefabs;
@@ -89,6 +93,7 @@ public class SaveDataLoader : MonoBehaviour
     [SerializeField] List<SkillData> skillPrefabs;
     [SerializeField] List<DivinationData> divinationPrefabs;
     [SerializeField] List<UnitData> unitPrefabs;
+    [SerializeField] List<ItemData> itemPrefabs;
 
     [Header("Static Data")]
     [SerializeField] List<SkillCalculation> skillCalculations = new List<SkillCalculation>();
@@ -109,6 +114,7 @@ public class SaveDataLoader : MonoBehaviour
     DataLoader<SkillData, SkillSaveData> skillDataLoader;
     DataLoader<DivinationData, DivinationSaveData> divinationDataLoader;
     DataLoader<UnitData, UnitSaveData> unitDataLoader;
+    ItemDataLoader itemDataLoader;
 
     void LoadInitialData()
     {
@@ -118,6 +124,7 @@ public class SaveDataLoader : MonoBehaviour
         jobDataLoader = new DataLoader<JobData, JobSaveData>(defaultJobs, "Classes", installedMods);
         skillDataLoader = new DataLoader<SkillData, SkillSaveData>(defaultSkills, "Skills", installedMods);
         divinationDataLoader = new DataLoader<DivinationData, DivinationSaveData>(defaultDivinations, "Divinations", installedMods);
+        itemDataLoader = new ItemDataLoader(defaultItems, "Items", installedMods);
         unitDataLoader = new DataLoader<UnitData, UnitSaveData>(defaultUnits, "Units", installedMods);
 
         elementDataLoader.Preload(elementPrefabs);
@@ -126,6 +133,7 @@ public class SaveDataLoader : MonoBehaviour
         jobDataLoader.Preload(jobPrefabs);
         skillDataLoader.Preload(skillPrefabs);
         divinationDataLoader.Preload(divinationPrefabs);
+        itemDataLoader.Preload(itemPrefabs);
         unitDataLoader.Preload(unitPrefabs);
 
         calculationDictionary.Clear();
@@ -164,6 +172,7 @@ public class SaveDataLoader : MonoBehaviour
         jobDataLoader.Populate();
         skillDataLoader.Populate();
         divinationDataLoader.Populate();
+        itemDataLoader.Populate();
         unitDataLoader.Populate();
     }
 
@@ -242,6 +251,11 @@ public class SaveDataLoader : MonoBehaviour
         return null;
     }
 
+    public ItemData GetItemData(string id)
+    {
+        return itemDataLoader.GetData(id);
+    }
+
     public void SaveDefaultData()
     {
         foreach(JobData defaultJob in defaultJobs)
@@ -285,6 +299,13 @@ public class SaveDataLoader : MonoBehaviour
             string json = JsonUtility.ToJson(saveData, true);
             File.WriteAllText(DEFAULT_DIVINATION_FOLDER + saveData.id + ".json", json);
 
+        }
+
+        foreach(ItemData defaultItem in defaultItems)
+        {
+            ItemSaveData saveData = defaultItem.GetSaveData();
+            string json = JsonUtility.ToJson(saveData, true);
+            File.WriteAllText(DEFAULT_ITEMS_FOLDER + saveData.id + ".json", json);
         }
 
         foreach(UnitData defaultUnit in defaultUnits)

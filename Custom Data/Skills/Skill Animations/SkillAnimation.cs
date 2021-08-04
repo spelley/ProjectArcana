@@ -68,10 +68,13 @@ public class SkillAnimation : MonoBehaviour
 
             if(hitSFX != null)
             {
-                Instantiate(hitSFX, gridCell.realWorldPosition, Quaternion.identity);
-                if(hitDelay > 0f)
+                if(!skillData.requireUnitTarget || (gridCell.occupiedBy && !skillData.executedOn.Contains(gridCell.occupiedBy)))
                 {
-                    yield return new WaitForSeconds(hitDelay);
+                    Instantiate(hitSFX, gridCell.realWorldPosition, Quaternion.identity);
+                    if(hitDelay > 0f)
+                    {
+                        yield return new WaitForSeconds(hitDelay);
+                    }
                 }
             }
             skillData.ExecutePerTarget(unitData, gridCell);

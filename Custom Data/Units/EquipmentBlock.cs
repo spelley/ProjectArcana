@@ -171,23 +171,23 @@ public class EquipmentBlock
         EquipmentBlockSaveData saveData = new EquipmentBlockSaveData();
         if(weapon != null)
         {
-            saveData.weaponID = weapon.itemID.ToString();
+            saveData.weaponID = weapon.id.ToString();
         }
         if(offhand != null)
         {
-            saveData.offhandID = offhand.itemID.ToString();
+            saveData.offhandID = offhand.id.ToString();
         }
         if(helmet != null)
         {
-            saveData.helmetID = helmet.itemID.ToString();
+            saveData.helmetID = helmet.id.ToString();
         }
         if(armor != null)
         {
-            saveData.armorID = armor.itemID.ToString();
+            saveData.armorID = armor.id.ToString();
         }
         if(accessory != null)
         {
-            saveData.accessoryID = accessory.itemID.ToString();
+            saveData.accessoryID = accessory.id.ToString();
         }
 
         return saveData;

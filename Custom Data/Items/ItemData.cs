@@ -3,19 +3,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class ItemData: ScriptableObject
+public class ItemData: ScriptableObject, ILoadable<ItemSaveData>
 {
-    [SerializeField]
-    [Header("Unique ID")]
-    int _itemID;
-    public int itemID { get { return _itemID; } }
+    [SerializeField] protected string _id;
+    public string id { get { return _id; } }
 
-    string _loadType = "Item";
+    protected string _loadType = "Item";
     public virtual string loadType { get { return _loadType; } }
 
     [Header("Basic Information")]
     [SerializeField]
-    string _itemName;
+    protected string _itemName;
     public string itemName
     {
         get
@@ -29,7 +27,7 @@ public abstract class ItemData: ScriptableObject
     }
 
     [SerializeField]
-    string _description;
+    protected string _description;
     public string description
     {
         get
@@ -40,5 +38,26 @@ public abstract class ItemData: ScriptableObject
         {
             _description = value;
         }
+    }
+
+    public virtual ItemSaveData GetSaveData()
+    {
+        ItemSaveData saveData = new ItemSaveData();
+        saveData.id = _id;
+        saveData.loadType = _loadType;
+        saveData.name = _itemName;
+        saveData.description = _description;
+
+        return saveData;
+    }
+
+    public virtual bool LoadFromSaveData(ItemSaveData saveData)
+    {
+        _id = saveData.id;
+        _loadType = saveData.loadType;
+        _description = saveData.description;
+        _itemName = saveData.name;
+
+        return true;
     }
 }

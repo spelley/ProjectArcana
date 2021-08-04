@@ -11,7 +11,7 @@ public class EquipmentInventoryUI : MonoBehaviour
     UnitData curUnit;
     EquipmentSlot curSlot;
 
-    Dictionary<int, InventoryItemUI> itemDictionary = new Dictionary<int, InventoryItemUI>();
+    Dictionary<string, InventoryItemUI> itemDictionary = new Dictionary<string, InventoryItemUI>();
 
     [SerializeField] GameObject inventoryList;
     [SerializeField] GameObject inventoryItemPrefab;
@@ -61,9 +61,9 @@ public class EquipmentInventoryUI : MonoBehaviour
 
     public void UpdateItem(InventoryQuantity inventoryQuantity)
     {
-        if(itemDictionary.ContainsKey(inventoryQuantity.itemData.itemID))
+        if(itemDictionary.ContainsKey(inventoryQuantity.itemData.id))
         {
-            itemDictionary[inventoryQuantity.itemData.itemID].SetInventoryItem(inventoryQuantity, curUnit, this);
+            itemDictionary[inventoryQuantity.itemData.id].SetInventoryItem(inventoryQuantity, curUnit, this);
         }
     }
 
@@ -74,14 +74,14 @@ public class EquipmentInventoryUI : MonoBehaviour
             GameObject itemGO = Instantiate(inventoryItemPrefab, inventoryList.transform);
             InventoryItemUI itemUI = itemGO.GetComponent<InventoryItemUI>();
             itemUI.SetInventoryItem(invItem, gameManager.activePlayer, this);
-            itemDictionary.Add(invItem.itemData.itemID, itemUI);
+            itemDictionary.Add(invItem.itemData.id, itemUI);
         }
     }
 
     public InventoryQuantity Equip(EquipmentData equipment)
     {
         curInventory.EquipFromInventory(equipment, curUnit, curSlot == EquipmentSlot.OFFHAND);
-        return curInventory.CheckItem(equipment.itemID, true);
+        return curInventory.CheckItem(equipment.id, true);
     }
 
     void ClearList()
