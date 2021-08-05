@@ -113,7 +113,15 @@ public class AIBrain : ScriptableObject
                     targetableAreasByCombatantSkill.Add(index, offsets[oIdx]);
                 }
                 // build up the array of skill scores
-                skillScoresByCombatantSkill[index] = skill.GetSkillScore(unitData, MapManager.Instance.GetCell(combatant.curPosition));
+                if(skill.skillEffect != null)
+                {
+                    skillScoresByCombatantSkill[index] = skill.skillEffect.GetSkillScore(skill, unitData, MapManager.Instance.GetCell(combatant.curPosition));
+                }
+                else
+                {
+                    skillScoresByCombatantSkill[index] = skill.GetSkillScore(unitData, MapManager.Instance.GetCell(combatant.curPosition));
+                }
+                
                 index++;
             }
         }

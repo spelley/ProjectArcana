@@ -333,6 +333,7 @@ public class BattleManager : MonoBehaviour
 
     public void SkillExecute()
     {
+        curSkill.executedOn.Clear();
         if(curSkill.executeAnimation != null)
         {
             GameObject skillAnimGO = Instantiate(curSkill.executeAnimation);
@@ -343,6 +344,7 @@ public class BattleManager : MonoBehaviour
             curSkill.Execute(curUnit, curTargets);
         }
         OnSkillExecute?.Invoke(curSkill, curUnit, curTargets);
+        curSkill.executedOn.Clear();
     }
 
     public void SkillClear()

@@ -3,9 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "Attack Effect", menuName = "Custom Data/Skill Effects/Attack Effect")]
-public class AttackEffect : SkillEffect
-{    
+[CreateAssetMenu(fileName = "Revive Effect", menuName = "Custom Data/Skill Effects/Revive Effect")]
+public class ReviveEffect : SkillEffect
+{
     public override void Execute(SkillData skill, UnitData unitData, List<GridCell> targets)
     {
         foreach(GridCell gridCell in targets)
@@ -19,11 +19,11 @@ public class AttackEffect : SkillEffect
         UnitData target = gridCell.occupiedBy;
         if(target != null)
         {
-            if(skill.IsHit(skill.GetHitChance(unitData, target, false)) && skill.IsValidTargetType(unitData, target))
+            if(skill.IsHit(skill.GetHitChance(unitData, target, unitData.faction == target.faction)) && target.hp == 0)
             {
                 int matches = BattleManager.Instance.GetRiverMatches(skill.elements);
-                int baseDamage = skill.skillCalculation.Calculate(skill, unitData, matches);
-                unitData.DealDamage(baseDamage, target, skill.elements);
+                int baseHeal = skill.skillCalculation.Calculate(skill, unitData, matches);
+                unitData.HealOther(baseHeal, target, skill.elements);
                 skill.HandlePush(unitData, target);
                 skill.executedOn.Add(unitData);
             }
@@ -37,13 +37,14 @@ public class AttackEffect : SkillEffect
     public override SkillPreview GetPreview(SkillData skill, UnitData unitData, GridCell targetCell)
     {
         UnitData target = targetCell.occupiedBy;
-        if(target != null)
+        if(target != null && target.hp == 0)
         {
             int matches = BattleManager.Instance.GetRiverMatches(skill.elements);
-            int baseDamage = skill.skillCalculation.Calculate(skill, unitData, matches);
-            int predictDamage = unitData.PredictDealDamage(baseDamage, target, skill.elements);
-            int toHit = skill.GetHitChance(unitData, target, false);
-            string output = predictDamage >= 0 ? predictDamage.ToString()+" Damage" : "+"+predictDamage.ToString()+"HP";
+            int baseHeal = skill.skillCalculation.Calculate(skill, unitData, matches);
+            int predictHeal = unitData.PredictHealOther(baseHeal, target, skill.elements);
+            int toHit = skill.GetHitChance(unitData, target, unitData.faction == target.faction);
+            string output = "Revive\n";
+            output = predictHeal >= 0 ? "+"+predictHeal.ToString()+"HP" : "-"+predictHeal.ToString()+"HP";
             
             if(skill.push != 0)
             {
@@ -67,20 +68,19 @@ public class AttackEffect : SkillEffect
 
     public override int GetSkillScore(SkillData skill, UnitData unitData, UnitData target)
     {
-        if(target != null && skill.IsValidTargetType(unitData, target))
+        if(target != null && skill.IsValidTargetType(unitData, target, false) && target.hp == 0)
         {
             int matches = BattleManager.Instance.GetRiverMatches(skill.elements);
-            int baseDamage = skill.skillCalculation.Calculate(skill, unitData, matches);
-            int predictDamage = unitData.PredictDealDamage(baseDamage, target, skill.elements);
+            int baseHeal = skill.skillCalculation.Calculate(skill, unitData, matches);
             int toHit = unitData.GetHitChance(skill.hitChance, target, skill.elements);
-
-            predictDamage = toHit == 0 ? 0 : Mathf.RoundToInt(predictDamage * (toHit / 100f));
-
-            if(predictDamage >= target.hp)
+            int predictHeal = unitData.PredictHealOther(baseHeal, target, skill.elements) * (target.faction == unitData.faction ? 1 : -1);
+            if(target.faction == unitData.faction)
             {
-                return predictDamage * 4;
+                predictHeal += 100;
             }
-            return predictDamage * (target.faction == unitData.faction ? -2 : 1);
+            predictHeal = toHit == 0 ? 0 : Mathf.RoundToInt(predictHeal * (toHit / 100f));
+
+            return predictHeal;
         }
         return 0;
     }

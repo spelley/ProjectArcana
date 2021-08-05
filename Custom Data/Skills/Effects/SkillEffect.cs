@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class SkillEffect : ScriptableObject
+public abstract class SkillEffect : ScriptableObject, IStaticData
 {
     [SerializeField] string _id;
     public string id { get { return _id; } }

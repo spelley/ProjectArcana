@@ -98,6 +98,8 @@ public class SaveDataLoader : MonoBehaviour
     [Header("Static Data")]
     [SerializeField] List<SkillCalculation> skillCalculations = new List<SkillCalculation>();
     Dictionary<string, SkillCalculation> calculationDictionary = new Dictionary<string, SkillCalculation>();
+    [SerializeField] List<SkillEffect> skillEffects = new List<SkillEffect>();
+    Dictionary<string, SkillEffect> skillEffectDictionary = new Dictionary<string, SkillEffect>();
     [SerializeField] List<GameObject> executeAnimations;
     Dictionary<string, GameObject> executeAnimationDictionary = new Dictionary<string, GameObject>();
     [SerializeField] List<StatusEffect> statusEffects;
@@ -140,6 +142,12 @@ public class SaveDataLoader : MonoBehaviour
         foreach(SkillCalculation skillCalculation in skillCalculations)
         {
             calculationDictionary.Add(skillCalculation.id, skillCalculation);
+        }
+
+        skillEffectDictionary.Clear();
+        foreach(SkillEffect skillEffect in skillEffects)
+        {
+            skillEffectDictionary.Add(skillEffect.id, skillEffect);
         }
 
         executeAnimationDictionary.Clear();
@@ -206,6 +214,15 @@ public class SaveDataLoader : MonoBehaviour
         if(calculationDictionary.ContainsKey(id))
         {
             return calculationDictionary[id];
+        }
+        return null;
+    }
+
+    public SkillEffect GetSkillEffect(string id)
+    {
+        if(skillEffectDictionary.ContainsKey(id))
+        {
+            return skillEffectDictionary[id];
         }
         return null;
     }
