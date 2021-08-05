@@ -17,7 +17,7 @@ public struct UnitJob
                 experience = 0;
                 level += 1;
                 unitData.GainedJobExperience(this, amount);
-                unitData.GainedJobLevel(this, amount);
+                unitData.GainedJobLevel(this, 1);
                 return true;
             }
             experience += amount;

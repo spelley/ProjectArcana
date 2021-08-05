@@ -6,11 +6,12 @@ using UnityEngine;
 using Unity.Jobs;
 using Unity.Collections;
 
+[CreateAssetMenu(fileName = "SkillData", menuName = "Custom Data/Skill Data", order = 0)]
 public class SkillData: ScriptableObject, IAssignableSkill, ILoadable<SkillSaveData>
 {
     [SerializeField] string _id;
     public string id { get { return _id; } }
-    string _loadType = "Default Skill";
+    string _loadType = "Skill";
     public virtual string loadType { get { return _loadType; } }
 
     [SerializeField] string _skillName;
@@ -37,6 +38,9 @@ public class SkillData: ScriptableObject, IAssignableSkill, ILoadable<SkillSaveD
             _description = value;
         }
     }
+
+    [SerializeField] SkillEffect _skillEffect;
+    public SkillEffect skillEffect { get { return _skillEffect; } }
 
     [Header("Resource Costs")]
     [SerializeField] ActionType _actionType;
@@ -393,9 +397,9 @@ public class SkillData: ScriptableObject, IAssignableSkill, ILoadable<SkillSaveD
         return 0;
     }
 
-    public bool IsValidTargetType(UnitData unitData, UnitData target)
+    public bool IsValidTargetType(UnitData unitData, UnitData target, bool cantBeIncapacitated = true)
     {
-        if(target.incapacitated)
+        if(cantBeIncapacitated && target.incapacitated)
         {
             return false;
         }
@@ -449,9 +453,21 @@ public class SkillData: ScriptableObject, IAssignableSkill, ILoadable<SkillSaveD
         return selfTargeting.Contains(targetType);
     }
 
-    public virtual void Execute(UnitData unitData, List<GridCell> targets) {}
+    public virtual void Execute(UnitData unitData, List<GridCell> targets)
+    {
+        if(skillEffect != null)
+        {
+            skillEffect.Execute(this, unitData, targets);
+        }
+    }
 
-    public virtual void ExecutePerTarget(UnitData unitData, GridCell gridCell) {}
+    public virtual void ExecutePerTarget(UnitData unitData, GridCell gridCell)
+    {
+        if(skillEffect != null)
+        {
+            skillEffect.ExecutePerTarget(this, unitData, gridCell);
+        }
+    }
 
     public virtual int GetSkillScore(UnitData unitData, GridCell gridCell)
     {
@@ -465,6 +481,10 @@ public class SkillData: ScriptableObject, IAssignableSkill, ILoadable<SkillSaveD
 
     public virtual SkillPreview GetPreview(UnitData unitData, GridCell target)
     {
+        if(skillEffect != null)
+        {
+            return skillEffect.GetPreview(this, unitData, target);
+        }
         return new SkillPreview("No Effect", 0);
     }
 
@@ -487,6 +507,10 @@ public class SkillData: ScriptableObject, IAssignableSkill, ILoadable<SkillSaveD
         saveData.description = _description;
         saveData.spCost = _spCost;
         saveData.actionType = _actionType.ToString();
+        if(_skillEffect != null)
+        {
+            saveData.skillEffectID = _skillEffect.id;
+        }
         saveData.hpCost = _hpCost;
         saveData.mpCost = _mpCost;
         
@@ -531,6 +555,19 @@ public class SkillData: ScriptableObject, IAssignableSkill, ILoadable<SkillSaveD
 
     public virtual bool LoadFromSaveData(SkillSaveData saveData)
     {
+        if(saveData.skillEffectID != "")
+        {
+            SkillEffect effect = SaveDataLoader.Instance.GetSkillEffect(saveData.skillEffectID);
+            if(effect != null)
+            {
+                _skillEffect = effect;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         _id = saveData.ID;
         _skillName = saveData.name;
         _description = saveData.description;

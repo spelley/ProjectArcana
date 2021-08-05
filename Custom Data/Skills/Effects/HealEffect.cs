@@ -19,12 +19,13 @@ public class HealEffect : SkillEffect
         UnitData target = gridCell.occupiedBy;
         if(target != null)
         {
-            if(skill.IsHit(skill.GetHitChance(unitData, target, unitData.faction == target.faction)))
+            if(skill.IsHit(skill.GetHitChance(unitData, target, unitData.faction == target.faction)) && skill.IsValidTargetType(unitData, target))
             {
                 int matches = BattleManager.Instance.GetRiverMatches(skill.elements);
                 int baseHeal = skill.skillCalculation.Calculate(skill, unitData, matches);
                 unitData.HealOther(baseHeal, target, skill.elements);
                 skill.HandlePush(unitData, target);
+                skill.executedOn.Add(unitData);
             }
             else
             {
@@ -66,13 +67,13 @@ public class HealEffect : SkillEffect
 
     public override int GetSkillScore(SkillData skill, UnitData unitData, UnitData target)
     {
-        if(target != null && skill.IsValidTargetType(unitData, target))
+        if(target != null && skill.IsValidTargetType(unitData, target) && !target.incapacitated)
         {
             int matches = BattleManager.Instance.GetRiverMatches(skill.elements);
             int baseHeal = skill.skillCalculation.Calculate(skill, unitData, matches);
             int toHit = unitData.GetHitChance(skill.hitChance, target, skill.elements);
             int predictHeal = unitData.PredictHealOther(baseHeal, target, skill.elements) * (target.faction == unitData.faction ? 1 : -1);
-            if(target.hp <= (target.maxHP * .7f))
+            if(target.faction == unitData.faction && target.hp <= (target.maxHP * .7f))
             {
                 predictHeal *= 2;
             }

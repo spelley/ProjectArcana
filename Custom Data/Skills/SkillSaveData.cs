@@ -10,6 +10,7 @@ public class SkillSaveData : ISaveData
     public string description;
     public int spCost;
     public string actionType;
+    public string skillEffectID;
     public int hpCost;
     public int mpCost;
     public string[] elementIDs;
