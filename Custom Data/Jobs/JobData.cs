@@ -85,6 +85,20 @@ public class JobData: ScriptableObject, ILoadable<JobSaveData>
         }
     }
 
+    [SerializeField]
+    List<JobPassive> _passives = new List<JobPassive>();
+    public List<JobPassive> passives
+    {
+        get
+        {
+            return _passives;
+        }
+        private set
+        {
+            _passives = value;
+        }
+    }
+
     [SerializeField] DivinationData _divinationSkill;
     public DivinationData divinationSkill {
         get { return _divinationSkill; }
@@ -192,6 +206,12 @@ public class JobData: ScriptableObject, ILoadable<JobSaveData>
             saveData.jobSkillIDs.Add(jobSkill.GetSaveData());
         }
 
+        saveData.jobPassiveIDs = new List<JobSkillSaveData>();
+        foreach(JobPassive jobPassive in passives)
+        {
+            saveData.jobPassiveIDs.Add(jobPassive.GetSaveData());
+        }
+
         saveData.jobRequirements = new List<UnitJobSaveData>();
         foreach(UnitJob unitJob in jobRequirements)
         {
@@ -219,6 +239,34 @@ public class JobData: ScriptableObject, ILoadable<JobSaveData>
         _baseMove = saveData.baseMove;
         _baseJump = saveData.baseJump;
         _baseEvasion = saveData.baseEvasion;
+
+        foreach(JobSkillSaveData jobSkillSaveData in saveData.jobSkillIDs)
+        {
+            SkillData skillData = SaveDataLoader.Instance.GetSkillData(jobSkillSaveData.skillID);
+            if(skillData != null)
+            {
+                JobSkill jobSkill = new JobSkill();
+                jobSkill.jobLocked = jobSkillSaveData.jobLocked;
+                jobSkill.learnLevel = jobSkillSaveData.learnLevel;
+                jobSkill.skill = skillData;
+
+                _skills.Add(jobSkill);
+            }
+        }
+
+        foreach(JobSkillSaveData jobSkillSaveData in saveData.jobPassiveIDs)
+        {
+            PassiveData skillData = SaveDataLoader.Instance.GetPassiveData(jobSkillSaveData.skillID);
+            if(skillData != null)
+            {
+                JobPassive jobPassive = new JobPassive();
+                jobPassive.jobLocked = jobSkillSaveData.jobLocked;
+                jobPassive.learnLevel = jobSkillSaveData.learnLevel;
+                jobPassive.skill = skillData;
+
+                _passives.Add(jobPassive);
+            }
+        }
 
         jobRequirements.Clear();
         foreach(UnitJobSaveData unitJobSaveData in saveData.jobRequirements)

@@ -6,6 +6,7 @@ using UnityEngine;
 using Unity.Jobs;
 using Unity.Collections;
 
+[Serializable]
 [CreateAssetMenu(fileName = "SkillData", menuName = "Custom Data/Skill Data", order = 0)]
 public class SkillData: ScriptableObject, IAssignableSkill, ILoadable<SkillSaveData>
 {

@@ -15,11 +15,11 @@ public class SkillListItemUI : MonoBehaviour
     GameObject skillMeta;
     [SerializeField]
     GameObject elementIconPrefab;
-    SkillData skill;
+    IAssignableSkill skill;
     UnitData curUnit;
-    Action<SkillData> selectCallback;
+    Action<IAssignableSkill> selectCallback;
 
-    public void SetData(SkillData skillData, UnitData unitData, Action<SkillData> callback, bool interactable = true)
+    public void SetData(IAssignableSkill skillData, UnitData unitData, Action<IAssignableSkill> callback, bool interactable = true)
     {
         skill = skillData;
         curUnit = unitData;
@@ -36,14 +36,17 @@ public class SkillListItemUI : MonoBehaviour
     {
         if(skill != null && curUnit != null)
         {
-            buttonText.text = GetCostString() + " / Action: " + skill.skillName;
+            buttonText.text = GetCostString() + " " + GetActionTypeText() + " " + skill.skillName;
             ClearMeta();
-            foreach(ElementData element in skill.elements)
+            if(skill is SkillData)
             {
-                GameObject mGO = Instantiate(elementIconPrefab, skillMeta.transform);
-                Image mGOImage = mGO.GetComponent<Image>();
-                mGOImage.sprite = element.icon;
-                mGOImage.color = element.color;
+                foreach(ElementData element in ((SkillData)skill).elements)
+                {
+                    GameObject mGO = Instantiate(elementIconPrefab, skillMeta.transform);
+                    Image mGOImage = mGO.GetComponent<Image>();
+                    mGOImage.sprite = element.icon;
+                    mGOImage.color = element.color;
+                }
             }
 
             skillButton.interactable = interactable;
@@ -56,19 +59,14 @@ public class SkillListItemUI : MonoBehaviour
         {
             return "[-]";
         }
-        if(skill.actionType == ActionType.MOVE)
-        {
-            return "[M]";
-        }
-        if(skill.actionType == ActionType.STANDARD)
+        if(skill is SkillData)
         {
             return "[S]";
         }
-        if(skill.actionType == ActionType.BONUS)
+        else
         {
-            return "[B]";
+            return "[P]";
         }
-        return "[F]";
     }
 
     string GetCostString()

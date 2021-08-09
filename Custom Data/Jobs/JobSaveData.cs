@@ -23,5 +23,6 @@ public class JobSaveData : ISaveData
     public int baseEvasion;
     public string divinationSkillID;
     public List<JobSkillSaveData> jobSkillIDs;
+    public List<JobSkillSaveData> jobPassiveIDs;
     public List<UnitJobSaveData> jobRequirements;
 }

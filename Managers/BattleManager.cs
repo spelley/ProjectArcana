@@ -556,6 +556,14 @@ public class BattleManager : MonoBehaviour
                 matches++;
             }
         }
+
+        if(curUnit != null)
+        {
+            ModInt modMatches = new ModInt(matches);
+            curUnit.GetUnitMatches(modMatches, elementsToMatch);
+            matches = modMatches.GetCalculated();
+        }
+
         return matches;
     }
 }

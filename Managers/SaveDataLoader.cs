@@ -108,6 +108,8 @@ public class SaveDataLoader : MonoBehaviour
     Dictionary<string, GameObject> unitModelDictionary = new Dictionary<string, GameObject>();
     [SerializeField] List<AIBrain> aiBrains;
     Dictionary<string, AIBrain> aiBrainDictionary = new Dictionary<string, AIBrain>();
+    [SerializeField] List<PassiveData> passives;
+    Dictionary<string, PassiveData> passiveDictionary = new Dictionary<string, PassiveData>();
 
     DataLoader<ElementData, ElementSaveData> elementDataLoader;
     DataLoader<FormationData, FormationSaveData> formationDataLoader;
@@ -174,6 +176,12 @@ public class SaveDataLoader : MonoBehaviour
             aiBrainDictionary.Add(aiBrain.id, aiBrain);
         }
 
+        passiveDictionary.Clear();
+        foreach(PassiveData passive in passives)
+        {
+            passiveDictionary.Add(passive.id, passive);
+        }
+
         elementDataLoader.Populate();
         arcanaDataLoader.Populate();
         formationDataLoader.Populate();
@@ -230,6 +238,15 @@ public class SaveDataLoader : MonoBehaviour
     public SkillData GetSkillData(string id)
     {
         return skillDataLoader.GetData(id);
+    }
+
+    public PassiveData GetPassiveData(string id)
+    {
+        if(passiveDictionary.ContainsKey(id))
+        {
+            return passiveDictionary[id];
+        }
+        return null;
     }
 
     public GameObject GetUnitModel(string id)

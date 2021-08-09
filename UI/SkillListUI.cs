@@ -7,6 +7,7 @@ public class SkillListUI : MonoBehaviour
 {
     UnitData curUnit;
     List<SkillData> jobSkills = new List<SkillData>();
+    List<PassiveData> jobPassives = new List<PassiveData>();
     [SerializeField] GameObject skillListItemPrefab;
     [SerializeField] GameObject learnedSkillListItemHolder;
     [SerializeField] GameObject assignedSkillListItemHolder;
@@ -17,6 +18,7 @@ public class SkillListUI : MonoBehaviour
     {
         curUnit = unitData;
         jobSkills = curUnit.GetJobSkills();
+        jobPassives = curUnit.GetJobPassives();
         UpdateUI();
         PopulateJobSkillList();
     }
@@ -33,15 +35,27 @@ public class SkillListUI : MonoBehaviour
     void PopulateLearnedList()
     {
         ClearLearnedList();
-        List<SkillData> skillItems = curUnit.GetLearnedSkills();
-        List<SkillData> assignedSkills = curUnit.GetAssignedSkills();
-        foreach(SkillData skillData in skillItems)
+
+        List<IAssignableSkill> learned = curUnit.GetAllLearnedSkills();
+        List<IAssignableSkill> assigned = curUnit.GetAllAssignedSkills();
+
+        foreach(IAssignableSkill skillData in learned)
         {
             GameObject siGO = Instantiate(skillListItemPrefab, learnedSkillListItemHolder.transform);
             SkillListItemUI skillListItemUI = siGO.GetComponent<SkillListItemUI>();
             bool canAssign = (skillData.spCost <= (curUnit.stats.maxSP - curUnit.stats.sp)) 
-                                && !assignedSkills.Contains(skillData) 
-                                && !jobSkills.Contains(skillData);
+                                && !assigned.Contains(skillData);
+            if(canAssign)
+            {
+                if(skillData is SkillData && jobSkills.Contains((SkillData)skillData))
+                {
+                    canAssign = false;
+                }
+                else if(skillData is PassiveData && jobPassives.Contains((PassiveData)skillData))
+                {
+                    canAssign = false;
+                }
+            }
             skillListItemUI.SetData(skillData, curUnit, AssignSkill, canAssign);
         }
 
@@ -51,8 +65,8 @@ public class SkillListUI : MonoBehaviour
     void PopulateAssignedList()
     {
         ClearAssignedList();
-        List<SkillData> skillItems = curUnit.GetAssignedSkills();
-        foreach(SkillData skillData in skillItems)
+        List<IAssignableSkill> assigned = curUnit.GetAllAssignedSkills();
+        foreach(IAssignableSkill skillData in assigned)
         {
             GameObject siGO = Instantiate(skillListItemPrefab, assignedSkillListItemHolder.transform);
             SkillListItemUI skillListItemUI = siGO.GetComponent<SkillListItemUI>();
@@ -63,6 +77,13 @@ public class SkillListUI : MonoBehaviour
     void PopulateJobSkillList()
     {
         ClearJobSkillList();
+
+        foreach(PassiveData passiveData in jobPassives)
+        {
+            GameObject siGO = Instantiate(skillListItemPrefab, jobSkillListItemHolder.transform);
+            SkillListItemUI skillListItemUI = siGO.GetComponent<SkillListItemUI>();
+            skillListItemUI.SetData(passiveData, curUnit, null, false);
+        }
         
         foreach(SkillData skillData in jobSkills)
         {
@@ -72,7 +93,7 @@ public class SkillListUI : MonoBehaviour
         }
     }
 
-    public void AssignSkill(SkillData skillData)
+    public void AssignSkill(IAssignableSkill skillData)
     {
         if(curUnit.AssignSkill(skillData))
         {
@@ -80,7 +101,7 @@ public class SkillListUI : MonoBehaviour
         }
     }
 
-    public void UnassignSkill(SkillData skillData)
+    public void UnassignSkill(IAssignableSkill skillData)
     {
         curUnit.UnassignSkill(skillData);
         UpdateUI();

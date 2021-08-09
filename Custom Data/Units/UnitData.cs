@@ -152,6 +152,8 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable, ILoadable<Uni
     }
     [SerializeField] List<SkillData> learnedSkills = new List<SkillData>();
     [SerializeField] List<SkillData> assignedSkills = new List<SkillData>();
+    [SerializeField] List<PassiveData> learnedPassives = new List<PassiveData>();
+    [SerializeField] List<PassiveData> assignedPassives = new List<PassiveData>();
     public Vector3Int curPosition { get; set; }
     public List<StatusEffect> statusEffects = new List<StatusEffect>();
 
@@ -187,6 +189,8 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable, ILoadable<Uni
     public event Action<int> OnUnitLevel;
     public event Action<UnitJob, int> OnUnitJobExperience;
     public event Action<UnitJob, int> OnUnitJobLevel;
+
+    public event Action<ModInt, UnitData, List<ElementData>> OnUnitMatches;
 
     public void GainedExperience(int amount)
     {
@@ -226,6 +230,23 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable, ILoadable<Uni
         // Re-apply equipment
         equipmentBlock.Load(this);
         activeJob.Load(this);
+
+        // Re-apply passives
+        foreach(PassiveData passive in assignedPassives)
+        {
+            passive.Assign(this);
+        }
+
+        // Re-apply passives from jobs
+        List<PassiveData> jobPassives = GetJobPassives();
+        foreach(PassiveData passive in jobPassives)
+        {
+            if(!assignedPassives.Contains(passive))
+            {
+                passive.Assign(this);
+            }
+        }
+
         loaded = true;
     }
 
@@ -498,6 +519,28 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable, ILoadable<Uni
         return availableSkills;
     }
 
+    public List<PassiveData> GetJobPassives()
+    {
+        List<PassiveData> availableSkills = new List<PassiveData>();
+
+        if(activeJob != null)
+        {
+            UnitJob activeUnitJob = GetUnitJob(activeJob);
+            if(activeUnitJob.jobData != null)
+            {
+                foreach(JobPassive jobSkill in activeUnitJob.jobData.passives)
+                {
+                    if(jobSkill.learnLevel <= activeUnitJob.level && !availableSkills.Contains(jobSkill.skill))
+                    {
+                        availableSkills.Add(jobSkill.skill);
+                    }
+                }
+            }
+        }
+
+        return availableSkills;
+    }
+
     public List<SkillData> GetAvailableSkills(bool filterByUsable = false)
     {
         List<SkillData> availableSkills = new List<SkillData>();
@@ -561,6 +604,36 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable, ILoadable<Uni
         return availableSkills;
     }
 
+    public List<IAssignableSkill> GetAllLearnedSkills()
+    {
+        List<IAssignableSkill> learned = new List<IAssignableSkill>();
+        foreach(SkillData skill in learnedSkills)
+        {
+            learned.Add(skill);
+        }
+        foreach(PassiveData passive in learnedPassives)
+        {
+            learned.Add(passive);
+        }
+
+        return learned;
+    }
+
+    public List<IAssignableSkill> GetAllAssignedSkills()
+    {
+        List<IAssignableSkill> assigned = new List<IAssignableSkill>();
+        foreach(SkillData skill in assignedSkills)
+        {
+            assigned.Add(skill);
+        }
+        foreach(PassiveData passive in assignedPassives)
+        {
+            assigned.Add(passive);
+        }
+
+        return assigned;
+    }
+
     public List<SkillData> GetLearnedSkills()
     {
         return learnedSkills;
@@ -576,25 +649,59 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable, ILoadable<Uni
         learnedSkills.Add(skillData);
     }
 
-    public bool AssignSkill(SkillData skillData)
+    public bool AssignSkill(IAssignableSkill skillData)
     {
         if((stats.maxSP - stats.sp) >= skillData.spCost)
         {
             stats.sp += skillData.spCost;
-            assignedSkills.Add(skillData);
+            if(skillData is SkillData)
+            {
+                assignedSkills.Add((SkillData)skillData);
+            }
+            else
+            {
+                assignedPassives.Add((PassiveData)skillData);
+                ((PassiveData)skillData).Assign(this);
+            }
             return true;
         }
 
         return false;
     }
 
-    public void UnassignSkill(SkillData skillData)
+    public void UnassignSkill(IAssignableSkill skill)
     {
-        if(assignedSkills.Contains(skillData))
+        if(skill == null)
         {
-            assignedSkills.Remove(skillData);
-            stats.sp -= skillData.spCost;
+            return;
         }
+
+        if(skill is SkillData && assignedSkills.Contains((SkillData)skill))
+        {
+            assignedSkills.Remove((SkillData)skill);
+            stats.sp -= skill.spCost;
+        }
+        else if(skill is PassiveData && assignedPassives.Contains((PassiveData)skill))
+        {
+            ((PassiveData)skill).Unassign(this);
+            assignedPassives.Remove((PassiveData)skill);
+            stats.sp -= skill.spCost;
+        }
+    }
+
+    public void LearnPassive(PassiveData passiveData)
+    {
+        learnedPassives.Add(passiveData);
+    }
+
+    public List<PassiveData> GetAssignedPassives()
+    {
+        return assignedPassives;
+    }
+
+    public void GetUnitMatches(ModInt modMatches, List<ElementData> elementsToMatch)
+    {
+        OnUnitMatches?.Invoke(modMatches, this, elementsToMatch);
     }
 
     public UnitSaveData GetSaveData()
