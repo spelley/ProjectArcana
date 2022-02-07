@@ -1,0 +1,152 @@
+"filename", "language", "C#", "comment", "blank", "total"
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Camera/CameraController.cs", "C#", 129, 2, 21, 152
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Camera/CameraFacingBillboard.cs", "C#", 37, 5, 5, 47
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Camera/CameraFollow.cs", "C#", 16, 3, 4, 23
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Arcana/ArcanaData.cs", "C#", 55, 0, 8, 63
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Arcana/ArcanaSaveData.cs", "C#", 12, 0, 0, 12
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/DataLoaders/DataLoader.cs", "C#", 128, 5, 13, 146
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/DataLoaders/ILoadable.cs", "C#", 7, 0, 0, 7
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/DataLoaders/ISaveData.cs", "C#", 5, 0, 0, 5
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/DataLoaders/IStaticData.cs", "C#", 4, 0, 0, 4
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/DataLoaders/ItemDataLoader.cs", "C#", 146, 9, 14, 169
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/DataLoaders/SkillDataLoader.cs", "C#", 65, 18, 8, 91
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/DataLoaders/StaticDataLoader.cs", "C#", 30, 0, 5, 35
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Divinations/DivinationAnimation.cs", "C#", 65, 0, 12, 77
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Divinations/DivinationData.cs", "C#", 147, 0, 22, 169
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Divinations/DivinationSaveData.cs", "C#", 22, 0, 1, 23
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Divinations/FlowRiverDivination.cs", "C#", 33, 0, 8, 41
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Divinations/RandomizeRiverDivination.cs", "C#", 26, 0, 7, 33
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Elements/ElementData.cs", "C#", 140, 0, 18, 158
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Elements/ElementSaveData.cs", "C#", 15, 0, 1, 16
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Encounter Conditions/AllEnemiesDefeatedCondition.cs", "C#", 18, 0, 2, 20
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Encounter Conditions/AlliesDefeatedCondition.cs", "C#", 18, 0, 2, 20
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Encounter Conditions/DefeatLeadersCondition.cs", "C#", 18, 0, 1, 19
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Encounter Conditions/EncounterCondition.cs", "C#", 33, 0, 4, 37
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Formations/FormationData.cs", "C#", 89, 0, 8, 97
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Formations/FormationSaveData.cs", "C#", 13, 0, 1, 14
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Items/EquipmentData.cs", "C#", 134, 0, 21, 155
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Items/EquipmentSaveData.cs", "C#", 10, 0, 1, 11
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Items/ItemData.cs", "C#", 55, 0, 8, 63
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Items/ItemSaveData.cs", "C#", 9, 0, 0, 9
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Items/StatBonus.cs", "C#", 12, 0, 2, 14
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Items/WeaponData.cs", "C#", 87, 0, 14, 101
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Items/WeaponSaveData.cs", "C#", 11, 0, 1, 12
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Jobs/JobData.cs", "C#", 260, 1, 30, 291
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Jobs/JobPassive.cs", "C#", 16, 0, 3, 19
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Jobs/JobSaveData.cs", "C#", 27, 0, 1, 28
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Jobs/JobSkill.cs", "C#", 16, 0, 3, 19
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Jobs/JobSkillSaveData.cs", "C#", 8, 0, 1, 9
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Maps/MapData.cs", "C#", 16, 0, 5, 21
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Skills/BasicAttackCalculation.cs", "C#", 18, 0, 3, 21
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Skills/Effects/AttackEffect.cs", "C#", 77, 0, 10, 87
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Skills/Effects/HealEffect.cs", "C#", 77, 0, 9, 86
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Skills/Effects/ReviveEffect.cs", "C#", 78, 0, 9, 87
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Skills/Effects/SkillEffect.cs", "C#", 14, 0, 1, 15
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Skills/IAssignableSkill.cs", "C#", 6, 0, 0, 6
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Skills/Passives/ImprovedRiverPassive.cs", "C#", 25, 0, 4, 29
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Skills/Passives/PassiveData.cs", "C#", 17, 0, 6, 23
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Skills/Skill Animations/SkillAnimation.cs", "C#", 93, 0, 16, 109
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Skills/SkillBase.cs", "C#", 0, 0, 1, 1
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Skills/SkillCalculation.cs", "C#", 55, 0, 6, 61
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Skills/SkillData.cs", "C#", 566, 0, 58, 624
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Skills/SkillOffsets.cs", "C#", 74, 1, 2, 77
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Skills/SkillPreview.cs", "C#", 10, 0, 1, 11
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Skills/SkillSaveData.cs", "C#", 37, 0, 1, 38
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Skills/SkillStruct.cs", "C#", 29, 0, 1, 30
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Skills/SkillTargetShape.cs", "C#", 161, 1, 4, 166
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Skills/StaticValueCalculation.cs", "C#", 12, 0, 1, 13
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Skills/TargetSelections.cs", "C#", 17, 0, 2, 19
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Status Effects/HasteStatus.cs", "C#", 31, 0, 7, 38
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Status Effects/SleepStatus.cs", "C#", 74, 2, 10, 86
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Status Effects/SleepStatusSaveData.cs", "C#", 7, 0, 1, 8
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Status Effects/SlowStatus.cs", "C#", 30, 0, 6, 36
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Status Effects/StatusEffect.cs", "C#", 12, 0, 3, 15
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Status Effects/StatusEffectInstances.cs", "C#", 29, 0, 4, 33
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Status Effects/StatusEffectSaveData.cs", "C#", 10, 0, 1, 11
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Units/AIBrain.cs", "C#", 186, 12, 24, 222
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Units/AIInstruction.cs", "C#", 12, 0, 1, 13
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Units/AIJob.cs", "C#", 216, 14, 15, 245
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Units/EquipmentBlock.cs", "C#", 191, 0, 10, 201
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Units/EquipmentBlockSaveData.cs", "C#", 10, 0, 1, 11
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Units/IDamageable.cs", "C#", 27, 4, 5, 36
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Units/ITurnTaker.cs", "C#", 18, 0, 5, 23
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Units/SkillScore.cs", "C#", 19, 0, 2, 21
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Units/StatBlock.cs", "C#", 258, 0, 15, 273
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Units/StatBlockSaveData.cs", "C#", 20, 0, 1, 21
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Units/UnitData.cs", "C#", 711, 4, 116, 831
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Units/UnitJob.cs", "C#", 41, 0, 6, 47
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Units/UnitJobSaveData.cs", "C#", 8, 0, 1, 9
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Units/UnitModel.cs", "C#", 8, 0, 1, 9
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Custom Data/Units/UnitSaveData.cs", "C#", 28, 0, 1, 29
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Editor/MapBuilderEditor.cs", "C#", 26, 0, 4, 30
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Editor/SaveDataLoaderEditor.cs", "C#", 22, 0, 4, 26
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Enums/ActionType.cs", "C#", 7, 0, 0, 7
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Enums/ArmorType.cs", "C#", 6, 0, 0, 6
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Enums/BattleAnimation.cs", "C#", 11, 0, 1, 12
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Enums/EquipmentSlot.cs", "C#", 8, 0, 0, 8
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Enums/Faction.cs", "C#", 5, 0, 0, 5
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Enums/MatchType.cs", "C#", 12, 0, 2, 14
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Enums/RangeType.cs", "C#", 9, 0, 2, 11
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Enums/RiverSelectType.cs", "C#", 6, 0, 0, 6
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Enums/Stat.cs", "C#", 22, 0, 1, 23
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Enums/TargetShape.cs", "C#", 10, 0, 1, 11
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Enums/TargetType.cs", "C#", 12, 0, 2, 14
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Enums/TileType.cs", "C#", 8, 0, 0, 8
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Enums/WeaponType.cs", "C#", 14, 0, 0, 14
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Managers/BattleManager.cs", "C#", 495, 15, 60, 570
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Managers/CellStruct.cs", "C#", 11, 0, 2, 13
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Managers/GameManager.cs", "C#", 173, 4, 28, 205
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Managers/GameSaveData.cs", "C#", 10, 0, 1, 11
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Managers/GridCell.cs", "C#", 48, 1, 6, 55
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Managers/GridPositioner.cs", "C#", 19, 0, 5, 24
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Managers/InstalledMod.cs", "C#", 12, 0, 2, 14
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Managers/Inventory.cs", "C#", 211, 0, 26, 237
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Managers/InventoryQuantity.cs", "C#", 22, 0, 4, 26
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Managers/InventoryQuantitySaveData.cs", "C#", 8, 0, 1, 9
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Managers/InventorySaveData.cs", "C#", 7, 0, 1, 8
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Managers/MapBuilder.cs", "C#", 329, 20, 51, 400
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Managers/MapManager.cs", "C#", 839, 23, 127, 989
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Managers/MenuManager.cs", "C#", 161, 0, 16, 177
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Managers/RiverCard.cs", "C#", 14, 0, 2, 16
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Managers/SaveDataLoader.cs", "C#", 327, 0, 47, 374
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Managers/TurnManager.cs", "C#", 144, 3, 17, 164
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Misc/AnimationExecuteSkill.cs", "C#", 20, 0, 3, 23
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Misc/Arcana.cs", "C#", 37, 0, 6, 43
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Misc/EncounterBox.cs", "C#", 55, 0, 7, 62
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Misc/EncounterTrigger.cs", "C#", 54, 0, 5, 59
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Misc/LevelManager.cs", "C#", 16, 1, 3, 20
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Misc/ModBool.cs", "C#", 15, 0, 4, 19
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Misc/ModFloat.cs", "C#", 24, 0, 4, 28
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Misc/ModInt.cs", "C#", 24, 0, 4, 28
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Misc/SimpleVector3.cs", "C#", 14, 0, 2, 16
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Misc/SimpleVector3Int.cs", "C#", 14, 0, 2, 16
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Misc/ToggleObstacle.cs", "C#", 24, 0, 4, 28
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Movement/CharacterMotor.cs", "C#", 125, 14, 27, 166
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Movement/CharacterUI.cs", "C#", 137, 1, 21, 159
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Movement/PopUp.cs", "C#", 15, 0, 2, 17
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/Movement/TacticsMotor.cs", "C#", 300, 5, 49, 354
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/UI/BattleUI.cs", "C#", 46, 1, 10, 57
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/UI/CellUI.cs", "C#", 93, 0, 11, 104
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/UI/CurrentJobUI.cs", "C#", 43, 0, 5, 48
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/UI/EquipmentInventoryUI.cs", "C#", 80, 0, 14, 94
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/UI/EquipmentItemUI.cs", "C#", 63, 0, 7, 70
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/UI/InventoryItemUI.cs", "C#", 45, 0, 7, 52
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/UI/InventoryTabUI.cs", "C#", 19, 0, 3, 22
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/UI/JobListItemUI.cs", "C#", 35, 0, 5, 40
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/UI/JobListUI.cs", "C#", 43, 0, 10, 53
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/UI/MenuTabsUI.cs", "C#", 53, 0, 6, 59
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/UI/PredictedTurnsUI.cs", "C#", 74, 1, 14, 89
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/UI/ProfileUI.cs", "C#", 54, 0, 8, 62
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/UI/ResourceBarUI.cs", "C#", 25, 0, 4, 29
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/UI/RiverCardUI.cs", "C#", 107, 0, 15, 122
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/UI/RiverUI.cs", "C#", 137, 2, 19, 158
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/UI/SkillList.cs", "C#", 35, 0, 6, 41
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/UI/SkillListItem.cs", "C#", 112, 0, 13, 125
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/UI/SkillListItemUI.cs", "C#", 75, 0, 9, 84
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/UI/SkillListUI.cs", "C#", 113, 0, 18, 131
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/UI/Tile.cs", "C#", 121, 1, 17, 139
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/UI/TurnControllerUI.cs", "C#", 35, 1, 6, 42
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/UI/UILoader.cs", "C#", 21, 0, 3, 24
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/UI/UnitBattleUI.cs", "C#", 311, 2, 34, 347
+"/Users/shawn.pelley/Projects/Unity/Project Arcana URP/Assets/Scripts/UI/WeaponViewUI.cs", "C#", 67, 0, 14, 81
+"Total", "-", 10933, 176, 1440, 12549

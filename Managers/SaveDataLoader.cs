@@ -4,7 +4,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
+#if UNITY_EDITOR
+[ExecuteInEditMode]
+#endif
 public class SaveDataLoader : MonoBehaviour
 {
     static SaveDataLoader _instance;
@@ -48,7 +54,10 @@ public class SaveDataLoader : MonoBehaviour
             folders.Add(DEFAULT_ITEMS_FOLDER);
             folders.Add(DEFAULT_UNITS_FOLDER);
 
-            DontDestroyOnLoad(this.gameObject);
+            if(Application.isPlaying)
+            {
+                DontDestroyOnLoad(this.gameObject);
+            }
 
             foreach(string folder in folders)
             {
@@ -351,11 +360,15 @@ public class SaveDataLoader : MonoBehaviour
         }
     }
 
-    void Update()
+    public void LoadDefaultData()
     {
-        if(Input.GetKeyDown(KeyCode.Z))
-        {
-            SaveDefaultData();
-        }
+        elementDataLoader.LoadFromDefaultData(elementPrefabs);
+        arcanaDataLoader.LoadFromDefaultData(arcanaPrefabs);
+        formationDataLoader.LoadFromDefaultData(formationPrefabs);
+        jobDataLoader.LoadFromDefaultData(jobPrefabs);
+        skillDataLoader.LoadFromDefaultData(skillPrefabs);
+        divinationDataLoader.LoadFromDefaultData(divinationPrefabs);
+        itemDataLoader.LoadFromDefaultData(itemPrefabs);
+        unitDataLoader.LoadFromDefaultData(unitPrefabs);
     }
 }

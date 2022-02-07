@@ -97,6 +97,66 @@ public class ItemDataLoader
         }
     }
 
+    public void LoadFromDefaultData(List<ItemData> typePrefabs)
+    {
+        string defaultFolder = SaveDataLoader.Instance.DEFAULT_DATA_FOLDER + folderName + "/";
+        if(Directory.Exists(defaultFolder))
+        {
+            string[] files = Directory.GetFiles(defaultFolder);
+            foreach(string filepath in files)
+            {
+                string key = Path.GetFileNameWithoutExtension(filepath);
+                // by having the installed mods be in priority order
+                // the first one to assign custom data to a skill takes priority
+                // so we never have to add more to it
+                if(!preloadDataDictionary.ContainsKey(key))
+                {
+                    if(Path.GetExtension(filepath).ToLower() == ".json")
+                    {
+                        string json = File.ReadAllText(filepath);
+                        ItemSaveData saveData = JsonUtility.FromJson<ItemSaveData>(json);
+
+                        switch(saveData.loadType)
+                        {
+                            case "Equipment":
+                                saveData = JsonUtility.FromJson<EquipmentSaveData>(json);
+                            break;
+                            case "Weapon":
+                                saveData = JsonUtility.FromJson<WeaponSaveData>(json);
+                            break;
+                        }
+
+                        // this is new custom data, make a new container for it
+                        if(dataDictionary.ContainsKey(key))
+                        {
+                            foreach(ItemData typePrefab in typePrefabs)
+                            {
+                                if(typePrefab.loadType == saveData.LoadType)
+                                {
+                                    ItemData data = UnityEngine.Object.Instantiate(typePrefab);
+                                    dataDictionary[saveData.ID] = data;
+                                    Debug.Log("Default element: "+key+" / "+data.loadType);
+                                    break;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Debug.Log("Default overwritten element: "+key);
+                        }
+                        preloadDataDictionary[saveData.ID] = saveData;
+                    }
+                }
+            }
+        }
+        else
+        {
+            Debug.Log(defaultFolder);
+        }
+
+        Populate();
+    }
+
     public ItemData GetData(string id)
     {
         if(dataDictionary.ContainsKey(id))

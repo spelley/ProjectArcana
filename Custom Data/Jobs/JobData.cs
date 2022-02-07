@@ -240,6 +240,7 @@ public class JobData: ScriptableObject, ILoadable<JobSaveData>
         _baseJump = saveData.baseJump;
         _baseEvasion = saveData.baseEvasion;
 
+        _skills.Clear();
         foreach(JobSkillSaveData jobSkillSaveData in saveData.jobSkillIDs)
         {
             SkillData skillData = SaveDataLoader.Instance.GetSkillData(jobSkillSaveData.skillID);
@@ -254,6 +255,7 @@ public class JobData: ScriptableObject, ILoadable<JobSaveData>
             }
         }
 
+        _passives.Clear();
         foreach(JobSkillSaveData jobSkillSaveData in saveData.jobPassiveIDs)
         {
             PassiveData skillData = SaveDataLoader.Instance.GetPassiveData(jobSkillSaveData.skillID);

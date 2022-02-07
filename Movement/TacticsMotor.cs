@@ -282,12 +282,16 @@ public class TacticsMotor : MonoBehaviour
 
     public void SnapToGrid()
     {
-        GridCell closestCell = mapManager.GetClosestGridCell(this.transform.position);
+        GridCell closestCell = mapManager.GetClosestUnoccupiedGridCell(this.transform.position, characterMotor.unitData);
+        Debug.Log(closestCell.position);
         if(closestCell != null)
         {
             this.transform.position = closestCell.realWorldPosition;
             curCell = closestCell;
             mapManager.UpdateUnitPosition(curCell.position, characterMotor.unitData);
+        }
+        else {
+            Debug.Log("uh oh");
         }
     }
 

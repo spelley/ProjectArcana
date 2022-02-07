@@ -87,6 +87,53 @@ public class DataLoader<T, U> where T : UnityEngine.Object, ILoadable<U>, new() 
         }
     }
 
+    public void LoadFromDefaultData(List<T> typePrefabs)
+    {
+        string defaultFolder = SaveDataLoader.Instance.DEFAULT_DATA_FOLDER + folderName + "/";
+
+        if(Directory.Exists(defaultFolder))
+        {
+            string[] files = Directory.GetFiles(defaultFolder);
+            foreach(string filepath in files)
+            {
+                string key = Path.GetFileNameWithoutExtension(filepath);
+                if(!preloadDataDictionary.ContainsKey(key))
+                {
+                    if(Path.GetExtension(filepath).ToLower() == ".json")
+                    {
+                        string json = File.ReadAllText(filepath);
+                        U saveData = JsonUtility.FromJson<U>(json);
+
+                        if(dataDictionary.ContainsKey(key))
+                        {
+                            foreach(T typePrefab in typePrefabs)
+                            {
+                                if(typePrefab.loadType == saveData.LoadType)
+                                {
+                                    T data = UnityEngine.Object.Instantiate(typePrefab);
+                                    dataDictionary[saveData.ID] = data;
+                                    Debug.Log("Default element: "+key+" / "+data.loadType);
+                                    break;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Debug.Log("Default overwritten element: "+key);
+                        }
+                        preloadDataDictionary[saveData.ID] = saveData;
+                    }
+                }
+            }
+        }
+        else
+        {
+            Debug.Log(defaultFolder);
+        }
+
+        Populate();
+    }
+
     public T GetData(string id)
     {
         if(dataDictionary.ContainsKey(id))

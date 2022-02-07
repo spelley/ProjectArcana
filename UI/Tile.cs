@@ -78,8 +78,7 @@ public class Tile : MonoBehaviour
 
     public void OnMouseEnter()
     {
-        Debug.Log(gridCell.position);
-        if(battleManager.curUnit == null || battleManager.curUnit.faction != Faction.ALLY || battleManager.previewingSkill)
+        if(battleManager.curUnit == null || battleManager.curUnit.faction != Faction.ALLY || battleManager.previewingSkill || battleManager.curUnit.aiBrain != null)
         {
             return;
         }
@@ -95,7 +94,7 @@ public class Tile : MonoBehaviour
 
     public void OnMouseExit()
     {
-        if(battleManager.curUnit == null || battleManager.curUnit.faction != Faction.ALLY)
+        if(battleManager.curUnit == null || battleManager.curUnit.faction != Faction.ALLY || battleManager.curUnit.aiBrain != null)
         {
             return;
         }
@@ -104,15 +103,11 @@ public class Tile : MonoBehaviour
             mapManager.ResetRenderedPath();
             return;
         }
-        if(this.TileType == TileType.TARGETED)
-        {
-            //battleManager.SkillSelectTargetCancel(battleManager.curSkill, gridCell);
-        }
     }
 
     public void OnMouseDown()
     {
-        if(battleManager.curUnit == null || battleManager.curUnit.faction != Faction.ALLY)
+        if(battleManager.curUnit == null || battleManager.curUnit.faction != Faction.ALLY || battleManager.curUnit.aiBrain != null)
         {
             return;
         }

@@ -157,18 +157,22 @@ public class AIBrain : ScriptableObject
         Vector3Int resultWalk = Vector3Int.zero;
         Vector3Int resultTarget = Vector3Int.zero;
 
+        UnityEngine.Debug.Log("Scores: "+ scores.Count);
+
         if(scores.Count > 0)
         {
             while(scores.Count > 0)
             {
                 SkillScore skillScore = scores.Dequeue();
-                if((skillScore.score > maxScore) || (skillScore.score == maxScore && skillScore.distanceScore > maxDistanceScore))
-                {
-                    maxScore = skillScore.score;
-                    maxScoreSkillIndex = skillScore.skillIndex;
-                    maxDistanceScore = skillScore.distanceScore;
-                    resultWalk = skillScore.origin;
-                    resultTarget = skillScore.target;
+                if(MapManager.Instance.CheckIfTargetable(skillScore.target)) {
+                    if((skillScore.score > maxScore) || (skillScore.score == maxScore && skillScore.distanceScore > maxDistanceScore))
+                    {
+                        maxScore = skillScore.score;
+                        maxScoreSkillIndex = skillScore.skillIndex;
+                        maxDistanceScore = skillScore.distanceScore;
+                        resultWalk = skillScore.origin;
+                        resultTarget = skillScore.target;
+                    }
                 }
             }
         }
@@ -190,7 +194,7 @@ public class AIBrain : ScriptableObject
         TimeSpan ts = stopWatch.Elapsed;
 
         // Format and display the TimeSpan value.
-        string elapsedTime = String.Format("{2:00}.{3:000}",
+        string elapsedTime = String.Format("{3:000}ms",
             ts.Hours, ts.Minutes, ts.Seconds,
             ts.Milliseconds);
         UnityEngine.Debug.Log("RunTime " + elapsedTime);

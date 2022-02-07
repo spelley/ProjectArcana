@@ -154,7 +154,10 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable, ILoadable<Uni
     [SerializeField] List<SkillData> assignedSkills = new List<SkillData>();
     [SerializeField] List<PassiveData> learnedPassives = new List<PassiveData>();
     [SerializeField] List<PassiveData> assignedPassives = new List<PassiveData>();
-    public Vector3Int curPosition { get; set; }
+
+    [SerializeField]
+    private Vector3Int _curPosition;
+    public Vector3Int curPosition { get { return _curPosition; } set { _curPosition = value; } }
     public List<StatusEffect> statusEffects = new List<StatusEffect>();
 
     public event Action OnUnitTurnStart;

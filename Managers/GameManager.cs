@@ -1,7 +1,9 @@
 using System;
+using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -90,6 +92,8 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        Application.targetFrameRate = 60;
+        
         party = new List<UnitData>();
         for(int i = 0; i < curPlayers.Count; i++)
         {
@@ -156,11 +160,45 @@ public class GameManager : MonoBehaviour
         return unitGO;
     }
 
+    public GameSaveData GetSaveData()
+    {
+        GameSaveData saveData = new GameSaveData();
+        saveData.sceneID = SceneManager.GetActiveScene().name;
+        saveData.partyUnits = new UnitSaveData[party.Count];
+        saveData.inventorySaveData = playerInventory.GetSaveData();
+        for(int i = 0; i < party.Count; i++)
+        {
+            saveData.partyUnits[i] = party[i].GetSaveData();
+            if(party[i] == activePlayer)
+            {
+                saveData.activePlayerIndex = i;
+            }
+        }
+        Vector3 currentPosition = activePlayer.unitGO.transform.position;
+        saveData.curPosition = new SimpleVector3(currentPosition.x, currentPosition.y, currentPosition.z);
+
+        return saveData;
+    }
+
     void Update()
     {
         if(Input.GetKeyDown(KeyCode.F5))
         {
-            Debug.Log(activePlayer.equipmentBlock.helmet.GetSaveData());
+            Debug.Log("Quick Save");
+            QuickSave();
         }
+    }
+
+    public void QuickSave()
+    {
+        string folder = Application.persistentDataPath + "/Saves/Quick Save/";
+        string filename = folder + "GameState.json";
+        GameSaveData saveData = GetSaveData();
+        if(!Directory.Exists(folder))
+        {
+            Directory.CreateDirectory(folder);
+        }
+        string json = JsonUtility.ToJson(saveData, true);
+        File.WriteAllText(filename, json);
     }
 }
