@@ -255,7 +255,7 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable, ILoadable<Uni
 
     public void StartTurn()
     {
-        Debug.Log("Started turn: "+this.unitName);
+        // Debug.Log"Started turn: "+this.unitName);
         acted = false;
         moved = false;
         usedBonus = false;

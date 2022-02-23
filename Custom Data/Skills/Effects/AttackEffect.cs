@@ -8,6 +8,7 @@ public class AttackEffect : SkillEffect
 {    
     public override void Execute(SkillData skill, UnitData unitData, List<GridCell> targets)
     {
+        Debug.Log("Targets count: "+targets.Count);
         foreach(GridCell gridCell in targets)
         {
             ExecutePerTarget(skill, unitData, gridCell);
@@ -17,10 +18,15 @@ public class AttackEffect : SkillEffect
     public override void ExecutePerTarget(SkillData skill, UnitData unitData, GridCell gridCell)
     {
         UnitData target = gridCell.occupiedBy;
+        Debug.Log("Execute per target: " + gridCell.position.ToString());
+        Debug.Log("Damage Source: " + unitData.unitName);
+        Debug.Log("Skill Name: " + skill.skillName);
         if(target != null)
         {
+            Debug.Log("Not null");
             if(skill.IsHit(skill.GetHitChance(unitData, target, false)) && skill.IsValidTargetType(unitData, target))
             {
+                Debug.Log("Is Hit");
                 int matches = BattleManager.Instance.GetRiverMatches(skill.elements);
                 int baseDamage = skill.skillCalculation.Calculate(skill, unitData, matches);
                 unitData.DealDamage(baseDamage, target, skill.elements);
@@ -29,8 +35,13 @@ public class AttackEffect : SkillEffect
             }
             else
             {
+                Debug.Log("Miss");
                 target.Miss();
             }
+        }
+        else
+        {
+            Debug.Log("Is null target");
         }
     }
 

@@ -30,12 +30,12 @@ public class ArcanaData : ScriptableObject, ILoadable<ArcanaSaveData>
         string[] elementIDs = new string[elements.Count];
         for(int i = 0; i < elements.Count; i++)
         {
-            Debug.Log(JsonUtility.ToJson(elements[i].GetSaveData()));
+            // Debug.Log(JsonUtility.ToJson(elements[i].GetSaveData()));
             elementIDs[i] = elements[i].id;
         }
         saveData.elementIDs = elementIDs;
 
-        Debug.Log(JsonUtility.ToJson(saveData));
+        // Debug.Log(JsonUtility.ToJson(saveData));
 
         return saveData;
     }
@@ -56,7 +56,7 @@ public class ArcanaData : ScriptableObject, ILoadable<ArcanaSaveData>
             }
         }
         
-        Debug.Log("Loaded: "+_arcanaName);
+        // Debug.Log("Loaded: "+_arcanaName);
         return true;
     }
 }

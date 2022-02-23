@@ -275,6 +275,19 @@ public class SkillData: ScriptableObject, IAssignableSkill, ILoadable<SkillSaveD
         }
     }
 
+    [SerializeField] bool _requireEmptyTile = false;
+    public bool requireEmptyTile
+    {
+        get
+        {
+            return _requireEmptyTile;
+        }
+        private set
+        {
+            _requireEmptyTile = value;
+        }
+    }
+
     [Header("Skill Calculation Information")]
     [SerializeField] SkillCalculation _skillCalculation;
     public SkillCalculation skillCalculation
@@ -364,6 +377,19 @@ public class SkillData: ScriptableObject, IAssignableSkill, ILoadable<SkillSaveD
         private set
         {
             _tertiaryValue = value;
+        }
+    }
+
+    [SerializeField] SkillData _associatedSkill;
+    public SkillData associatedSkill
+    {
+        get 
+        {
+            return _associatedSkill;
+        }
+        private set
+        {
+            _associatedSkill = value;
         }
     }
 
@@ -533,6 +559,11 @@ public class SkillData: ScriptableObject, IAssignableSkill, ILoadable<SkillSaveD
             saveData.executeAnimation = _executeAnimation.GetComponent<SkillAnimation>().id;
         }
 
+        if(_associatedSkill != null)
+        {
+            saveData.associatedSkillID = _associatedSkill.id;
+        }
+
         saveData.hitChance = Mathf.RoundToInt(_hitChance);
         saveData.targetType = _targetType.ToString();
         saveData.targetShape = _targetShape.ToString();
@@ -544,6 +575,7 @@ public class SkillData: ScriptableObject, IAssignableSkill, ILoadable<SkillSaveD
         saveData.push = _push;
         saveData.pushFromTarget = _pushFromTarget;
         saveData.requireUnitTarget = _requireUnitTarget;
+        saveData.requireEmptyTile = _requireEmptyTile;
         saveData.skillCalculation = skillCalculation.id;
         saveData.primaryAttribute = _primaryAttribute.ToString();
         saveData.secondaryAttribute = _secondaryAttribute.ToString();
@@ -600,6 +632,11 @@ public class SkillData: ScriptableObject, IAssignableSkill, ILoadable<SkillSaveD
             _executeAnimation = SaveDataLoader.Instance.GetExecuteAnimation(saveData.executeAnimation);
         }
 
+        if(saveData.associatedSkillID != "")
+        {
+            _associatedSkill = SaveDataLoader.Instance.GetSkillData(saveData.associatedSkillID);
+        }
+
         _hitChance = saveData.hitChance;
         _targetType = (TargetType)System.Enum.Parse(typeof(TargetType), saveData.targetType);
         _targetShape = (TargetShape)System.Enum.Parse(typeof(TargetShape), saveData.targetShape);
@@ -611,6 +648,7 @@ public class SkillData: ScriptableObject, IAssignableSkill, ILoadable<SkillSaveD
         _push = saveData.push;
         _pushFromTarget = saveData.pushFromTarget;
         _requireUnitTarget = saveData.requireUnitTarget;
+        _requireEmptyTile = saveData.requireEmptyTile;
         _skillCalculation = SaveDataLoader.Instance.GetSkillCalculation(saveData.skillCalculation);
         _primaryAttribute = (Stat)System.Enum.Parse(typeof(Stat), saveData.primaryAttribute);
         _secondaryAttribute = (Stat)System.Enum.Parse(typeof(Stat), saveData.secondaryAttribute);

@@ -29,7 +29,7 @@ public class SkillAnimation : MonoBehaviour
 
     public void Animate()
     {
-        if(pauseCastAnimation)
+        if(pauseCastAnimation && unitData == BattleManager.Instance.curUnit)
         {
             unitData.unitGO.GetComponent<TacticsMotor>().anim.speed = 0f;
         }
@@ -41,7 +41,7 @@ public class SkillAnimation : MonoBehaviour
         else
         {
             skillData.Execute(unitData, targets);
-            if(pauseCastAnimation)
+            if(pauseCastAnimation && unitData == BattleManager.Instance.curUnit)
             {
                 unitData.unitGO.GetComponent<TacticsMotor>().anim.speed = 1f;
             }
@@ -89,11 +89,11 @@ public class SkillAnimation : MonoBehaviour
             }
         }
 
-        Camera.main.GetComponent<CameraController>().SetFocus(unitData.unitGO);
+        Camera.main.GetComponent<CameraController>().SetFocus(BattleManager.Instance.curUnit.unitGO);
         
         yield return null;
 
-        if(pauseCastAnimation)
+        if(pauseCastAnimation && unitData == BattleManager.Instance.curUnit)
         {
             unitData.unitGO.GetComponent<TacticsMotor>().anim.speed = 1f;
         }

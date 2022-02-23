@@ -72,7 +72,7 @@ public class UnitBattleUI : MonoBehaviour
         battleManager.OnSkillPreview += OnSkillPreview;
         battleManager.OnSkillPreviewCancel += OnSkillPreviewCancel;
         battleManager.OnSkillTargetCancel += OnSkillTargetCancel;
-        battleManager.OnSkillConfirm += OnSkillConfirm;
+        battleManager.OnSkillConfirmPrep += OnSkillConfirmPrep;
         battleManager.OnSkillClear += OnSkillClear;
     }
 
@@ -83,7 +83,7 @@ public class UnitBattleUI : MonoBehaviour
         battleManager.OnSkillPreview -= OnSkillPreview;
         battleManager.OnSkillPreviewCancel -= OnSkillPreviewCancel;
         battleManager.OnSkillTargetCancel -= OnSkillTargetCancel;
-        battleManager.OnSkillConfirm -= OnSkillConfirm;
+        battleManager.OnSkillConfirmPrep -= OnSkillConfirmPrep;
         battleManager.OnSkillClear -= OnSkillClear;
         if(battleManager.turnManager != null)
         {
@@ -97,7 +97,7 @@ public class UnitBattleUI : MonoBehaviour
         // close the skill window if it is open
         if(Input.GetKeyDown(KeyCode.Escape) && curUnit != null && curUnit.isPlayerControlled)
         {
-            Debug.Log(curState);
+            // Debug.LogcurState);
             if(curState == UnitUIState.SKILL_LIST)
             {
                 SetState(UnitUIState.UNIT_WITH_COMMANDS);
@@ -185,12 +185,16 @@ public class UnitBattleUI : MonoBehaviour
                 firstTarget = gridCell;
             }
         }
+        if(firstTarget == null) {
+            firstTarget = targets[0];
+        }
         SkillPreview skillPreview = skillData.GetPreview(unitData, firstTarget);
-        if(firstTarget != null)
+        if(firstTarget.occupiedBy != null)
         {
             UpdateTargetWindow(firstTarget.occupiedBy);
         }
         previewWindowText.text = skillPreview.text + " (" + skillPreview.hitChance.ToString() + "%)";
+        skillConfirmButton.onClick.RemoveListener(OnSkillConfirmButton);
         skillConfirmButton.onClick.AddListener(OnSkillConfirmButton);
     }
 
@@ -205,8 +209,9 @@ public class UnitBattleUI : MonoBehaviour
         SetState(UnitUIState.SKILL_TARGET);
     }
 
-    void OnSkillConfirm(SkillData skillData, UnitData unitData, List<GridCell> targets)
+    void OnSkillConfirmPrep(SkillData skillData, UnitData unitData, List<GridCell> targets)
     {
+        UpdateResources();
         SetState(UnitUIState.HIDDEN);
     }
 

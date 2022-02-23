@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class LevelManager : MonoBehaviour
 {
+    public MapData mapData;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -13,6 +15,7 @@ public class LevelManager : MonoBehaviour
     IEnumerator SetPlayerFocus()
     {
         yield return null;
+        MapManager.Instance.SetMapData(mapData);
         yield return null;
         Camera.main.GetComponent<CameraController>().SetFocus(GameManager.Instance.activePlayer.unitGO);
     }

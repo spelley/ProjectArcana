@@ -19,7 +19,7 @@ public class RandomizeRiverDivination : DivinationData
         DivinationSaveData saveData = base.GetSaveData();
         saveData.loadType = loadType;
 
-        Debug.Log(JsonUtility.ToJson(saveData));
+        // Debug.LogJsonUtility.ToJson(saveData));
         
         return saveData;
     }

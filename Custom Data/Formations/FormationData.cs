@@ -80,7 +80,7 @@ public class FormationData : ScriptableObject, ILoadable<FormationSaveData>
         {
             saveData.offsets[i] = new SimpleVector3Int(offsets[i].x, offsets[i].y, offsets[i].z);
         }
-        Debug.Log(JsonUtility.ToJson(saveData));
+        // Debug.LogJsonUtility.ToJson(saveData));
         return saveData;
     }
 
@@ -91,7 +91,7 @@ public class FormationData : ScriptableObject, ILoadable<FormationSaveData>
         _formationName = saveData.name;
         _description = saveData.description;
         _image = Resources.Load<Sprite>("Formations/Icons/"+saveData.imagePath);
-        Debug.Log(saveData.offsets);
+        // Debug.LogsaveData.offsets);
         return true;
     }
 }

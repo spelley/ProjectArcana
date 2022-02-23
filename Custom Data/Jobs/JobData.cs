@@ -218,7 +218,7 @@ public class JobData: ScriptableObject, ILoadable<JobSaveData>
             saveData.jobRequirements.Add(unitJob.GetSaveData());
         }
 
-        Debug.Log(JsonUtility.ToJson(saveData));
+        // Debug.LogJsonUtility.ToJson(saveData));
 
         return saveData;
     }

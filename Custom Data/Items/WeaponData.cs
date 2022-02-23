@@ -66,7 +66,7 @@ public class WeaponData: EquipmentData
         saveData.twoHanded = _twoHanded;
         saveData.offHandOnly = _offhandOnly;
 
-        Debug.Log(JsonUtility.ToJson(saveData));
+        // Debug.LogJsonUtility.ToJson(saveData));
 
         return saveData;
     }

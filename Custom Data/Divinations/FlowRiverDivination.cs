@@ -25,7 +25,7 @@ public class FlowRiverDivination : DivinationData
         saveData.loadType = loadType;
         saveData.flowAmount = _flowAmount;
 
-        Debug.Log(JsonUtility.ToJson(saveData));
+        // Debug.LogJsonUtility.ToJson(saveData));
 
         return saveData;
     }
@@ -33,7 +33,7 @@ public class FlowRiverDivination : DivinationData
     public override bool LoadFromSaveData(DivinationSaveData saveData)
     {
         base.LoadFromSaveData(saveData);
-        Debug.Log(saveData.ToString());
+        // Debug.LogsaveData.ToString());
         _flowAmount = saveData.flowAmount;
 
         return true;

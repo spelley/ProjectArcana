@@ -23,7 +23,7 @@ public class MapBuilder : MonoBehaviour
 
     [Header("Data Store")]
     [SerializeField]
-    MapData mapData;
+    public MapData mapData;
 
     [Header("Grid Settings")]
     [Tooltip("Grid anchor and offset are set using real-world units")]
@@ -52,6 +52,8 @@ public class MapBuilder : MonoBehaviour
     float raycastDistance = 20f;
 
     GridCell[,,] grid;
+
+    public List<GridCell> cellList = new List<GridCell>();
 
     void Awake()
     {
@@ -109,8 +111,7 @@ public class MapBuilder : MonoBehaviour
             {
                 float colPos = startColumnPos + (colIdx * cellSize);
                 RaycastHit[] hits;
-                hits = Physics.RaycastAll(new Vector3(colPos, (endHeightPos + 1f), rowPos), -transform.up, raycastDistance).OrderBy(h=>h.distance).ToArray();
-                Debug.DrawRay(new Vector3(colPos, (endHeightPos + 1f), rowPos), (-transform.up * raycastDistance), Color.green);
+                hits = Physics.RaycastAll(new Vector3(colPos, (endHeightPos + 100f), rowPos), -transform.up, raycastDistance + 200).OrderBy(h=>h.distance).ToArray();
                 
                 int tileGridHeight = 0;
                 bool blockFurther = false;
@@ -147,6 +148,11 @@ public class MapBuilder : MonoBehaviour
                         else
                         {
                             tileGridHeight = gridPositioner.height;
+                        }
+
+                        if(tileGridHeight >= gridSize.z || tileGridHeight < 0)
+                        {
+                            continue;
                         }
 
                         Vector3 tileNormal = gridPositioner.preventNormalOverride ? gridPositioner.normal : hit.normal;
@@ -217,7 +223,7 @@ public class MapBuilder : MonoBehaviour
         }
     }
 
-    void BuildNeighbours()
+    public void BuildNeighbours()
     {
         int columns = gridSize.x;
         int rows = gridSize.y;
@@ -242,6 +248,9 @@ public class MapBuilder : MonoBehaviour
         {
             return;
         }
+
+        // clear out any existing neighbours
+        grid[colIdx, rowIdx, heightIdx].neighbours.Clear();
 
         int columns = gridSize.x;
         int rows = gridSize.y;
@@ -272,7 +281,7 @@ public class MapBuilder : MonoBehaviour
         }
     }
 
-    void AssignMapData()
+    public void AssignMapData()
     {
         if(mapData)
         {
@@ -311,11 +320,11 @@ public class MapBuilder : MonoBehaviour
             AssetDatabase.Refresh();
             #endif
 
-            Debug.Log("Assigned");
+            // Debug.Log"Assigned");
         }
     }
 
-    void RenderGrid()
+    public void RenderGrid()
     {
         int columns = gridSize.x;
         int rows = gridSize.y;
@@ -379,6 +388,7 @@ public class MapBuilder : MonoBehaviour
             foreach(GridCell gridCell in mapInstance.gridData)
             {
                 grid[gridCell.position.x, gridCell.position.y, gridCell.position.z] = gridCell;
+                cellList.Add(gridCell);
             }
         }
     }
@@ -387,6 +397,7 @@ public class MapBuilder : MonoBehaviour
     {
         ClearTiles();
         grid = new GridCell[gridSize.x, gridSize.y, gridSize.z];
+        cellList.Clear();
     }
 
     void ClearTiles()

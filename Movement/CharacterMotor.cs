@@ -79,10 +79,12 @@ public class CharacterMotor : MonoBehaviour
         }
 
         // Cache the inputs.
+        /**
         if(Input.GetKeyDown(KeyCode.Space))
         {
             jump = true;
         }
+        **/
     }
 
     void FixedUpdate()

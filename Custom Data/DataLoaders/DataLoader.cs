@@ -28,7 +28,7 @@ public class DataLoader<T, U> where T : UnityEngine.Object, ILoadable<U>, new() 
         foreach(T data in defaultData)
         {
             dataDictionary[data.id] = data;
-            Debug.Log(data.id);
+            // Debug.Log(data.id);
         }
 
         foreach(InstalledMod mod in installedMods)
@@ -59,14 +59,14 @@ public class DataLoader<T, U> where T : UnityEngine.Object, ILoadable<U>, new() 
                                     {
                                         T data = UnityEngine.Object.Instantiate(typePrefab);
                                         dataDictionary[saveData.ID] = data;
-                                        Debug.Log("Custom element: "+key+" / "+data.loadType);
+                                        // Debug.Log("Custom element: "+key+" / "+data.loadType);
                                         break;
                                     }
                                 }
                             }
                             else
                             {
-                                Debug.Log("Overwritten element: "+key);
+                                // Debug.Log("Overwritten element: "+key);
                             }
                             preloadDataDictionary[saveData.ID] = saveData;
                         }
@@ -112,14 +112,14 @@ public class DataLoader<T, U> where T : UnityEngine.Object, ILoadable<U>, new() 
                                 {
                                     T data = UnityEngine.Object.Instantiate(typePrefab);
                                     dataDictionary[saveData.ID] = data;
-                                    Debug.Log("Default element: "+key+" / "+data.loadType);
+                                    // Debug.Log("Default element: "+key+" / "+data.loadType);
                                     break;
                                 }
                             }
                         }
                         else
                         {
-                            Debug.Log("Default overwritten element: "+key);
+                            // Debug.Log("Default overwritten element: "+key);
                         }
                         preloadDataDictionary[saveData.ID] = saveData;
                     }
@@ -128,7 +128,7 @@ public class DataLoader<T, U> where T : UnityEngine.Object, ILoadable<U>, new() 
         }
         else
         {
-            Debug.Log(defaultFolder);
+            // Debug.Log(defaultFolder);
         }
 
         Populate();

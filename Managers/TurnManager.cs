@@ -36,29 +36,49 @@ public class TurnManager
     public void StartNextTurn()
     {
         curTurnTaker = GetNextTurn();
-        if(curTurnTaker.incapacitated)
-        {
-            EndTurn();
-        }
-        else
-        {
-            curTurnTaker.StartTurn();
-            OnTurnStart?.Invoke(curTurnTaker);
-        }
 
-        BattleManager.Instance.IsEncounterResolved();
+        Action<ModBool> turnCheck = (ModBool cancelled) => {
+            if(cancelled.GetCalculated())
+            {
+                // Debug.Log"cancel turn?");
+                EndTurn();
+                BattleManager.Instance.IsEncounterResolved();
+                return;
+            }
+
+            if(curTurnTaker.incapacitated)
+            {
+                EndTurn();
+            }
+            else
+            {
+                curTurnTaker.StartTurn();
+                OnTurnStart?.Invoke(curTurnTaker);
+            }
+            BattleManager.Instance.IsEncounterResolved();
+        };
+
+        ModBool cancelExecution = new ModBool(false);
+        BattleManager.Instance.ResolveInterrupts(cancelExecution, turnCheck);
     }
-
+    
     public void EndTurn()
     {
-        BattleManager.Instance.FlowRiver(1);
-        curTurnTaker.EndTurn();
-        OnTurnEnd?.Invoke(curTurnTaker);
+        Action<ModBool> interruptCheck = (ModBool cancelled) => {
+            if(!cancelled.GetCalculated())
+            {
+                BattleManager.Instance.FlowRiver(1);
+                curTurnTaker.EndTurn();
+                OnTurnEnd?.Invoke(curTurnTaker);
 
-        if(!BattleManager.Instance.IsEncounterResolved())
-        {
-            BattleManager.Instance.StartCoroutine(DelayStartNextTurn(2));
-        }
+                if(!BattleManager.Instance.IsEncounterResolved())
+                {
+                    BattleManager.Instance.StartCoroutine(DelayStartNextTurn(2));
+                }
+            }
+        };
+        ModBool cancelExecution = new ModBool(false);
+        BattleManager.Instance.ResolveInterrupts(cancelExecution, interruptCheck);
     }
 
     IEnumerator DelayStartNextTurn(int delayFrames)
@@ -103,7 +123,7 @@ public class TurnManager
         }
         if(curTurnTaker == null)
         {
-            Debug.Log("why on earth is everyone at 0 speed?");
+            // Debug.Log"why on earth is everyone at 0 speed?");
             return turnTakers[0];
         }
         curTurnTaker.ct = 0;

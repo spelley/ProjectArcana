@@ -26,7 +26,7 @@ public class SkillDataLoader
         foreach(SkillData data in defaultData)
         {
             dataDictionary[data.id] = data;
-            Debug.Log(data.id);
+            // Debug.Logdata.id);
         }
 
         foreach(InstalledMod mod in installedMods)
@@ -53,11 +53,11 @@ public class SkillDataLoader
                             {
                                 SkillData data = UnityEngine.Object.Instantiate(prefab);
                                 dataDictionary[saveData.ID] = data;
-                                Debug.Log("Custom element: "+key);
+                                // Debug.Log"Custom element: "+key);
                             }
                             else
                             {
-                                Debug.Log("Overwritten element: "+key);
+                                // Debug.Log"Overwritten element: "+key);
                             }
                             preloadDataDictionary[saveData.ID] = saveData;
                             **/

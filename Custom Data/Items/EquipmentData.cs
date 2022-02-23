@@ -125,7 +125,7 @@ public class EquipmentData: ItemData
             saveData.statusEffectIDs[i] = equipStatusEffects[i].id;
         }
 
-        Debug.Log(JsonUtility.ToJson(saveData));
+        // Debug.LogJsonUtility.ToJson(saveData));
 
         return saveData;
     }

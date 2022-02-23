@@ -61,7 +61,7 @@ public class TacticsMotor : MonoBehaviour
             battleManager.OnEncounterStart -= OnEncounterStart;
             battleManager.OnEncounterEnd -= OnEncounterEnd;
 
-            battleManager.OnSkillConfirm -= OnSkillConfirm;
+            // battleManager.OnSkillConfirm -= OnSkillConfirm;
             battleManager.OnSkillExecute -= OnSkillExecute;
             battleManager.OnSkillClear -= OnSkillClear;
             mapManager.OnTravelPath -= OnTravelPath;
@@ -91,12 +91,16 @@ public class TacticsMotor : MonoBehaviour
         characterMotor.unitData.OnUnitTurnEnd -= OnUnitTurnEnd;
         characterMotor.unitData.OnUnitPush -= OnUnitPush;
 
+        battleManager.OnSkillExecute -= OnSkillExecute;
+        battleManager.OnSkillClear -= OnSkillClear;
+        mapManager.OnTravelPath -= OnTravelPath;
+
         mapManager.ClearAllTiles();
     }
 
     void OnUnitTurnStart()
     {
-        battleManager.OnSkillConfirm += OnSkillConfirm;
+        // battleManager.OnSkillConfirm += OnSkillConfirm;
         battleManager.OnSkillExecute += OnSkillExecute;
         battleManager.OnSkillClear += OnSkillClear;
         mapManager.OnTravelPath += OnTravelPath;
@@ -139,9 +143,9 @@ public class TacticsMotor : MonoBehaviour
         if(instruction.skill != null)
         {
             battleManager.SkillTarget(instruction.skill, characterMotor.unitData, mapManager.GetCell(characterMotor.unitData.curPosition));
-            yield return new WaitForSeconds(.2f);
-            battleManager.SkillSelectTarget(instruction.skill, instruction.targetCell);
             yield return new WaitForSeconds(.5f);
+            battleManager.SkillSelectTarget(instruction.skill, instruction.targetCell);
+            yield return new WaitForSeconds(.8f);
             battleManager.SkillPreview(instruction.skill, characterMotor.unitData, mapManager.GetTargetedCells());
             battleManager.SkillConfirm(instruction.skill, characterMotor.unitData, mapManager.GetTargetedCells());
         }
@@ -172,37 +176,68 @@ public class TacticsMotor : MonoBehaviour
         anim.SetBool("Moving", true);
 
         Vector3 startPosition = this.transform.position;
-        foreach(GridCell cell in path)
-        {
-            if(cell.position != startPosition)
-            {
-                float curTravelTime = 0f;
-                float curJumpTime = 0f;
-                Vector3 lookPos = cell.realWorldPosition - startPosition;
-                lookPos.y = 0;
-                if(lookPos != Vector3.zero)
-                {
-                    this.transform.rotation = Quaternion.LookRotation(lookPos);
-                }
-                while(curTravelTime < travelSpeed)
-                {
-                    curTravelTime += Time.deltaTime;
-                    curJumpTime += Time.deltaTime;
+        bool continueWalking = true;
 
-                    Vector3 gridMove = Vector3.Lerp(startPosition, cell.realWorldPosition, (curTravelTime / travelSpeed));
-                    if(startPosition.y < cell.realWorldPosition.y && (cell.realWorldPosition.y - startPosition.y) >= 1f)
+        if(path.Count > 0) {
+            while(path.Count > 0)
+            {
+                if(continueWalking) {
+                    GridCell cell = path.Pop();
+                    if(cell.position != startPosition)
                     {
-                        float jumpHeight = Mathf.Lerp(startPosition.y, cell.realWorldPosition.y, (curJumpTime / jumpSpeed));
-                        gridMove = new Vector3(gridMove.x, jumpHeight, gridMove.z);
+                        float curTravelTime = 0f;
+                        float curJumpTime = 0f;
+                        Vector3 lookPos = cell.realWorldPosition - startPosition;
+                        lookPos.y = 0;
+                        if(lookPos != Vector3.zero)
+                        {
+                            this.transform.rotation = Quaternion.LookRotation(lookPos);
+                        }
+                        while(curTravelTime < travelSpeed)
+                        {
+                            curTravelTime += Time.deltaTime;
+                            curJumpTime += Time.deltaTime;
+
+                            Vector3 gridMove = Vector3.Lerp(startPosition, cell.realWorldPosition, (curTravelTime / travelSpeed));
+                            if(startPosition.y < cell.realWorldPosition.y && (cell.realWorldPosition.y - startPosition.y) >= 1f)
+                            {
+                                float jumpHeight = Mathf.Lerp(startPosition.y, cell.realWorldPosition.y, (curJumpTime / jumpSpeed));
+                                gridMove = new Vector3(gridMove.x, jumpHeight, gridMove.z);
+                            }
+                            this.transform.position = gridMove;
+                            
+                            yield return null;
+                        }
                     }
-                    this.transform.position = gridMove;
-                    
-                    yield return null;
+                    curCell = cell;
+                    startPosition = cell.realWorldPosition;
+                    continueWalking = false;
+                    if(curCell.occupiedBy == null) 
+                    {
+                        mapManager.UpdateUnitPosition(curCell.position, characterMotor.unitData);
+                    }
+                    mapManager.TravelEnter(characterMotor.unitData, curCell);
+                    if(battleManager.HasInterrupts())
+                    {
+                        anim.SetBool("Moving", false);
+                        yield return new WaitForSeconds(.4f);
+                    }
+                    Action<ModBool> checkIfCancelled = (ModBool cancelled) => {
+                        continueWalking = !cancelled.GetCalculated();
+                        if(!continueWalking) {
+                            path.Clear();
+                        }
+                        else {
+                            anim.SetBool("Moving", true);
+                        }
+                    };
+                    ModBool cancelledMovement = new ModBool(false);
+                    battleManager.ResolveInterrupts(cancelledMovement, checkIfCancelled);
                 }
+                yield return null;
             }
-            curCell = cell;
-            startPosition = cell.realWorldPosition;
         }
+        
         mapManager.UpdateUnitPosition(curCell.position, characterMotor.unitData);
 
         isMoving = false;
@@ -212,27 +247,35 @@ public class TacticsMotor : MonoBehaviour
 
     void OnUnitTurnEnd()
     {
-        battleManager.OnSkillConfirm -= OnSkillConfirm;
+        // battleManager.OnSkillConfirm -= OnSkillConfirm;
         battleManager.OnSkillExecute -= OnSkillExecute;
         battleManager.OnSkillClear -= OnSkillClear;
         mapManager.OnTravelPath -= OnTravelPath;
         mapManager.ClearAllTiles();
     }
 
-    void OnSkillConfirm(SkillData skillData, UnitData unitData, List<GridCell> targets)
+    public void UseSkill(SkillData skillData, UnitData unitData, List<GridCell> targets)
     {
-        Vector3 direction = (targets[0].realWorldPosition - transform.position).normalized;
-        direction.y = 0;
-        transform.rotation = Quaternion.LookRotation(direction);
-
-        switch(skillData.castAnimation)
+        // using a skill on our own turn, do a proper animation
+        if(!isMoving)
         {
-            case BattleAnimation.BASIC_ATTACK:
-                anim.SetTrigger("BasicAttack");
-            break;
-            default:
-                anim.SetTrigger("BasicAttack");
-            break;
+            Vector3 direction = (targets[0].realWorldPosition - transform.position).normalized;
+            direction.y = 0;
+            transform.rotation = Quaternion.LookRotation(direction);
+
+            switch(skillData.castAnimation)
+            {
+                case BattleAnimation.BASIC_ATTACK:
+                    anim.SetTrigger("BasicAttack");
+                break;
+                default:
+                    anim.SetTrigger("BasicAttack");
+                break;
+            }
+        }
+        else
+        {
+            battleManager.SkillExecute();
         }
     }
 
@@ -243,10 +286,15 @@ public class TacticsMotor : MonoBehaviour
 
     void OnSkillClear(SkillData skillData)
     {
-        if(characterMotor.unitData.aiBrain != null)
-        {
-            StartCoroutine(DelayEndTurn());
-        }
+        Action<ModBool> interruptCheck = (ModBool cancelled) => {
+            if(!cancelled.GetCalculated() && characterMotor.unitData.aiBrain != null)
+            {
+                StartCoroutine(DelayEndTurn());
+            }
+        };
+
+        ModBool cancelExecution = new ModBool(false);
+        BattleManager.Instance.ResolveInterrupts(cancelExecution, interruptCheck);
     }
 
     IEnumerator DelayEndTurn()
@@ -283,7 +331,7 @@ public class TacticsMotor : MonoBehaviour
     public void SnapToGrid()
     {
         GridCell closestCell = mapManager.GetClosestUnoccupiedGridCell(this.transform.position, characterMotor.unitData);
-        Debug.Log(closestCell.position);
+        // Debug.LogclosestCell.position);
         if(closestCell != null)
         {
             this.transform.position = closestCell.realWorldPosition;
@@ -291,7 +339,7 @@ public class TacticsMotor : MonoBehaviour
             mapManager.UpdateUnitPosition(curCell.position, characterMotor.unitData);
         }
         else {
-            Debug.Log("uh oh");
+            // Debug.Log"uh oh");
         }
     }
 

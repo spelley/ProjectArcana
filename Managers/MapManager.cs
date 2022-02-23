@@ -77,6 +77,7 @@ public class MapManager : MonoBehaviour
     Dictionary<GridCell, GameObject> renderedTiles = new Dictionary<GridCell, GameObject>();
     public event Action<Stack<GridCell>> OnTravelPath;
     public event Action OnTravelPathEnd;
+    public event Action<UnitData, GridCell> OnTravelEnter;
 
     void Awake()
     {
@@ -123,7 +124,7 @@ public class MapManager : MonoBehaviour
         battleManager.OnSkillTargetCancel += OnSkillTargetCancel;
         battleManager.OnSkillSelectTarget += OnSkillSelectTarget;
         battleManager.OnSkillSelectTargetCancel += OnSkillSelectTargetCancel;
-        battleManager.OnSkillConfirm += OnSkillConfirm;
+        battleManager.OnSkillConfirmPrep += OnSkillConfirmPrep;
     }
 
     void UnbindEvents()
@@ -138,7 +139,7 @@ public class MapManager : MonoBehaviour
         battleManager.OnSkillTargetCancel -= OnSkillTargetCancel;
         battleManager.OnSkillSelectTarget -= OnSkillSelectTarget;
         battleManager.OnSkillSelectTargetCancel -= OnSkillSelectTargetCancel;
-        battleManager.OnSkillConfirm -= OnSkillConfirm;
+        battleManager.OnSkillConfirmPrep -= OnSkillConfirmPrep;
     }
 
     public void OnEncounterStart()
@@ -167,6 +168,16 @@ public class MapManager : MonoBehaviour
         ResetTargetedCells();
         ClearOccupiedBy();
         battleManager.turnManager.OnTurnEnd -= OnTurnEnd;
+    }
+
+    public void SetMapData(MapData newMapData)
+    {
+        mapData = newMapData;
+        ResetGrid();
+        if(mapData)
+        {
+            LoadFromMapData();
+        }
     }
 
     public void OnSkillTarget(SkillData skillData, UnitData userData, GridCell originCell)
@@ -240,9 +251,13 @@ public class MapManager : MonoBehaviour
         {
             if(CheckIfTargetable(targetCell.position.x + offset.x, targetCell.position.y + offset.y, targetCell.position.z + offset.z))
             {
-                if(!occupiedOnly || grid[targetCell.position.x + offset.x, targetCell.position.y + offset.y, targetCell.position.z + offset.z].occupiedBy != null) 
+                GridCell newCell = grid[targetCell.position.x + offset.x, targetCell.position.y + offset.y, targetCell.position.z + offset.z];
+                if(!occupiedOnly || newCell.occupiedBy != null) 
                 {
-                    targetedArea.Add(grid[targetCell.position.x + offset.x, targetCell.position.y + offset.y, targetCell.position.z + offset.z]);
+                    if(!skillData.requireEmptyTile || newCell.occupiedBy == null)
+                    {
+                        targetedArea.Add(newCell);
+                    }
                 }
             }
         }
@@ -256,7 +271,7 @@ public class MapManager : MonoBehaviour
         RenderTargetableCells();
     }
 
-    public void OnSkillConfirm(SkillData skillData, UnitData unitData, List<GridCell> targets)
+    public void OnSkillConfirmPrep(SkillData skillData, UnitData unitData, List<GridCell> targets)
     {
         ClearAllTiles();
     }
@@ -976,9 +991,18 @@ public class MapManager : MonoBehaviour
         OnTravelPath?.Invoke(path);
     }
 
+    public void TravelEnter(UnitData unitData, GridCell cell)
+    {
+        OnTravelEnter?.Invoke(unitData, cell);
+    }
+
     public void TravelPathEnd()
     {
-        OnTravelPathEnd?.Invoke();
+        ModBool cancelExecution = new ModBool(false);
+        Action<ModBool> callback = (ModBool cancelled) => {
+            OnTravelPathEnd?.Invoke();
+        };
+        battleManager.ResolveInterrupts(cancelExecution, callback);
     }
 
     void OnDestroy()

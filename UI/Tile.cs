@@ -9,7 +9,7 @@ public class Tile : MonoBehaviour
     BattleManager battleManager;
     
     [SerializeField]
-    GridCell gridCell;
+    public GridCell gridCell;
 
     [SerializeField]
     MeshRenderer tileMaterial;
@@ -45,7 +45,14 @@ public class Tile : MonoBehaviour
             switch(value)
             {
                 case TileType.WALKING_ZONE:
-                    tileMaterial.material = gridCell != null && gridCell.walkable ? defaultMat : unwalkableMat;
+                    if(!gridCell.walkable && gridCell.targetable)
+                    {
+                        tileMaterial.material = inactiveMat;
+                    }
+                    else
+                    {
+                        tileMaterial.material = gridCell != null && gridCell.walkable ? defaultMat : unwalkableMat;
+                    } 
                 break;
                 case TileType.PATH:
                     tileMaterial.material = pathMat;
@@ -78,7 +85,7 @@ public class Tile : MonoBehaviour
 
     public void OnMouseEnter()
     {
-        if(battleManager.curUnit == null || battleManager.curUnit.faction != Faction.ALLY || battleManager.previewingSkill || battleManager.curUnit.aiBrain != null)
+        if(battleManager.curUnit == null || battleManager.curUnit.faction != Faction.ALLY || battleManager.previewingSkill || battleManager.curUnit.aiBrain != null || battleManager.curUnit.unitGO.GetComponent<TacticsMotor>().isMoving)
         {
             return;
         }
@@ -94,7 +101,7 @@ public class Tile : MonoBehaviour
 
     public void OnMouseExit()
     {
-        if(battleManager.curUnit == null || battleManager.curUnit.faction != Faction.ALLY || battleManager.curUnit.aiBrain != null)
+        if(battleManager.curUnit == null || battleManager.curUnit.faction != Faction.ALLY || battleManager.curUnit.aiBrain != null || battleManager.curUnit.unitGO.GetComponent<TacticsMotor>().isMoving)
         {
             return;
         }
@@ -107,7 +114,7 @@ public class Tile : MonoBehaviour
 
     public void OnMouseDown()
     {
-        if(battleManager.curUnit == null || battleManager.curUnit.faction != Faction.ALLY || battleManager.curUnit.aiBrain != null)
+        if(battleManager.curUnit == null || battleManager.curUnit.faction != Faction.ALLY || battleManager.curUnit.aiBrain != null || battleManager.curUnit.unitGO.GetComponent<TacticsMotor>().isMoving)
         {
             return;
         }

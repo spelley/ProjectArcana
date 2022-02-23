@@ -28,7 +28,7 @@ public class ItemDataLoader
         foreach(ItemData data in defaultData)
         {
             dataDictionary[data.id] = data;
-            Debug.Log(data.id);
+            // Debug.Logdata.id);
         }
 
         foreach(InstalledMod mod in installedMods)
@@ -69,14 +69,14 @@ public class ItemDataLoader
                                     {
                                         ItemData data = UnityEngine.Object.Instantiate(typePrefab);
                                         dataDictionary[saveData.ID] = data;
-                                        Debug.Log("Custom element: "+key+" / "+data.loadType);
+                                        // Debug.Log"Custom element: "+key+" / "+data.loadType);
                                         break;
                                     }
                                 }
                             }
                             else
                             {
-                                Debug.Log("Overwritten element: "+key);
+                                // Debug.Log"Overwritten element: "+key);
                             }
                             preloadDataDictionary[saveData.ID] = saveData;
                         }
@@ -135,14 +135,14 @@ public class ItemDataLoader
                                 {
                                     ItemData data = UnityEngine.Object.Instantiate(typePrefab);
                                     dataDictionary[saveData.ID] = data;
-                                    Debug.Log("Default element: "+key+" / "+data.loadType);
+                                    // Debug.Log"Default element: "+key+" / "+data.loadType);
                                     break;
                                 }
                             }
                         }
                         else
                         {
-                            Debug.Log("Default overwritten element: "+key);
+                            // Debug.Log"Default overwritten element: "+key);
                         }
                         preloadDataDictionary[saveData.ID] = saveData;
                     }
@@ -151,7 +151,7 @@ public class ItemDataLoader
         }
         else
         {
-            Debug.Log(defaultFolder);
+            // Debug.LogdefaultFolder);
         }
 
         Populate();

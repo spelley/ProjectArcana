@@ -69,9 +69,9 @@ public class CameraController : MonoBehaviour
                 SetFocus(followTarget.gameObject);
             }
 
-            //HandleLockedRotations();
+            HandleLockedRotations();
             HandleScroll();
-            HandleSmoothedRotations();
+            // HandleSmoothedRotations();
         }
     }
 

@@ -28,6 +28,7 @@ public class SkillSaveData : ISaveData
     public int push;
     public bool pushFromTarget;
     public bool requireUnitTarget;
+    public bool requireEmptyTile;
     public string skillCalculation;
     public string primaryAttribute;
     public string secondaryAttribute;
@@ -35,4 +36,5 @@ public class SkillSaveData : ISaveData
     public int primaryValue;
     public int secondaryValue;
     public int tertiaryValue;
+    public string associatedSkillID;
 }

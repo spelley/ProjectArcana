@@ -184,7 +184,7 @@ public class GameManager : MonoBehaviour
     {
         if(Input.GetKeyDown(KeyCode.F5))
         {
-            Debug.Log("Quick Save");
+            // Debug.Log"Quick Save");
             QuickSave();
         }
     }

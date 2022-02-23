@@ -118,7 +118,7 @@ public class ElementData : ScriptableObject, ILoadable<ElementSaveData>
         }
         saveData.strengthsIDs = strengthsIDs;
 
-        Debug.Log(JsonUtility.ToJson(saveData));
+        // Debug.LogJsonUtility.ToJson(saveData));
 
         return saveData;
     }
@@ -150,7 +150,7 @@ public class ElementData : ScriptableObject, ILoadable<ElementSaveData>
             }
         }
 
-        Debug.Log("Loaded: "+_elementName);
+        // Debug.Log"Loaded: "+_elementName);
 
         return true;
     }
