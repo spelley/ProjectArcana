@@ -7,6 +7,7 @@ using TMPro;
 public class UnitBattleUI : MonoBehaviour
 {
     BattleManager battleManager;
+    MapManager mapManager;
     enum UnitUIState
     {
         HIDDEN,
@@ -67,6 +68,7 @@ public class UnitBattleUI : MonoBehaviour
     void Start()
     {
         battleManager = BattleManager.Instance;
+        mapManager = MapManager.Instance;
         battleManager.OnEncounterStart += OnEncounterStart;
         battleManager.OnEncounterEnd += OnEncounterEnd;
         battleManager.OnSkillPreview += OnSkillPreview;
@@ -201,7 +203,8 @@ public class UnitBattleUI : MonoBehaviour
     void OnSkillConfirmButton()
     {
         skillConfirmButton.onClick.RemoveListener(OnSkillConfirmButton);
-        battleManager.SkillConfirm(battleManager.curSkill, battleManager.curUnit, battleManager.curTargets);
+        BattleSkill battleSkill = new BattleSkill(battleManager.curSkill, battleManager.curUnit, mapManager.GetCell(battleManager.curUnit.curPosition), true);
+        battleManager.SkillConfirm(battleSkill);
     }
 
     void OnSkillPreviewCancel()
@@ -215,7 +218,7 @@ public class UnitBattleUI : MonoBehaviour
         SetState(UnitUIState.HIDDEN);
     }
 
-    void OnSkillClear(SkillData skillData)
+    void OnSkillClear(BattleSkill battleSkill)
     {
         if(curUnit != null)
         {

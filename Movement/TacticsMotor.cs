@@ -142,12 +142,13 @@ public class TacticsMotor : MonoBehaviour
         }
         if(instruction.skill != null)
         {
+            BattleSkill aiBattleSkill = new BattleSkill(instruction.skill, characterMotor.unitData, mapManager.GetCell(characterMotor.unitData.curPosition), true);
             battleManager.SkillTarget(instruction.skill, characterMotor.unitData, mapManager.GetCell(characterMotor.unitData.curPosition));
             yield return new WaitForSeconds(.5f);
             battleManager.SkillSelectTarget(instruction.skill, instruction.targetCell);
             yield return new WaitForSeconds(.8f);
             battleManager.SkillPreview(instruction.skill, characterMotor.unitData, mapManager.GetTargetedCells());
-            battleManager.SkillConfirm(instruction.skill, characterMotor.unitData, mapManager.GetTargetedCells());
+            battleManager.SkillConfirm(aiBattleSkill);
         }
         else
         {
@@ -171,6 +172,7 @@ public class TacticsMotor : MonoBehaviour
     {
         float travelSpeed = .25f;
         float jumpSpeed = .125f;
+        bool processingInterrupt = false;
 
         isMoving = true;
         anim.SetBool("Moving", true);
@@ -178,10 +180,12 @@ public class TacticsMotor : MonoBehaviour
         Vector3 startPosition = this.transform.position;
         bool continueWalking = true;
 
-        if(path.Count > 0) {
-            while(path.Count > 0)
+        if(path.Count > 0)
+        {
+            while(path.Count > 0 || processingInterrupt)
             {
-                if(continueWalking) {
+                if(continueWalking && !processingInterrupt)
+                {
                     GridCell cell = path.Pop();
                     if(cell.position != startPosition)
                     {
@@ -216,33 +220,42 @@ public class TacticsMotor : MonoBehaviour
                     {
                         mapManager.UpdateUnitPosition(curCell.position, characterMotor.unitData);
                     }
+
                     mapManager.TravelEnter(characterMotor.unitData, curCell);
+
                     if(battleManager.HasInterrupts())
                     {
                         anim.SetBool("Moving", false);
+                        processingInterrupt = true;
                         yield return new WaitForSeconds(.4f);
                     }
-                    Action<ModBool> checkIfCancelled = (ModBool cancelled) => {
+
+                    Action<ModBool> checkIfCancelled = (ModBool cancelled) => 
+                    {
                         continueWalking = !cancelled.GetCalculated();
-                        if(!continueWalking) {
+                        if(!continueWalking)
+                        {
                             path.Clear();
                         }
-                        else {
+                        else
+                        {
                             anim.SetBool("Moving", true);
                         }
+                        processingInterrupt = false;
                     };
                     ModBool cancelledMovement = new ModBool(false);
                     battleManager.ResolveInterrupts(cancelledMovement, checkIfCancelled);
+                    yield return null;
                 }
                 yield return null;
             }
         }
-        
+        yield return null;
         mapManager.UpdateUnitPosition(curCell.position, characterMotor.unitData);
 
-        isMoving = false;
         anim.SetBool("Moving", false);
         mapManager.TravelPathEnd();
+        isMoving = false;
     }
 
     void OnUnitTurnEnd()
@@ -256,8 +269,9 @@ public class TacticsMotor : MonoBehaviour
 
     public void UseSkill(SkillData skillData, UnitData unitData, List<GridCell> targets)
     {
+        Debug.Log("isMoving: " + isMoving.ToString());
         // using a skill on our own turn, do a proper animation
-        if(!isMoving)
+        if(!isMoving )
         {
             Vector3 direction = (targets[0].realWorldPosition - transform.position).normalized;
             direction.y = 0;
@@ -284,7 +298,7 @@ public class TacticsMotor : MonoBehaviour
 
     }
 
-    void OnSkillClear(SkillData skillData)
+    void OnSkillClear(BattleSkill battleSkill)
     {
         Action<ModBool> interruptCheck = (ModBool cancelled) => {
             if(!cancelled.GetCalculated() && characterMotor.unitData.aiBrain != null)
@@ -305,27 +319,74 @@ public class TacticsMotor : MonoBehaviour
         battleManager.turnManager.EndTurn();
     }
 
-    void OnUnitPush(GridCell gridCell, Action<Vector3Int> callback)
+    void OnUnitPush(List<GridCell> pushPath, Action callback)
     {
-        StartCoroutine(PushCoroutine(gridCell, .5f, callback));
+        StartCoroutine(PushCoroutine(pushPath, .2f, callback));
     }
 
-    IEnumerator PushCoroutine(GridCell gridCell, float lerpDuration, Action<Vector3Int> callback)
+    IEnumerator PushCoroutine(List<GridCell> pushPath, float lerpDuration, Action callback)
     {
-        // TODO: push animation
+        int i = 0;
         float timeElapsed = 0;
         Vector3 startPosition = this.transform.position;
+        bool processingInterrupt = false;
+        bool continuePushing = true;
+        isMoving = true;
 
-        while (timeElapsed < lerpDuration)
+        while(i < pushPath.Count || processingInterrupt)
         {
-            this.transform.position = Vector3.Lerp(startPosition, gridCell.realWorldPosition, timeElapsed / lerpDuration);
-            timeElapsed += Time.deltaTime;
+            if(continuePushing && !processingInterrupt)
+            {
+                GridCell destinationCell = pushPath[i];
+                i++;
 
+                while (timeElapsed < lerpDuration)
+                {
+                    this.transform.position = Vector3.Lerp(startPosition, destinationCell.realWorldPosition, timeElapsed / lerpDuration);
+                    timeElapsed += Time.deltaTime;
+
+                    yield return null;
+                }
+
+                if(destinationCell.occupiedBy == null)
+                {
+                    mapManager.UpdateUnitPosition(destinationCell.position, characterMotor.unitData);
+                    mapManager.TravelEnter(characterMotor.unitData, destinationCell);
+                }
+                continuePushing = false;
+                if(curCell.occupiedBy == null) 
+                {
+                    mapManager.UpdateUnitPosition(curCell.position, characterMotor.unitData);
+                }
+
+                mapManager.TravelEnter(characterMotor.unitData, curCell);
+                
+                if(battleManager.HasInterrupts())
+                {
+                    processingInterrupt = true;
+                    yield return new WaitForSeconds(.4f);
+                }
+
+                Action<ModBool> checkIfCancelled = (ModBool cancelled) => 
+                {
+                    continuePushing = !cancelled.GetCalculated();
+                    if(!continuePushing)
+                    {
+                        pushPath.Clear();
+                    }
+                    processingInterrupt = false;
+                };
+                ModBool cancelledMovement = new ModBool(false);
+                battleManager.ResolveInterrupts(cancelledMovement, checkIfCancelled);
+                yield return null;
+            }
             yield return null;
-        }
-        
-        this.transform.position = gridCell.realWorldPosition;
-        callback?.Invoke(gridCell.position);
+        } 
+        yield return null;
+
+        mapManager.TravelPathEnd();
+        isMoving = false;
+        callback.Invoke();
     }
 
     public void SnapToGrid()
@@ -393,9 +454,9 @@ public class TacticsMotor : MonoBehaviour
             return;
         }
 
-        if(Input.GetKeyDown(KeyCode.Escape) && battleManager.targeting && battleManager.curSkill != null && !isMoving && !battleManager.previewingSkill)
+        if(Input.GetKeyDown(KeyCode.Escape) && battleManager.targetLocked && battleManager.preparedSkill != null && !isMoving)
         {
-            battleManager.SkillTargetCancel(battleManager.curSkill, characterMotor.unitData);
+            battleManager.PreparedSkillCancelTarget();
         }
     }
 }

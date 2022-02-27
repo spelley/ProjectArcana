@@ -47,7 +47,8 @@ public class SkillListItem : MonoBehaviour
     {
         if(skill != null && unit != null && !previewing)
         {
-            battleManager.SkillTarget(skill, unit, mapManager.GetCell(unit.curPosition));
+            battleManager.PreparedSkillInit(skill, unit);
+            //battleManager.SkillTarget(skill, unit, mapManager.GetCell(unit.curPosition));
             previewing = true;
             selectCallback?.Invoke();
         }

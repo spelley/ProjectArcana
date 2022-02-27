@@ -85,7 +85,12 @@ public class Tile : MonoBehaviour
 
     public void OnMouseEnter()
     {
-        if(battleManager.curUnit == null || battleManager.curUnit.faction != Faction.ALLY || battleManager.previewingSkill || battleManager.curUnit.aiBrain != null || battleManager.curUnit.unitGO.GetComponent<TacticsMotor>().isMoving)
+        if(battleManager.curUnit == null 
+            || battleManager.curUnit.faction != Faction.ALLY 
+            || battleManager.preparedSkill == null
+            || battleManager.targetLocked
+            || battleManager.curUnit.aiBrain != null 
+            || battleManager.curUnit.unitGO.GetComponent<TacticsMotor>().isMoving)
         {
             return;
         }
@@ -95,13 +100,16 @@ public class Tile : MonoBehaviour
         }
         else if(this.TileType == TileType.TARGETABLE || this.TileType == TileType.TARGETED)
         {
-            battleManager.SkillSelectTarget(battleManager.curSkill, gridCell);
+            battleManager.PreparedSkillPreviewTarget(gridCell);
         }
     }
 
     public void OnMouseExit()
     {
-        if(battleManager.curUnit == null || battleManager.curUnit.faction != Faction.ALLY || battleManager.curUnit.aiBrain != null || battleManager.curUnit.unitGO.GetComponent<TacticsMotor>().isMoving)
+        if(battleManager.curUnit == null 
+            || battleManager.curUnit.faction != Faction.ALLY 
+            || battleManager.curUnit.aiBrain != null 
+            || battleManager.curUnit.unitGO.GetComponent<TacticsMotor>().isMoving)
         {
             return;
         }
@@ -114,8 +122,13 @@ public class Tile : MonoBehaviour
 
     public void OnMouseDown()
     {
-        if(battleManager.curUnit == null || battleManager.curUnit.faction != Faction.ALLY || battleManager.curUnit.aiBrain != null || battleManager.curUnit.unitGO.GetComponent<TacticsMotor>().isMoving)
+        if(battleManager.curUnit == null 
+            || battleManager.curUnit.faction != Faction.ALLY 
+            || battleManager.curUnit.aiBrain != null 
+            || battleManager.curUnit.unitGO.GetComponent<TacticsMotor>().isMoving
+            || battleManager.targetLocked)
         {
+            Debug.Log("no clicky");
             return;
         }
 
@@ -130,11 +143,11 @@ public class Tile : MonoBehaviour
         else if(this.TileType == TileType.TARGETABLE || this.TileType == TileType.TARGETED)
         {
             UnitData unitData = battleManager.curUnit;
-            if(unitData == null)
-            {
-                unitData = GameObject.FindWithTag("Player").GetComponent<CharacterMotor>().unitData;
-            }
-            battleManager.SkillPreview(battleManager.curSkill, unitData, mapManager.GetTargetedCells());
+            battleManager.PreparedSkillSelectTarget(gridCell);
+        }
+        else
+        {
+            Debug.Log("TEST");
         }
     }
 }

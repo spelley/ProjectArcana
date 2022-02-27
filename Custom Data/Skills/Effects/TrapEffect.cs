@@ -5,23 +5,20 @@ using UnityEngine;
 
 [CreateAssetMenu(fileName = "Trap Effect", menuName = "Custom Data/Skill Effects/Trap Effect")]
 public class TrapEffect : SkillEffect
-{    
-    public override void Execute(SkillData skill, UnitData unitData, List<GridCell> targets)
-    {
-        foreach(GridCell gridCell in targets)
-        {
-            ExecutePerTarget(skill, unitData, gridCell);
-        }
-    }
-
-    public override void ExecutePerTarget(SkillData skill, UnitData unitData, GridCell gridCell)
+{   
+    public override void ExecutePerTarget(SkillData skill, UnitData unitData, GridCell gridCell, Action callback)
     {
         UnitData target = gridCell.occupiedBy;
         if(target == null && gridCell != null && unitData != null)
         {
             GameObject trapObjectPrefab = BattleManager.Instance.GetTrap();
             GameObject trapObject = Instantiate(trapObjectPrefab, gridCell.realWorldPosition, Quaternion.identity);
-            trapObject.GetComponent<TrapSetter>().SetTrap(skill.associatedSkill, unitData, gridCell);
+            BattleSkill trapSkill = new BattleSkill(skill.associatedSkill, unitData, gridCell, false);
+            trapObject.GetComponent<TrapSetter>().SetTrap(trapSkill, gridCell, callback);
+        }
+        else
+        {
+            callback.Invoke();
         }
     }
 

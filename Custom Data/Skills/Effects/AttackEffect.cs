@@ -6,42 +6,28 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "Attack Effect", menuName = "Custom Data/Skill Effects/Attack Effect")]
 public class AttackEffect : SkillEffect
 {    
-    public override void Execute(SkillData skill, UnitData unitData, List<GridCell> targets)
-    {
-        Debug.Log("Targets count: "+targets.Count);
-        foreach(GridCell gridCell in targets)
-        {
-            ExecutePerTarget(skill, unitData, gridCell);
-        }
-    }
-
-    public override void ExecutePerTarget(SkillData skill, UnitData unitData, GridCell gridCell)
+    public override void ExecutePerTarget(SkillData skill, UnitData unitData, GridCell gridCell, Action callback)
     {
         UnitData target = gridCell.occupiedBy;
-        Debug.Log("Execute per target: " + gridCell.position.ToString());
-        Debug.Log("Damage Source: " + unitData.unitName);
-        Debug.Log("Skill Name: " + skill.skillName);
         if(target != null)
         {
-            Debug.Log("Not null");
             if(skill.IsHit(skill.GetHitChance(unitData, target, false)) && skill.IsValidTargetType(unitData, target))
             {
-                Debug.Log("Is Hit");
                 int matches = BattleManager.Instance.GetRiverMatches(skill.elements);
                 int baseDamage = skill.skillCalculation.Calculate(skill, unitData, matches);
                 unitData.DealDamage(baseDamage, target, skill.elements);
-                skill.HandlePush(unitData, target);
                 skill.executedOn.Add(unitData);
+                Action pushComplete = () =>
+                {
+                    callback.Invoke();
+                };
+                skill.HandlePush(unitData, target, pushComplete);
             }
             else
             {
-                Debug.Log("Miss");
                 target.Miss();
+                callback.Invoke();
             }
-        }
-        else
-        {
-            Debug.Log("Is null target");
         }
     }
 

@@ -5,24 +5,27 @@ using UnityEngine;
 
 public class TrapSetter : MonoBehaviour
 {
+    BattleSkill battleSkill;
     SkillData skillData;
     UnitData unitData;
     GridCell gridCell;
     BattleManager battleManager;
     MapManager mapManager;
 
-    public void SetTrap(SkillData skill, UnitData source, GridCell cell)
+    public void SetTrap(BattleSkill battleSkill, GridCell cell, Action callback)
     {
         battleManager = BattleManager.Instance;
         mapManager = MapManager.Instance;
 
         transform.position = cell.realWorldPosition;
 
-        skillData = skill;
-        unitData = source;
+        this.battleSkill = battleSkill;
+        skillData = battleSkill.skill;
+        unitData = battleSkill.source;
         gridCell = cell;
 
         BindEvents();
+        callback.Invoke();
     }
 
     void BindEvents()
@@ -42,12 +45,14 @@ public class TrapSetter : MonoBehaviour
         GameObject thisGO = this.gameObject;
         if(cell == gridCell)
         {
-            Action<ModBool, Action<ModBool>> interrupt = (ModBool cancelExecution, Action<ModBool> completedCallback) => {
+            Action<ModBool, Action<ModBool>> interrupt = (ModBool cancelExecution, Action<ModBool> completedCallback) => 
+            {
                 cancelExecution.baseValue = true;
                 // clear the skill
-                Action<SkillData> trapSkillClear = null;
-                trapSkillClear = (SkillData skill) => {
-                    if(skill == skillData)
+                Action<BattleSkill> trapSkillClear = null;
+                trapSkillClear = (BattleSkill clearedBattleSkill) =>
+                { 
+                    if(battleSkill == clearedBattleSkill)
                     {
                         battleManager.OnSkillClear -= trapSkillClear;
                         battleManager.ResolveInterrupts(cancelExecution, completedCallback);
@@ -57,11 +62,8 @@ public class TrapSetter : MonoBehaviour
 
                 battleManager.OnSkillClear += trapSkillClear;
 
-                List<GridCell> targets = new List<GridCell>();
-                targets.Add(gridCell);
-                Debug.Log("Trap Setter: Skill Confirm - "+skillData.skillName);
-                battleManager.SkillTarget(skillData, unitData, gridCell);
-                battleManager.SkillSelectTarget(skillData, gridCell);
+                // battleManager.SkillTarget(skillData, unitData, gridCell);
+                // battleManager.SkillSelectTarget(skillData, gridCell, true);
                 StartCoroutine(SkillConfirmRoutine());
             };
 
@@ -72,7 +74,7 @@ public class TrapSetter : MonoBehaviour
     IEnumerator SkillConfirmRoutine()
     {
         yield return new WaitForSeconds(.8f);
-        battleManager.SkillConfirm(skillData, unitData, mapManager.GetTargetedCells());
+        battleManager.SkillConfirm(battleSkill);
     }
 
     public void OnEncounterEnd()

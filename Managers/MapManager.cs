@@ -6,6 +6,7 @@ using UnityEngine;
 
 public class MapManager : MonoBehaviour
 {
+    #region Initialization
     static MapManager _instance;
     public static MapManager Instance 
     { 
@@ -16,7 +17,9 @@ public class MapManager : MonoBehaviour
     }
 
     BattleManager battleManager;
+    #endregion
 
+    #region Private Variables
     Camera cam;
     Ray camRay;
     RaycastHit hit;
@@ -31,8 +34,9 @@ public class MapManager : MonoBehaviour
     GameObject tilePrefab;
     [SerializeField]
     GameObject targetTilePrefab;
+    #endregion
 
-    // grid data and positioning
+    #region Grid Data/Positioning
     public GridCell[,,] grid { get; private set; }
     Vector3Int gridAnchor = new Vector3Int(0, 0, 0);
     Vector3Int gridSize = new Vector3Int(24, 24, 12);
@@ -65,19 +69,27 @@ public class MapManager : MonoBehaviour
             _tileSize = value;
         }
     }
+    #endregion
 
+    #region Cell Lists & Filtering
     List<GridCell> cellList = new List<GridCell>();
     List<GridCell> walkableCells = new List<GridCell>();
     List<GridCell> targetableCells = new List<GridCell>();
     List<GridCell> targetedCells = new List<GridCell>();
     Dictionary<Vector3Int, Stack<GridCell>> cachedPaths = new Dictionary<Vector3Int, Stack<GridCell>>();
+    #endregion
 
+    #region Tile Rendering
     public int startPooledSize = 100;
     List<GameObject> pooledTiles;
     Dictionary<GridCell, GameObject> renderedTiles = new Dictionary<GridCell, GameObject>();
+    #endregion
+
+    #region Events
     public event Action<Stack<GridCell>> OnTravelPath;
     public event Action OnTravelPathEnd;
     public event Action<UnitData, GridCell> OnTravelEnter;
+    #endregion
 
     void Awake()
     {
@@ -115,7 +127,7 @@ public class MapManager : MonoBehaviour
         BindEvents();
     }
     
-    // EVENTS
+    #region Event Bindings
     void BindEvents()
     {
         battleManager.OnEncounterStart += OnEncounterStart;
@@ -141,7 +153,9 @@ public class MapManager : MonoBehaviour
         battleManager.OnSkillSelectTargetCancel -= OnSkillSelectTargetCancel;
         battleManager.OnSkillConfirmPrep -= OnSkillConfirmPrep;
     }
+    #endregion
 
+    #region Encounter Events
     public void OnEncounterStart()
     {
         ClearAllTiles();
@@ -169,17 +183,9 @@ public class MapManager : MonoBehaviour
         ClearOccupiedBy();
         battleManager.turnManager.OnTurnEnd -= OnTurnEnd;
     }
+    #endregion
 
-    public void SetMapData(MapData newMapData)
-    {
-        mapData = newMapData;
-        ResetGrid();
-        if(mapData)
-        {
-            LoadFromMapData();
-        }
-    }
-
+    #region Skill Targeting Events
     public void OnSkillTarget(SkillData skillData, UnitData userData, GridCell originCell)
     {
         // remove the walkability tiles for now
@@ -191,41 +197,13 @@ public class MapManager : MonoBehaviour
         RenderTargetableCells();
     }
 
-    public List<GridCell> GetTargetableCells(SkillData skillData, GridCell originCell)
-    {
-        List<GridCell> cells = new List<GridCell>();
-        if(skillData.targetType == TargetType.SELF)
-        {
-            cells.Add(originCell);
-        }
-        else
-        {
-            bool targetSelf = skillData.IsSelfTargeting();
-            
-            switch(skillData.rangeType)
-            {
-                case RangeType.AREA:
-                    cells.AddRange(GetTargetableArea(originCell, skillData.range, skillData.height, targetSelf));
-                break;
-                case RangeType.LINE:
-                    cells.AddRange(GetTargetableLine(originCell, skillData.range, skillData.height, targetSelf));
-                break;
-                default:
-                    // nothing
-                break;
-            }
-        }
-
-        return cells;
-    }
-
     public void OnSkillTargetCancel(SkillData skillData, UnitData unitData)
     {
         ResetTargetableCells();
         ResetTargetedCells();
     }
 
-    public void OnSkillSelectTarget(SkillData skillData, GridCell originCell, GridCell targetCell)
+    public void OnSkillSelectTarget(SkillData skillData, GridCell originCell, GridCell targetCell, bool hideUntargetedCells = false)
     {
         if(skillData == null)
         {
@@ -234,10 +212,19 @@ public class MapManager : MonoBehaviour
 
         ResetTargetedCells();
         targetedCells.AddRange(GetTargetedArea(skillData, originCell, targetCell, targetableCells));
+        if(hideUntargetedCells)
+        {
+            ClearTargetableTiles();
+        }
         RenderTargetedCells();
     }
 
-    public List<GridCell> GetTargetedArea(SkillData skillData, GridCell originCell, GridCell targetCell, List<GridCell> targetableArea, bool occupiedOnly = false)
+    public List<GridCell> GetTargetedArea(
+        SkillData skillData, 
+        GridCell originCell, 
+        GridCell targetCell, 
+        List<GridCell> targetableArea, 
+        bool occupiedOnly = false)
     {
         List<GridCell> targetedArea = new List<GridCell>();
 
@@ -282,9 +269,16 @@ public class MapManager : MonoBehaviour
         ResetTargetableCells();
         ResetTargetedCells();
     }
-    // END EVENTS
+    #endregion
 
-    // PATHFINDING
+    #region Pathfinding
+    public void UpdateUnitPosition(Vector3Int position, UnitData unitData)
+    {
+        grid[unitData.curPosition.x, unitData.curPosition.y, unitData.curPosition.z].occupiedBy = null;
+        unitData.curPosition = position;
+        grid[position.x, position.y, position.z].occupiedBy = unitData;
+    }
+
     public Vector3Int LoadWalkabilityZone(GameObject player, Vector3 start, bool render = true)
     {
         UnitData unitData = player.GetComponent<CharacterMotor>().unitData;
@@ -405,11 +399,14 @@ public class MapManager : MonoBehaviour
         cachedPaths.Clear();
     }
 
-    public GridCell GetForcedMovement(Vector3Int pushOriginPosition, Vector3Int pushTargetPosition, int distance = 1, int maxHeightDiff = 100)
+    public List<GridCell> GetForcedMovement(Vector3Int pushOriginPosition, Vector3Int pushTargetPosition, int distance = 1, int maxHeightDiff = 100)
     {
+        List<GridCell> forcedPath = new List<GridCell>();
         if(pushOriginPosition == pushTargetPosition || distance == 0)
         {
-            return GetCell(pushTargetPosition);
+            forcedPath.Add(GetCell(pushTargetPosition));
+            return forcedPath;
+            // return GetCell(pushTargetPosition);
         }
 
         int distMod = distance > 0 ? 1 : -1;
@@ -428,7 +425,6 @@ public class MapManager : MonoBehaviour
         }
         else
         {
-            // TODO: pick one at random, instead of defaulting to X
             modVector = (pushOriginPosition.x < pushTargetPosition.x) ? new Vector3Int(distMod, 0, 0) : new Vector3Int(-distMod, 0, 0);
         }
 
@@ -447,7 +443,9 @@ public class MapManager : MonoBehaviour
                         Vector3Int heightPosition = new Vector3Int(checkPosition.x, checkPosition.y, checkPosition.z - h);
                         if(!CellInBounds(heightPosition.x, heightPosition.y, heightPosition.z))
                         {
-                            return GetCell(lastValidPosition);
+                            forcedPath.Add(GetCell(lastValidPosition));
+                            return forcedPath;
+                            // return GetCell(lastValidPosition);
                         }
                         
                         GridCell heightCell = GetCell(heightPosition);
@@ -457,80 +455,41 @@ public class MapManager : MonoBehaviour
                         }
                         if(heightCell.buildNoNeighbours)
                         {
-                            return GetCell(lastValidPosition);
+                            forcedPath.Add(GetCell(lastValidPosition));
+                            return forcedPath;
+                            // return GetCell(lastValidPosition);
                         }
                         if(heightCell.walkable)
                         {
-                            return heightCell;
+                            forcedPath.Add(heightCell);
+                            return forcedPath;
+                            // return heightCell;
                         }
                     }
-                    return GetCell(lastValidPosition);
+                    forcedPath.Add(GetCell(lastValidPosition));
+                    return forcedPath;
+                    // return GetCell(lastValidPosition);
                 }
                 else if(checkCell.buildNoNeighbours || !checkCell.walkable || checkCell.occupiedBy != null)
                 {
-                    return GetCell(lastValidPosition);
+                    forcedPath.Add(GetCell(lastValidPosition));
+                    return forcedPath;
+                    // return GetCell(lastValidPosition);
                 }
 
                 lastValidPosition = checkCell.position;
             }
             else
             {
-                return GetCell(lastValidPosition);
+                forcedPath.Add(GetCell(lastValidPosition));
+                return forcedPath;
+                // return GetCell(lastValidPosition);
             }
         }
 
-        return GetCell(lastValidPosition);
-    }
-
-    public GridCell GetClosestUnoccupiedGridCell(Vector3Int targetPosition, UnitData unitData)
-    {
-        GridCell closestCell = cellList
-                                .Where(gc => gc.walkable && (gc.occupiedBy == null || gc.occupiedBy == unitData))
-                                .OrderBy(gc =>  Vector3Int.Distance(gc.position, targetPosition))
-                                .FirstOrDefault();
-        return closestCell;
-    }
-
-    public GridCell GetClosestUnoccupiedGridCell(Vector3 targetPosition, UnitData unitData)
-    {
-        GridCell closestCell = cellList
-                                .Where(gc => gc.walkable && (gc.occupiedBy == null || gc.occupiedBy == unitData))
-                                .OrderBy(gc =>  Vector3.Distance(gc.realWorldPosition, targetPosition))
-                                .FirstOrDefault();
-        return closestCell;
-    }
-
-    public GridCell GetClosestGridCell(Vector3 targetPosition, bool walkable = true)
-    {
-        if(walkable)
-        {
-            GridCell closestCell = cellList.Where(gc => gc.walkable).OrderBy(gc => Vector3.Distance(gc.realWorldPosition, targetPosition)).FirstOrDefault();
-            return closestCell;
-        }
-        else
-        {
-            GridCell closestCell = cellList.OrderBy(gc => Vector3.Distance(gc.realWorldPosition, targetPosition)).FirstOrDefault();
-            return closestCell;
-        }
-    }
-
-    public GridCell GetClosestGridCell(Vector3Int targetPosition, List<GridCell> customList)
-    {
-        GridCell closestCell = customList.OrderBy(gc => Vector3Int.Distance(gc.position, targetPosition)).FirstOrDefault();
-        return closestCell;
-    }
-
-    public Stack<GridCell> GetPath(Vector3Int endPosition)
-    {
-        Stack<GridCell> path = new Stack<GridCell>();
-        GridCell endCell = grid[endPosition.x, endPosition.y, endPosition.z];
-
-        return CalculatePath(endCell);
-    }
-
-    public Stack<GridCell> GetPath(GridCell endCell)
-    {
-        return CalculatePath(endCell);
+        forcedPath.Add(GetCell(lastValidPosition));
+        return forcedPath;
+        // return GetCell(lastValidPosition);
     }
 
     public Stack<GridCell> CalculatePath(GridCell endCell)
@@ -593,7 +552,145 @@ public class MapManager : MonoBehaviour
             }
         }
     }
+
+    public void TravelPath(Stack<GridCell> path)
+    {
+        OnTravelPath?.Invoke(path);
+    }
+
+    public void TravelEnter(UnitData unitData, GridCell cell)
+    {
+        OnTravelEnter?.Invoke(unitData, cell);
+    }
+
+    public void TravelPathEnd()
+    {
+        ModBool cancelExecution = new ModBool(false);
+        Action<ModBool> callback = (ModBool cancelled) => {
+            OnTravelPathEnd?.Invoke();
+        };
+        battleManager.ResolveInterrupts(cancelExecution, callback);
+    }
+    #endregion
+
+    #region Getters
+    GameObject GetPooledTile()
+    {
+        for(int i = 0; i < pooledTiles.Count; i++)
+        {
+            if(!pooledTiles[i].activeInHierarchy)
+            {
+                return pooledTiles[i];
+            }
+        }
+
+        GameObject tileObj = Instantiate(tilePrefab, mapHolder);
+        tileObj.SetActive(false);
+        pooledTiles.Add(tileObj);
+        return tileObj;
+    }
+
+    public List<GridCell> GetTargetableCells()
+    {
+        return targetableCells;
+    }
     
+    public List<GridCell> GetTargetedCells()
+    {
+        return targetedCells;
+    }
+
+    public List<GridCell> GetTargetableCells(SkillData skillData, GridCell originCell)
+    {
+        List<GridCell> cells = new List<GridCell>();
+        if(skillData.targetType == TargetType.SELF)
+        {
+            cells.Add(originCell);
+        }
+        else
+        {
+            bool targetSelf = skillData.IsSelfTargeting();
+            
+            switch(skillData.rangeType)
+            {
+                case RangeType.AREA:
+                    cells.AddRange(GetTargetableArea(originCell, skillData.range, skillData.height, targetSelf));
+                break;
+                case RangeType.LINE:
+                    cells.AddRange(GetTargetableLine(originCell, skillData.range, skillData.height, targetSelf));
+                break;
+                default:
+                    // nothing
+                break;
+            }
+        }
+
+        return cells;
+    }
+
+    public GridCell GetClosestUnoccupiedGridCell(Vector3Int targetPosition, UnitData unitData)
+    {
+        GridCell closestCell = cellList
+                                .Where(gc => gc.walkable && (gc.occupiedBy == null || gc.occupiedBy == unitData))
+                                .OrderBy(gc =>  Vector3Int.Distance(gc.position, targetPosition))
+                                .FirstOrDefault();
+        return closestCell;
+    }
+
+    public GridCell GetClosestUnoccupiedGridCell(Vector3 targetPosition, UnitData unitData)
+    {
+        GridCell closestCell = cellList
+                                .Where(gc => gc.walkable && (gc.occupiedBy == null || gc.occupiedBy == unitData))
+                                .OrderBy(gc =>  Vector3.Distance(gc.realWorldPosition, targetPosition))
+                                .FirstOrDefault();
+        return closestCell;
+    }
+
+    public GridCell GetClosestGridCell(Vector3 targetPosition, bool walkable = true)
+    {
+        if(walkable)
+        {
+            GridCell closestCell = cellList.Where(gc => gc.walkable).OrderBy(gc => Vector3.Distance(gc.realWorldPosition, targetPosition)).FirstOrDefault();
+            return closestCell;
+        }
+        else
+        {
+            GridCell closestCell = cellList.OrderBy(gc => Vector3.Distance(gc.realWorldPosition, targetPosition)).FirstOrDefault();
+            return closestCell;
+        }
+    }
+
+    public GridCell GetClosestGridCell(Vector3Int targetPosition, List<GridCell> customList)
+    {
+        GridCell closestCell = customList.OrderBy(gc => Vector3Int.Distance(gc.position, targetPosition)).FirstOrDefault();
+        return closestCell;
+    }
+
+    public Stack<GridCell> GetPath(Vector3Int endPosition)
+    {
+        Stack<GridCell> path = new Stack<GridCell>();
+        GridCell endCell = grid[endPosition.x, endPosition.y, endPosition.z];
+
+        return CalculatePath(endCell);
+    }
+
+    public Stack<GridCell> GetPath(GridCell endCell)
+    {
+        return CalculatePath(endCell);
+    }
+
+    public GridCell GetCell(Vector3Int cellPosition)
+    {
+        return grid[cellPosition.x, cellPosition.y, cellPosition.z];
+    }
+
+    public List<GridCell> GetWalkableCells()
+    {
+        return walkableCells;
+    }
+    #endregion
+
+    #region Map Data
     void LoadFromMapData()
     {
         if(mapData)
@@ -621,11 +718,14 @@ public class MapManager : MonoBehaviour
         }
     }
 
-    public void UpdateUnitPosition(Vector3Int position, UnitData unitData)
+    public void SetMapData(MapData newMapData)
     {
-        grid[unitData.curPosition.x, unitData.curPosition.y, unitData.curPosition.z].occupiedBy = null;
-        unitData.curPosition = position;
-        grid[position.x, position.y, position.z].occupiedBy = unitData;
+        mapData = newMapData;
+        ResetGrid();
+        if(mapData)
+        {
+            LoadFromMapData();
+        }
     }
 
     void ResetGrid()
@@ -633,9 +733,7 @@ public class MapManager : MonoBehaviour
         grid = new GridCell[gridSize.x, gridSize.y, gridSize.z];
         cellList = new List<GridCell>();
     }
-    // END PATHFINDING
 
-    // CELL UTILITY FUNCTIONS
     bool CellInBounds(int x, int y, int z)
     {
         if(x < 0 || y < 0 || z < 0)
@@ -649,18 +747,40 @@ public class MapManager : MonoBehaviour
         return true;
     }
 
-    public GridCell GetCell(Vector3Int cellPosition)
+    void RenderCell(GridCell gridCell, TileType tileType)
     {
-        return grid[cellPosition.x, cellPosition.y, cellPosition.z];
-    }
+        if(renderedTiles.ContainsKey(gridCell))
+        {
+            renderedTiles[gridCell].GetComponent<Tile>().TileType = tileType;
+            return;
+        }
 
-    public List<GridCell> GetWalkableCells()
-    {
-        return walkableCells;
-    }
-    // END CELL UTILITY FUNCTIONS
+        GameObject tileObj = GetPooledTile();
+        
+        float tileSizeX = tileSize;
+        if(gridCell.realWorldNormal.x != 0f)
+        {
+            tileSizeX = tileSize / gridCell.realWorldNormal.y;
+        }
 
-    // SKILL TARGETING
+        float tileSizeZ = tileSize;
+        if(gridCell.realWorldNormal.z != 0f)
+        {
+            tileSizeZ = tileSize / gridCell.realWorldNormal.y;
+        }
+
+        tileObj.transform.position = gridCell.realWorldPosition;
+        tileObj.transform.localScale = new Vector3(tileSizeX, .01f, tileSizeZ);
+        tileObj.transform.rotation = Quaternion.FromToRotation(Vector3.up, gridCell.realWorldNormal);
+        gridCell.tileObj = tileObj;
+        tileObj.SetActive(true);
+        tileObj.GetComponent<Tile>().SetGridCell(gridCell, tileType);
+
+        renderedTiles.Add(gridCell, tileObj);
+    }
+    #endregion
+
+    #region Skill Targeting
     List<GridCell> GetTargetableArea(GridCell originCell, int maxDistance, int maxUp, bool includeSelf = false)
     {
         List<GridCell> cells = new List<GridCell>();
@@ -843,6 +963,15 @@ public class MapManager : MonoBehaviour
         }
     }
 
+    public void RenderTargetableTiles(List<GridCell> cells)
+    {
+        ResetTargetableCells();
+        foreach(GridCell gridCell in cells)
+        {
+            RenderCell(gridCell, TileType.TARGETABLE);
+        }
+    }
+
     void RenderTargetedCells()
     {
         foreach(GridCell targetCell in targetedCells)
@@ -850,19 +979,18 @@ public class MapManager : MonoBehaviour
             RenderCell(targetCell, TileType.TARGETED);
         }
     }
-
-    public List<GridCell> GetTargetableCells()
+    public void RenderTargetedTiles(List<GridCell> cells)
     {
-        return targetableCells;
+        ResetTargetedCells();
+        foreach(GridCell gridCell in cells)
+        {
+            RenderCell(gridCell, TileType.TARGETED);
+        }
     }
 
-    public List<GridCell> GetTargetedCells()
-    {
-        return targetedCells;
-    }
+    #endregion
 
-    // END SKILL TARGETING
-
+    #region Clear Functions
     public void ClearAllTiles()
     {
         ClearWalkabilityTiles();
@@ -904,7 +1032,20 @@ public class MapManager : MonoBehaviour
         }
     }
 
-    void ResetTargetableCells()
+    public void ClearTargetableTiles(List<GridCell> tiles)
+    {
+        foreach(GridCell gridCell in tiles)
+        {
+            GameObject tileObj = null;
+            if(renderedTiles.TryGetValue(gridCell, out tileObj))
+            {
+                renderedTiles.Remove(gridCell);
+                tileObj.SetActive(false);
+            }
+        }
+    }
+
+    public void ResetTargetableCells()
     {
         ClearTargetableTiles();
         targetableCells.Clear();
@@ -932,78 +1073,34 @@ public class MapManager : MonoBehaviour
         }
     }
 
-    void ResetTargetedCells()
+    public void ClearTargetedTiles(List<GridCell> tiles)
+    {
+        foreach(GridCell gridCell in tiles)
+        {
+            GameObject tileObj = null;
+            if(renderedTiles.TryGetValue(gridCell, out tileObj))
+            {
+                // if this tile exists as part of the targetable grid
+                // we don't want to get rid of it, just toggle it on off
+                if(targetableCells.Contains(gridCell))
+                {
+                    tileObj.GetComponent<Tile>().TileType = TileType.TARGETABLE;
+                }
+                else // we only exist because the target 
+                {
+                    renderedTiles.Remove(gridCell);
+                    tileObj.SetActive(false);
+                }
+            }
+        }
+    }
+
+    public void ResetTargetedCells()
     {
         ClearTargetedTiles();
         targetedCells.Clear();
     }
-
-    GameObject GetPooledTile()
-    {
-        for(int i = 0; i < pooledTiles.Count; i++)
-        {
-            if(!pooledTiles[i].activeInHierarchy)
-            {
-                return pooledTiles[i];
-            }
-        }
-
-        GameObject tileObj = Instantiate(tilePrefab, mapHolder);
-        tileObj.SetActive(false);
-        pooledTiles.Add(tileObj);
-        return tileObj;
-    }
-
-    void RenderCell(GridCell gridCell, TileType tileType)
-    {
-        if(renderedTiles.ContainsKey(gridCell))
-        {
-            renderedTiles[gridCell].GetComponent<Tile>().TileType = tileType;
-            return;
-        }
-
-        GameObject tileObj = GetPooledTile();
-        
-        float tileSizeX = tileSize;
-        if(gridCell.realWorldNormal.x != 0f)
-        {
-            tileSizeX = tileSize / gridCell.realWorldNormal.y;
-        }
-
-        float tileSizeZ = tileSize;
-        if(gridCell.realWorldNormal.z != 0f)
-        {
-            tileSizeZ = tileSize / gridCell.realWorldNormal.y;
-        }
-
-        tileObj.transform.position = gridCell.realWorldPosition;
-        tileObj.transform.localScale = new Vector3(tileSizeX, .01f, tileSizeZ);
-        tileObj.transform.rotation = Quaternion.FromToRotation(Vector3.up, gridCell.realWorldNormal);
-        gridCell.tileObj = tileObj;
-        tileObj.SetActive(true);
-        tileObj.GetComponent<Tile>().SetGridCell(gridCell, tileType);
-
-        renderedTiles.Add(gridCell, tileObj);
-    }
-
-    public void TravelPath(Stack<GridCell> path)
-    {
-        OnTravelPath?.Invoke(path);
-    }
-
-    public void TravelEnter(UnitData unitData, GridCell cell)
-    {
-        OnTravelEnter?.Invoke(unitData, cell);
-    }
-
-    public void TravelPathEnd()
-    {
-        ModBool cancelExecution = new ModBool(false);
-        Action<ModBool> callback = (ModBool cancelled) => {
-            OnTravelPathEnd?.Invoke();
-        };
-        battleManager.ResolveInterrupts(cancelExecution, callback);
-    }
+    #endregion    
 
     void OnDestroy()
     {

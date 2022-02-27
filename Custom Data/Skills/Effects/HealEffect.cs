@@ -6,15 +6,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "Heal Effect", menuName = "Custom Data/Skill Effects/Heal Effect")]
 public class HealEffect : SkillEffect
 {
-    public override void Execute(SkillData skill, UnitData unitData, List<GridCell> targets)
-    {
-        foreach(GridCell gridCell in targets)
-        {
-            ExecutePerTarget(skill, unitData, gridCell);
-        }
-    }
-
-    public override void ExecutePerTarget(SkillData skill, UnitData unitData, GridCell gridCell)
+    public override void ExecutePerTarget(SkillData skill, UnitData unitData, GridCell gridCell, Action callback)
     {
         UnitData target = gridCell.occupiedBy;
         if(target != null)
@@ -24,8 +16,12 @@ public class HealEffect : SkillEffect
                 int matches = BattleManager.Instance.GetRiverMatches(skill.elements);
                 int baseHeal = skill.skillCalculation.Calculate(skill, unitData, matches);
                 unitData.HealOther(baseHeal, target, skill.elements);
-                skill.HandlePush(unitData, target);
                 skill.executedOn.Add(unitData);
+                Action pushComplete = () =>
+                {
+                    callback.Invoke();
+                };
+                skill.HandlePush(unitData, target, pushComplete);
             }
             else
             {
