@@ -20,12 +20,15 @@ public class BattleSkillAnimation : MonoBehaviour
     [SerializeField]
     GameObject hitSFX;
 
+    List<UnitData> usedOn = new List<UnitData>();
+
     public void SetSkill(BattleSkill _battleSkill)
     {
         battleSkill = _battleSkill;
         skillData = _battleSkill.skillData;
         unitData = _battleSkill.unitData;
         targets = _battleSkill.targets;
+        usedOn.Clear();
         Animate();
     }
 
@@ -50,10 +53,6 @@ public class BattleSkillAnimation : MonoBehaviour
                 yield return null;
                 continue;
             }
-            else if(i > 0)
-            {
-                yield return new WaitForSeconds(timeBetweenTargets);
-            }
 
             GridCell gridCell = targets[i];
             i++;
@@ -62,8 +61,21 @@ public class BattleSkillAnimation : MonoBehaviour
                 continue;
             }
 
+            if(gridCell.occupiedBy != null)
+            {
+                if(usedOn.Contains(gridCell.occupiedBy))
+                {
+                    continue;
+                }
+                else
+                {
+                    usedOn.Add(gridCell.occupiedBy);
+                }
+            }
+            
             if(skillData.requireUnitTarget && gridCell.occupiedBy != null)
             {
+                yield return new WaitForSeconds(timeBetweenTargets);
                 Camera.main.GetComponent<CameraController>().SetFocus(gridCell.occupiedBy.unitGO);
             }
 
@@ -85,7 +97,7 @@ public class BattleSkillAnimation : MonoBehaviour
                 continueExecuting = true;
             };
             
-            battleSkill.ExecutePerTarget(gridCell, continueTargeting);
+            BattleManager.Instance.PerformSkillOnTarget(battleSkill, gridCell, continueTargeting);
 
             yield return null;
         }

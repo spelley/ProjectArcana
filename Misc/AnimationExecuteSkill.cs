@@ -8,7 +8,7 @@ public class AnimationExecuteSkill : MonoBehaviour
     {
         if(BattleManager.Instance != null)
         {
-            BattleManager.Instance.SkillExecute();
+            BattleManager.Instance.PreparedSkillConfirm();
         }
     }
 
@@ -16,7 +16,7 @@ public class AnimationExecuteSkill : MonoBehaviour
     {
         if(BattleManager.Instance != null)
         {
-            BattleManager.Instance.SkillClear();
+            BattleManager.Instance.PreparedSkillComplete();
         }
     }
 }

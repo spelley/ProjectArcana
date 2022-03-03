@@ -87,8 +87,6 @@ public class Tile : MonoBehaviour
     {
         if(battleManager.curUnit == null 
             || battleManager.curUnit.faction != Faction.ALLY 
-            || battleManager.preparedSkill == null
-            || battleManager.targetLocked
             || battleManager.curUnit.aiBrain != null 
             || battleManager.curUnit.unitGO.GetComponent<TacticsMotor>().isMoving)
         {
@@ -98,7 +96,8 @@ public class Tile : MonoBehaviour
         {
             mapManager.GetAndRenderPath(gridCell);
         }
-        else if(this.TileType == TileType.TARGETABLE || this.TileType == TileType.TARGETED)
+        else if(battleManager.preparedSkill != null && !battleManager.targetLocked 
+                && (this.TileType == TileType.TARGETABLE || this.TileType == TileType.TARGETED))
         {
             battleManager.PreparedSkillPreviewTarget(gridCell);
         }
@@ -128,7 +127,6 @@ public class Tile : MonoBehaviour
             || battleManager.curUnit.unitGO.GetComponent<TacticsMotor>().isMoving
             || battleManager.targetLocked)
         {
-            Debug.Log("no clicky");
             return;
         }
 
@@ -140,14 +138,13 @@ public class Tile : MonoBehaviour
                 mapManager.TravelPath(path);
             }
         }
-        else if(this.TileType == TileType.TARGETABLE || this.TileType == TileType.TARGETED)
+        else if((this.TileType == TileType.TARGETABLE || this.TileType == TileType.TARGETED) 
+            && battleManager.preparedSkill != null 
+            && ((battleManager.preparedSkill.skill.requireEmptyTile && gridCell.occupiedBy == null)
+                || battleManager.preparedSkill.skill.requireUnitTarget))
         {
             UnitData unitData = battleManager.curUnit;
             battleManager.PreparedSkillSelectTarget(gridCell);
-        }
-        else
-        {
-            Debug.Log("TEST");
         }
     }
 }

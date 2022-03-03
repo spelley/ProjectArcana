@@ -48,33 +48,15 @@ public class TrapSetter : MonoBehaviour
             Action<ModBool, Action<ModBool>> interrupt = (ModBool cancelExecution, Action<ModBool> completedCallback) => 
             {
                 cancelExecution.baseValue = true;
-                // clear the skill
-                Action<BattleSkill> trapSkillClear = null;
-                trapSkillClear = (BattleSkill clearedBattleSkill) =>
-                { 
-                    if(battleSkill == clearedBattleSkill)
-                    {
-                        battleManager.OnSkillClear -= trapSkillClear;
-                        battleManager.ResolveInterrupts(cancelExecution, completedCallback);
-                        GameObject.Destroy(thisGO);
-                    }
-                };
-
-                battleManager.OnSkillClear += trapSkillClear;
-
-                // battleManager.SkillTarget(skillData, unitData, gridCell);
-                // battleManager.SkillSelectTarget(skillData, gridCell, true);
-                StartCoroutine(SkillConfirmRoutine());
+                battleSkill.UpdateTargetableArea();
+                battleSkill.StartTargeting();
+                battleSkill.SetTarget(gridCell);
+                battleManager.AddSkill(battleSkill);
+                completedCallback.Invoke(cancelExecution);
             };
 
             battleManager.AddInterrupt(interrupt);
         }
-    }
-
-    IEnumerator SkillConfirmRoutine()
-    {
-        yield return new WaitForSeconds(.8f);
-        battleManager.SkillConfirm(battleSkill);
     }
 
     public void OnEncounterEnd()

@@ -26,6 +26,7 @@ public class HealEffect : SkillEffect
             else
             {
                 target.Miss();
+                callback.Invoke();
             }
         }
     }

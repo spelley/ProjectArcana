@@ -74,8 +74,6 @@ public class MapManager : MonoBehaviour
     #region Cell Lists & Filtering
     List<GridCell> cellList = new List<GridCell>();
     List<GridCell> walkableCells = new List<GridCell>();
-    List<GridCell> targetableCells = new List<GridCell>();
-    List<GridCell> targetedCells = new List<GridCell>();
     Dictionary<Vector3Int, Stack<GridCell>> cachedPaths = new Dictionary<Vector3Int, Stack<GridCell>>();
     #endregion
 
@@ -132,11 +130,6 @@ public class MapManager : MonoBehaviour
     {
         battleManager.OnEncounterStart += OnEncounterStart;
         battleManager.OnEncounterEnd += OnEncounterEnd;
-        battleManager.OnSkillTarget += OnSkillTarget;
-        battleManager.OnSkillTargetCancel += OnSkillTargetCancel;
-        battleManager.OnSkillSelectTarget += OnSkillSelectTarget;
-        battleManager.OnSkillSelectTargetCancel += OnSkillSelectTargetCancel;
-        battleManager.OnSkillConfirmPrep += OnSkillConfirmPrep;
     }
 
     void UnbindEvents()
@@ -147,11 +140,6 @@ public class MapManager : MonoBehaviour
         {
             battleManager.turnManager.OnTurnEnd -= OnTurnEnd;
         }
-        battleManager.OnSkillTarget -= OnSkillTarget;
-        battleManager.OnSkillTargetCancel -= OnSkillTargetCancel;
-        battleManager.OnSkillSelectTarget -= OnSkillSelectTarget;
-        battleManager.OnSkillSelectTargetCancel -= OnSkillSelectTargetCancel;
-        battleManager.OnSkillConfirmPrep -= OnSkillConfirmPrep;
     }
     #endregion
 
@@ -160,8 +148,6 @@ public class MapManager : MonoBehaviour
     {
         ClearAllTiles();
         ResetWalkableZoneCalculations();
-        ResetTargetableCells();
-        ResetTargetedCells();
 
         battleManager.turnManager.OnTurnEnd += OnTurnEnd;
     }
@@ -170,54 +156,18 @@ public class MapManager : MonoBehaviour
     {
         ClearAllTiles();
         ResetWalkableZoneCalculations();
-        ResetTargetableCells();
-        ResetTargetedCells();
     }
 
     public void OnEncounterEnd()
     {
         ClearAllTiles();
         ResetWalkableZoneCalculations();
-        ResetTargetableCells();
-        ResetTargetedCells();
         ClearOccupiedBy();
         battleManager.turnManager.OnTurnEnd -= OnTurnEnd;
     }
     #endregion
 
-    #region Skill Targeting Events
-    public void OnSkillTarget(SkillData skillData, UnitData userData, GridCell originCell)
-    {
-        // remove the walkability tiles for now
-        ClearWalkabilityTiles();
-        // clear out any old targetable cells
-        ResetTargetableCells();
-        targetableCells.Clear();
-        targetableCells.AddRange(GetTargetableCells(skillData, originCell));
-        RenderTargetableCells();
-    }
-
-    public void OnSkillTargetCancel(SkillData skillData, UnitData unitData)
-    {
-        ResetTargetableCells();
-        ResetTargetedCells();
-    }
-
-    public void OnSkillSelectTarget(SkillData skillData, GridCell originCell, GridCell targetCell, bool hideUntargetedCells = false)
-    {
-        if(skillData == null)
-        {
-            return;
-        }
-
-        ResetTargetedCells();
-        targetedCells.AddRange(GetTargetedArea(skillData, originCell, targetCell, targetableCells));
-        if(hideUntargetedCells)
-        {
-            ClearTargetableTiles();
-        }
-        RenderTargetedCells();
-    }
+    #region Skill Targeting
 
     public List<GridCell> GetTargetedArea(
         SkillData skillData, 
@@ -233,42 +183,20 @@ public class MapManager : MonoBehaviour
             return targetedArea;
         }
 
-        List<Vector3Int> offsets = SkillTargetShape.GetTargetShape(skillData, originCell, targetCell, targetableCells);
+        List<Vector3Int> offsets = SkillTargetShape.GetTargetShape(skillData, originCell, targetCell, targetableArea);
+
         foreach(Vector3Int offset in offsets)
         {
-            if(CheckIfTargetable(targetCell.position.x + offset.x, targetCell.position.y + offset.y, targetCell.position.z + offset.z))
+            if(CheckIfTargetable(targetCell.position.x + offset.x, targetCell.position.y + offset.y, targetCell.position.z + offset.z, skillData.requireEmptyTile))
             {
                 GridCell newCell = grid[targetCell.position.x + offset.x, targetCell.position.y + offset.y, targetCell.position.z + offset.z];
-                if(!occupiedOnly || newCell.occupiedBy != null) 
-                {
-                    if(!skillData.requireEmptyTile || newCell.occupiedBy == null)
-                    {
-                        targetedArea.Add(newCell);
-                    }
-                }
+                targetedArea.Add(newCell);
             }
         }
 
         return targetedArea;
     }
 
-    public void OnSkillSelectTargetCancel(SkillData skillData, GridCell originCell, GridCell targetCell)
-    {
-        ResetTargetedCells();
-        RenderTargetableCells();
-    }
-
-    public void OnSkillConfirmPrep(SkillData skillData, UnitData unitData, List<GridCell> targets)
-    {
-        ClearAllTiles();
-    }
-
-    public void OnSkillClear()
-    {
-        ResetWalkableZoneCalculations();
-        ResetTargetableCells();
-        ResetTargetedCells();
-    }
     #endregion
 
     #region Pathfinding
@@ -590,16 +518,6 @@ public class MapManager : MonoBehaviour
         return tileObj;
     }
 
-    public List<GridCell> GetTargetableCells()
-    {
-        return targetableCells;
-    }
-    
-    public List<GridCell> GetTargetedCells()
-    {
-        return targetedCells;
-    }
-
     public List<GridCell> GetTargetableCells(SkillData skillData, GridCell originCell)
     {
         List<GridCell> cells = new List<GridCell>();
@@ -610,14 +528,15 @@ public class MapManager : MonoBehaviour
         else
         {
             bool targetSelf = skillData.IsSelfTargeting();
+            bool skipOccupied = skillData.requireEmptyTile;
             
             switch(skillData.rangeType)
             {
                 case RangeType.AREA:
-                    cells.AddRange(GetTargetableArea(originCell, skillData.range, skillData.height, targetSelf));
+                    cells.AddRange(GetTargetableArea(originCell, skillData.range, skillData.height, targetSelf, skipOccupied));
                 break;
                 case RangeType.LINE:
-                    cells.AddRange(GetTargetableLine(originCell, skillData.range, skillData.height, targetSelf));
+                    cells.AddRange(GetTargetableLine(originCell, skillData.range, skillData.height, targetSelf, skipOccupied));
                 break;
                 default:
                     // nothing
@@ -781,7 +700,7 @@ public class MapManager : MonoBehaviour
     #endregion
 
     #region Skill Targeting
-    List<GridCell> GetTargetableArea(GridCell originCell, int maxDistance, int maxUp, bool includeSelf = false)
+    List<GridCell> GetTargetableArea(GridCell originCell, int maxDistance, int maxUp, bool includeSelf = false, bool skipOccupied = false)
     {
         List<GridCell> cells = new List<GridCell>();
         for(int x = 0; x <= maxDistance; x++)
@@ -800,7 +719,7 @@ public class MapManager : MonoBehaviour
                         // checking the origin square, since +0/-0 means it just checks the same square 8 times
                         if(x == 0 && y == 0)
                         {
-                            if(z == 0 && includeSelf)
+                            if(z == 0 && includeSelf && !skipOccupied)
                             {
                                 cells.Add(originCell);
                             }
@@ -810,28 +729,28 @@ public class MapManager : MonoBehaviour
                         int targetZA = originCell.position.z + z;
                         int targetZB = originCell.position.z - z;
 
-                        if(CheckIfTargetable(targetXA, targetYA, targetZA))
+                        if(CheckIfTargetable(targetXA, targetYA, targetZA, skipOccupied))
                         {
                             cells.Add(grid[targetXA, targetYA, targetZA]);
                         }
 
                         if(x > 0)
                         {
-                            if(CheckIfTargetable(targetXB, targetYA, targetZA))
+                            if(CheckIfTargetable(targetXB, targetYA, targetZA, skipOccupied))
                             {
                                 cells.Add(grid[targetXB, targetYA, targetZA]);
                             }
                             
                             if(y > 0)
                             {
-                                if(CheckIfTargetable(targetXB, targetYB, targetZA))
+                                if(CheckIfTargetable(targetXB, targetYB, targetZA, skipOccupied))
                                 {
                                     cells.Add(grid[targetXB, targetYB, targetZA]);
                                 }
 
                                 if(z > 0)
                                 {
-                                    if(CheckIfTargetable(targetXB, targetYB, targetZB))
+                                    if(CheckIfTargetable(targetXB, targetYB, targetZB, skipOccupied))
                                     {
                                         cells.Add(grid[targetXB, targetYB, targetZB]);
                                     }
@@ -840,7 +759,7 @@ public class MapManager : MonoBehaviour
 
                             if(z > 0)
                             {
-                                if(CheckIfTargetable(targetXB, targetYA, targetZB))
+                                if(CheckIfTargetable(targetXB, targetYA, targetZB, skipOccupied))
                                 {
                                     cells.Add(grid[targetXB, targetYA, targetZB]);
                                 }
@@ -849,14 +768,14 @@ public class MapManager : MonoBehaviour
 
                         if(y > 0)
                         {
-                            if(CheckIfTargetable(targetXA, targetYB, targetZA))
+                            if(CheckIfTargetable(targetXA, targetYB, targetZA, skipOccupied))
                             {
                                 cells.Add(grid[targetXA, targetYB, targetZA]);
                             }
 
                             if(z > 0)
                             {
-                                if(CheckIfTargetable(targetXA, targetYB, targetZB))
+                                if(CheckIfTargetable(targetXA, targetYB, targetZB, skipOccupied))
                                 {
                                     cells.Add(grid[targetXA, targetYB, targetZB]);
                                 }
@@ -865,7 +784,7 @@ public class MapManager : MonoBehaviour
 
                         if(z != 0)
                         {
-                            if(CheckIfTargetable(targetXA, targetYA, targetZB))
+                            if(CheckIfTargetable(targetXA, targetYA, targetZB, skipOccupied))
                             {
                                 cells.Add(grid[targetXA, targetYA, targetZB]);
                             }
@@ -878,7 +797,7 @@ public class MapManager : MonoBehaviour
         return cells;
     }
 
-    List<GridCell> GetTargetableLine(GridCell originCell, int maxDistance, int maxUp, bool includeSelf = false)
+    List<GridCell> GetTargetableLine(GridCell originCell, int maxDistance, int maxUp, bool includeSelf = false, bool skipOccupied = false)
     {
         List<GridCell> cells = new List<GridCell>();
         for(int d = 0; d <= maxDistance; d++)
@@ -902,37 +821,37 @@ public class MapManager : MonoBehaviour
                 int targetZB = originCell.position.z - z;
 
                 // check along the X axis
-                if(CheckIfTargetable(targetXA, originCell.position.y, targetZA))
+                if(CheckIfTargetable(targetXA, originCell.position.y, targetZA, skipOccupied))
                 {
                     cells.Add(grid[targetXA, originCell.position.y, targetZA]);
                 }
-                if(CheckIfTargetable(targetXB, originCell.position.y, targetZA))
+                if(CheckIfTargetable(targetXB, originCell.position.y, targetZA, skipOccupied))
                 {
                     cells.Add(grid[targetXB, originCell.position.y, targetZA]);
                 }
-                if(targetZB != 0 && CheckIfTargetable(targetXA, originCell.position.y, targetZB))
+                if(targetZB != 0 && CheckIfTargetable(targetXA, originCell.position.y, targetZB, skipOccupied))
                 {
                     cells.Add(grid[targetXA, originCell.position.y, targetZB]);
                 }
-                if(targetZB != 0 && CheckIfTargetable(targetXB, originCell.position.y, targetZB))
+                if(targetZB != 0 && CheckIfTargetable(targetXB, originCell.position.y, targetZB, skipOccupied))
                 {
                     cells.Add(grid[targetXB, originCell.position.y, targetZB]);
                 }
 
                 // check along the Y axis
-                if(CheckIfTargetable(originCell.position.x, targetYA, targetZA))
+                if(CheckIfTargetable(originCell.position.x, targetYA, targetZA, skipOccupied))
                 {
                     cells.Add(grid[originCell.position.x, targetYA, targetZA]);
                 }
-                if(CheckIfTargetable(originCell.position.x, targetYB, targetZA))
+                if(CheckIfTargetable(originCell.position.x, targetYB, targetZA, skipOccupied))
                 {
                     cells.Add(grid[originCell.position.x, targetYB, targetZA]);
                 }
-                if(targetZB != 0 && CheckIfTargetable(originCell.position.x, targetYA, targetZB))
+                if(targetZB != 0 && CheckIfTargetable(originCell.position.x, targetYA, targetZB, skipOccupied))
                 {
                     cells.Add(grid[originCell.position.x, targetYA, targetZB]);
                 }
-                if(targetZB != 0 && CheckIfTargetable(originCell.position.x, targetYB, targetZB))
+                if(targetZB != 0 && CheckIfTargetable(originCell.position.x, targetYB, targetZB, skipOccupied))
                 {
                     cells.Add(grid[originCell.position.x, targetYB, targetZB]);
                 }
@@ -941,47 +860,34 @@ public class MapManager : MonoBehaviour
         return cells;
     }
 
-    public bool CheckIfTargetable(int x, int y, int z)
+    public bool CheckIfTargetable(int x, int y, int z, bool skipOccupied = false)
     {
-        return CellInBounds(x, y, z) && grid[x, y, z] != null && !grid[x, y, z].buildNoNeighbours && grid[x, y, z].targetable;
+        return CellInBounds(x, y, z) 
+                && grid[x, y, z] != null 
+                && !grid[x, y, z].buildNoNeighbours 
+                && grid[x, y, z].targetable 
+                && (!skipOccupied || grid[x, y, z].occupiedBy == null);
     }
 
-    public bool CheckIfTargetable(Vector3Int position)
+    public bool CheckIfTargetable(Vector3Int position, bool skipOccupied = false)
     {
         int x = position.x;
         int y = position.y;
         int z = position.z;
 
-        return CheckIfTargetable(x, y, z);
-    }
-    
-    void RenderTargetableCells()
-    {
-        foreach(GridCell targetCell in targetableCells)
-        {
-            RenderCell(targetCell, TileType.TARGETABLE);
-        }
+        return CheckIfTargetable(x, y, z, skipOccupied);
     }
 
     public void RenderTargetableTiles(List<GridCell> cells)
     {
-        ResetTargetableCells();
         foreach(GridCell gridCell in cells)
         {
             RenderCell(gridCell, TileType.TARGETABLE);
         }
     }
 
-    void RenderTargetedCells()
-    {
-        foreach(GridCell targetCell in targetedCells)
-        {
-            RenderCell(targetCell, TileType.TARGETED);
-        }
-    }
     public void RenderTargetedTiles(List<GridCell> cells)
     {
-        ResetTargetedCells();
         foreach(GridCell gridCell in cells)
         {
             RenderCell(gridCell, TileType.TARGETED);
@@ -994,8 +900,6 @@ public class MapManager : MonoBehaviour
     public void ClearAllTiles()
     {
         ClearWalkabilityTiles();
-        ClearTargetableTiles();
-        ClearTargetedTiles();
     }
 
     public void ClearOccupiedBy()
@@ -1019,19 +923,6 @@ public class MapManager : MonoBehaviour
         }
     }
 
-    public void ClearTargetableTiles()
-    {
-        foreach(GridCell gridCell in targetableCells)
-        {
-            GameObject tileObj = null;
-            if(renderedTiles.TryGetValue(gridCell, out tileObj))
-            {
-                renderedTiles.Remove(gridCell);
-                tileObj.SetActive(false);
-            }
-        }
-    }
-
     public void ClearTargetableTiles(List<GridCell> tiles)
     {
         foreach(GridCell gridCell in tiles)
@@ -1045,34 +936,6 @@ public class MapManager : MonoBehaviour
         }
     }
 
-    public void ResetTargetableCells()
-    {
-        ClearTargetableTiles();
-        targetableCells.Clear();
-    }
-
-    public void ClearTargetedTiles()
-    {
-        foreach(GridCell gridCell in targetedCells)
-        {
-            GameObject tileObj = null;
-            if(renderedTiles.TryGetValue(gridCell, out tileObj))
-            {
-                // if this tile exists as part of the targetable grid
-                // we don't want to get rid of it, just toggle it on off
-                if(targetableCells.Contains(gridCell))
-                {
-                    tileObj.GetComponent<Tile>().TileType = TileType.TARGETABLE;
-                }
-                else // we only exist because the target 
-                {
-                    renderedTiles.Remove(gridCell);
-                    tileObj.SetActive(false);
-                }
-            }
-        }
-    }
-
     public void ClearTargetedTiles(List<GridCell> tiles)
     {
         foreach(GridCell gridCell in tiles)
@@ -1080,25 +943,10 @@ public class MapManager : MonoBehaviour
             GameObject tileObj = null;
             if(renderedTiles.TryGetValue(gridCell, out tileObj))
             {
-                // if this tile exists as part of the targetable grid
-                // we don't want to get rid of it, just toggle it on off
-                if(targetableCells.Contains(gridCell))
-                {
-                    tileObj.GetComponent<Tile>().TileType = TileType.TARGETABLE;
-                }
-                else // we only exist because the target 
-                {
-                    renderedTiles.Remove(gridCell);
-                    tileObj.SetActive(false);
-                }
+                renderedTiles.Remove(gridCell);
+                tileObj.SetActive(false);
             }
         }
-    }
-
-    public void ResetTargetedCells()
-    {
-        ClearTargetedTiles();
-        targetedCells.Clear();
     }
     #endregion    
 

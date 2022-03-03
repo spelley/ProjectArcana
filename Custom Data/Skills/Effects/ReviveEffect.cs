@@ -26,6 +26,7 @@ public class ReviveEffect : SkillEffect
             else
             {
                 target.Miss();
+                callback.Invoke();
             }
         }
     }

@@ -227,6 +227,8 @@ public class SkillData: ScriptableObject, IAssignableSkill, ILoadable<SkillSaveD
     {
         get
         {
+            Debug.Log("Area of Effect: " + _areaOfEffect);
+            Debug.Log("Additional Area: " + (matchTypes.Contains(MatchType.AREA) ? BattleManager.Instance.GetRiverMatches(this.elements) : 0));
             return _areaOfEffect + (matchTypes.Contains(MatchType.AREA) ? BattleManager.Instance.GetRiverMatches(this.elements) : 0);
         }
         private set
@@ -518,11 +520,6 @@ public class SkillData: ScriptableObject, IAssignableSkill, ILoadable<SkillSaveD
     public virtual SkillStruct GetSkillStruct()
     {
         return new SkillStruct(range, areaOfEffect, heightTolerance, GetShapeRangeExtension(), rangeType, targetType, targetShape, actionType);
-    }
-
-    public virtual void ResolveSkill(BattleSkill battleSkill = null)
-    {
-        BattleManager.Instance.SkillClear(battleSkill);
     }
 
     public virtual SkillSaveData GetSaveData()

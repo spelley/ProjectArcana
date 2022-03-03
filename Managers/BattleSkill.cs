@@ -52,6 +52,7 @@ public class BattleSkill
         SetSkill(initialSkill);
         SetCosts(payForSkill);
         SetSkillOrigin(origin);
+        UpdateTargetableArea();
 
         isTargeting = false;
         isConfirmed = false;
@@ -68,6 +69,7 @@ public class BattleSkill
         SetSkill(initialSkill);
         SetCosts(payCosts);
         SetSkillOrigin(mapManager.GetCell(unit.curPosition));
+        UpdateTargetableArea();
         SetTargetedArea(initialTargets);
 
         isTargeting = false;
@@ -116,7 +118,8 @@ public class BattleSkill
 
     public void UpdateTargetableArea()
     {
-        SetTargetableArea(mapManager.GetTargetableCells(skill, skillOrigin));
+        List<GridCell> cells = mapManager.GetTargetableCells(skill, skillOrigin);
+        SetTargetableArea(cells);
     }
 
     void SetTargetableArea(List<GridCell> newTargetableArea)
@@ -142,7 +145,16 @@ public class BattleSkill
     void SetTargetedArea(List<GridCell> newTargetedArea)
     {
         targetedArea.Clear();
-        targetedArea.AddRange(newTargetedArea);
+        //targetedArea.AddRange(newTargetedArea);
+        Vector3Int pos = (skill.targetShape == TargetShape.ALL) ? skillOrigin.position : targetOrigin.position;
+        if(skill.push > 0)
+        {
+            targetedArea = newTargetedArea.OrderByDescending(gc => ManhattanDistance(pos, gc.position)).ToList();
+        }
+        else
+        {
+            targetedArea = newTargetedArea.OrderBy(gc => ManhattanDistance(pos, gc.position)).ToList();
+        }
     }
 
     public void Confirm()
@@ -200,6 +212,7 @@ public class BattleSkill
 
     public void Complete()
     {
+        Debug.Log(skill.skillName + "Complete");
         skill.executedOn.Clear();
         isExecuting = false;
         isCompleted = true;
@@ -207,6 +220,14 @@ public class BattleSkill
         if(completionCallback != null)
         {
             completionCallback.Invoke();
+        }
+    }
+
+    public int ManhattanDistance(Vector3Int a, Vector3Int b)
+    {
+        checked
+        {
+            return Mathf.Abs(a.x - b.x) + Mathf.Abs(a.y - b.y);
         }
     }
 }

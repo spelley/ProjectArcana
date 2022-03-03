@@ -41,22 +41,12 @@ public class BattleManager : MonoBehaviour
     public event Action OnEncounterEnd;
     public event Action OnEncounterWon;
     public event Action OnEncounterLost;
-    // skill events
-    public event Action<SkillData, UnitData, GridCell> OnSkillTarget;
-    public event Action<SkillData, UnitData> OnSkillTargetCancel;
-    public event Action<SkillData, GridCell, GridCell, bool> OnSkillSelectTarget;
-    public event Action<SkillData, GridCell, GridCell> OnSkillSelectTargetCancel;
-    public event Action<SkillData, UnitData, List<GridCell>> OnSkillPreview;
-    public event Action OnSkillPreviewCancel;
-    public event Action<SkillData, UnitData, List<GridCell>> OnSkillConfirm;
-    public event Action<SkillData, UnitData, List<GridCell>> OnSkillConfirmPrep;
-    public event Action<SkillData, UnitData, List<GridCell>> OnSkillExecute;
-    public event Action<BattleSkill> OnSkillClear;
-
+    // prepared skill events
     public event Action<BattleSkill> OnPreparedSkillInit;
     public event Action<BattleSkill> OnPreparedSkillPreviewTarget;
     public event Action<BattleSkill> OnPreparedSkillSelectTarget;
     public event Action<BattleSkill> OnPreparedSkillCancelTarget;
+    public event Action<BattleSkill> OnPreparedSkillConfirmPrep;
     public event Action<BattleSkill> OnPreparedSkillConfirm;
     public event Action OnPreparedSkillCancel;
     public event Action<BattleSkill> OnSkillPaidCosts;
@@ -345,7 +335,6 @@ public class BattleManager : MonoBehaviour
 
     public void EncounterWon()
     {
-        // Debug.Log"Battle has been won!");
         // TODO: Actual encounter rewards
         OnEncounterWon?.Invoke();
         EndEncounter();
@@ -353,231 +342,9 @@ public class BattleManager : MonoBehaviour
 
     public void EncounterLost()
     {
-        // Debug.Log"Battle has been lost!");
         // TODO: Actual encounter cleanup?
         OnEncounterLost?.Invoke();
         EndEncounter();
-    }
-    #endregion
-
-    #region Skill Lifecycle
-    public void SkillTarget(SkillData skillData, UnitData unitData, GridCell originCell)
-    {
-        targeting = true;
-        curSkill = skillData;
-        OnSkillTarget?.Invoke(skillData, unitData, originCell);
-    }
-
-    public void SkillTargetCancel(SkillData skillData, UnitData unitData)
-    {
-        targeting = false;
-        curSkill = null;
-        OnSkillTargetCancel?.Invoke(skillData, unitData);
-    }
-
-    public void SkillSelectTarget(SkillData skillData, GridCell targetCell, bool hideUntargetedCells = false)
-    {
-        if(!targeting)
-        {
-            return;
-        }
-
-        GridCell originCell = null;
-        if(turnManager?.curTurnTaker != null)
-        {
-            originCell = mapManager.GetCell(turnManager.curTurnTaker.curPosition);
-        }
-        else
-        {
-            originCell = GameObject.FindWithTag("Player").GetComponent<TacticsMotor>().curCell;
-        }
-        curSkill = skillData;
-        OnSkillSelectTarget?.Invoke(skillData, originCell, targetCell, hideUntargetedCells);
-    }
-
-    public void SkillSelectTargetCancel(SkillData skillData, GridCell targetCell)
-    {
-        GridCell originCell = null;
-        if(turnManager?.curTurnTaker != null)
-        {
-            originCell = mapManager.GetCell(turnManager.curTurnTaker.curPosition);
-        }
-        else
-        {
-            originCell = GameObject.FindWithTag("Player").GetComponent<TacticsMotor>().curCell;
-        } 
-        OnSkillSelectTargetCancel?.Invoke(skillData, originCell, targetCell);
-    }
-
-    public void SkillPreview(SkillData skillData, UnitData unitData, List<GridCell> targets)
-    {
-        curSkill = skillData;
-        curTargets = targets;
-        previewingSkill = true;
-        OnSkillPreview?.Invoke(skillData, unitData, targets);
-    }
-
-    public void SkillPreviewCancel()
-    {
-        if(previewingSkill)
-        {
-            OnSkillPreviewCancel?.Invoke();
-            previewingSkill = false;
-        }
-    }
-
-    public void SkillConfirm(BattleSkill battleSkill)
-    {   
-        previewingSkill = false;
-        executingSkill = true;
-
-        battleSkill.PayCosts();
-        
-        targeting = false;
-        
-        // add the starting battle skill
-        AddBattleSkill(battleSkill);
-
-        OnSkillConfirmPrep?.Invoke(battleSkill.skillData, battleSkill.unitData, battleSkill.targets);
-
-        ModBool cancelExecution = new ModBool(false);
-        Action<ModBool> confirmCallback = (ModBool cancelled) => {
-            if(cancelled.GetCalculated()) {
-                SkillClear();
-            }
-            else {
-                StartCoroutine(BattleSkillStackRoutine());
-            }
-        };
-        ResolveInterrupts(cancelExecution, confirmCallback);   
-    }
-
-    public void AddBattleSkill(SkillData skill, UnitData unit, List<GridCell> targets)
-    {
-        BattleSkill battleSkill = new BattleSkill(skill, unit, targets);
-        battleSkills.Push(battleSkill);
-    }
-
-    public void AddBattleSkill(BattleSkill battleSkill)
-    {
-        battleSkills.Push(battleSkill);
-    }
-
-    IEnumerator BattleSkillStackRoutine()
-    {
-        while(battleSkills.Count > 0)
-        {
-            if(curBattleSkill == null)
-            {
-                curBattleSkill = battleSkills.Pop();
-                Action<ModBool> interruptCheck = (ModBool cancelled) =>
-                {
-                    if(!cancelled.GetCalculated())
-                    {
-                        OnSkillConfirm?.Invoke(curBattleSkill.skillData, curBattleSkill.unitData, curBattleSkill.targets);
-                        curUnit.unitGO.GetComponent<TacticsMotor>().UseSkill(curBattleSkill.skillData, curBattleSkill.unitData, curBattleSkill.targets);
-                    }
-                    else 
-                    {
-                        SkillClear();
-                    }
-                };
-
-                ModBool cancelExecution = new ModBool(false);
-                BattleManager.Instance.ResolveInterrupts(cancelExecution, interruptCheck);
-            }
-            yield return null;
-        }
-    }
-
-    public void SkillExecute()
-    {
-        SkillExecute(curBattleSkill);
-    }
-
-    public void SkillExecute(BattleSkill battleSkill)
-    {
-        SkillData skill = battleSkill.skillData;
-        UnitData unit = battleSkill.unitData;
-        List<GridCell> targets = battleSkill.targets;
-        
-        skill.executedOn.Clear();
-        if(skill.executeAnimation != null)
-        {
-            GameObject skillAnimGO = Instantiate(skill.executeAnimation);
-            skillAnimGO.GetComponent<BattleSkillAnimation>().SetSkill(battleSkill);
-        }
-        OnSkillExecute?.Invoke(skill, unit, targets);
-    }
-
-    public void SkillClear(BattleSkill battleSkill = null)
-    {
-        BattleSkill skillToClear = (battleSkill != null) ? battleSkill : curBattleSkill;
-        // process river changes per skill
-        List<RiverCard> updatedRiver = new List<RiverCard>();
-        foreach(RiverCard riverCard in riverCards)
-        {
-            bool matched = false;
-            if(!riverCard.locked)
-            {
-                foreach(ElementData element in skillToClear.skillData.elements)
-                {
-                    if(riverCard.element == element)
-                    {
-                        matched = true;
-                        break;
-                    }
-                }
-            }
-            if(!matched) // matched cards go away
-            {
-                updatedRiver.Add(riverCard);
-            }
-        }
-        riverCards = updatedRiver;
-        RefillRiver(); // fill up any missing cards in the river
-        OnUpdateRiver?.Invoke(riverCards);
-
-        // the stack is clear, this is the last skill to be cleared
-        if(battleSkills.Count == 0)
-        {
-            // clean up our initial starting skill
-            curSkill = null;
-            curTargets.Clear();
-            previewingSkill = false;
-
-            // let the game know we are clearing this skill
-            OnSkillClear?.Invoke(skillToClear);
-            if(curBattleSkill == skillToClear)
-            {
-                curBattleSkill = null;
-            }
-
-            /**
-            if(!curUnit.incapacitated)
-            {
-                // TODO: make EXP more refined
-                curUnit.stats.AddExperience(10, curUnit);
-                UnitJob unitJob = curUnit.GetUnitJob(curUnit.activeJob);
-                unitJob.AddExperience(10, curUnit);
-            }
-            **/
-            
-            Action<ModBool> cleanupSkill = (ModBool cancelled) => {
-                IsEncounterResolved();
-            };
-            ModBool cancelExecution = new ModBool(false);
-            BattleManager.Instance.ResolveInterrupts(cancelExecution, cleanupSkill);
-        }
-
-        // null out the current battle skill
-        if(skillToClear == curBattleSkill)
-        {
-            curBattleSkill = null;
-            executingSkill = false;
-        }
-
-        battleSkill.skillData.executedOn.Clear();
     }
     #endregion
 
@@ -700,12 +467,15 @@ public class BattleManager : MonoBehaviour
             }
         }
 
+        /**
+         * TODO: determine if we want this
         if(curUnit != null)
         {
             ModInt modMatches = new ModInt(matches);
             curUnit.GetUnitMatches(modMatches, elementsToMatch);
             matches = modMatches.GetCalculated();
         }
+        **/
 
         return matches;
     }
@@ -757,6 +527,11 @@ public class BattleManager : MonoBehaviour
     {
         GridCell origin = (skillOrigin != null) ? skillOrigin : mapManager.GetCell(source.curPosition);
         BattleSkill battleSkill = new BattleSkill(skill, source, origin, true);
+        return PreparedSkillInit(battleSkill);
+    }
+
+    public BattleSkill PreparedSkillInit(BattleSkill battleSkill)
+    {
         preparedSkill = battleSkill;
         targeting = true;
         preparedSkill.StartTargeting();
@@ -814,8 +589,10 @@ public class BattleManager : MonoBehaviour
 
     public void PreparedSkillConfirm()
     {
+        OnPreparedSkillConfirmPrep?.Invoke(preparedSkill);
         preparedSkill.SetCompletionCallback(PreparedSkillComplete);
-        mapManager.ClearAllTiles();
+        mapManager.ClearTargetableTiles(preparedSkill.targetableArea);
+        mapManager.ClearTargetableTiles(preparedSkill.targetedArea);
         OnPreparedSkillConfirm?.Invoke(preparedSkill);
         PerformSkill(preparedSkill);
     }
@@ -836,6 +613,8 @@ public class BattleManager : MonoBehaviour
 
     void PerformSkill(BattleSkill battleSkill)
     {
+        Debug.Log("Performing Skill: "+ battleSkill.skill.skillName);
+        Debug.Log("Target: " + battleSkill.targetOrigin.position.ToString());
         executingSkill = true;
         battleSkill.PayCosts();
         OnSkillPaidCosts?.Invoke(battleSkill);
@@ -846,12 +625,19 @@ public class BattleManager : MonoBehaviour
     {
         Action targetCallback = () =>
         {
+            Debug.Log("Check for interrupt");
             ResolveNextInterruptSkill(callback);
         };
+        Debug.Log("Executing " + battleSkill.skill.skillName + " on " + ((target.occupiedBy != null) ? target.occupiedBy.unitName : "Empty Tile") + " at " + target.position.ToString());
         battleSkill.ExecutePerTarget(target, targetCallback);
     }
 
     public void ResolveNextInterruptSkill(Action callback)
+    {
+        StartCoroutine(SkillInterruptRoutine(callback));
+    }
+
+    IEnumerator SkillInterruptRoutine(Action callback)
     {
         if(interruptingSkills.Count > 0)
         {
@@ -862,17 +648,25 @@ public class BattleManager : MonoBehaviour
                 ResolveNextInterruptSkill(callback);
             };
             interruptingSkill.SetCompletionCallback(callback);
+
+            mapManager.RenderTargetedTiles(interruptingSkill.targetedArea);
+            yield return new WaitForSeconds(1f);
+            mapManager.ClearTargetedTiles(interruptingSkill.targetedArea);
             PerformSkill(interruptingSkill);
         }
-
-        callback.Invoke();
+        else
+        {
+            callback.Invoke();
+        }
+        yield return null;
     }
 
     public void PreparedSkillComplete()
     {
         executingSkill = false;
+        targeting = false;
         targetLocked = false;
-        OnPreparedSkillComplete.Invoke(preparedSkill);
+        OnPreparedSkillComplete?.Invoke(preparedSkill);
         preparedSkill = null;
     }
     #endregion

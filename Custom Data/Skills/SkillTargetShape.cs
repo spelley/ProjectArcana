@@ -44,6 +44,7 @@ public static class SkillTargetShape
             break;
             case TargetShape.CROSS:
                 offsets.Add(new Vector3Int(0, 0, 0));
+                Debug.Log(skill.areaOfEffect);
                 for(int a = 1; a <= skill.areaOfEffect; a++)
                 {
                     int targetXA = a;
