@@ -7,6 +7,7 @@ using TMPro;
 public class UnitBattleUI : MonoBehaviour
 {
     BattleManager battleManager;
+    MapManager mapManager;
     enum UnitUIState
     {
         HIDDEN,
@@ -67,24 +68,27 @@ public class UnitBattleUI : MonoBehaviour
     void Start()
     {
         battleManager = BattleManager.Instance;
+        mapManager = MapManager.Instance;
         battleManager.OnEncounterStart += OnEncounterStart;
         battleManager.OnEncounterEnd += OnEncounterEnd;
-        battleManager.OnSkillPreview += OnSkillPreview;
-        battleManager.OnSkillPreviewCancel += OnSkillPreviewCancel;
-        battleManager.OnSkillTargetCancel += OnSkillTargetCancel;
-        battleManager.OnSkillConfirmPrep += OnSkillConfirmPrep;
-        battleManager.OnSkillClear += OnSkillClear;
+        battleManager.OnPreparedSkillInit += OnPreparedSkillInit;
+        battleManager.OnPreparedSkillSelectTarget += OnSkillPreview;
+        battleManager.OnPreparedSkillCancelTarget += OnSkillPreviewCancel;
+        battleManager.OnPreparedSkillCancel += OnSkillTargetCancel;
+        battleManager.OnPreparedSkillConfirmPrep += OnSkillConfirmPrep;
+        battleManager.OnPreparedSkillComplete += OnSkillClear;
     }
 
     void OnDestroy()
     {
         battleManager.OnEncounterStart -= OnEncounterStart;
         battleManager.OnEncounterEnd -= OnEncounterEnd;
-        battleManager.OnSkillPreview -= OnSkillPreview;
-        battleManager.OnSkillPreviewCancel -= OnSkillPreviewCancel;
-        battleManager.OnSkillTargetCancel -= OnSkillTargetCancel;
-        battleManager.OnSkillConfirmPrep -= OnSkillConfirmPrep;
-        battleManager.OnSkillClear -= OnSkillClear;
+        battleManager.OnPreparedSkillInit -= OnPreparedSkillInit;
+        battleManager.OnPreparedSkillSelectTarget -= OnSkillPreview;
+        battleManager.OnPreparedSkillCancelTarget -= OnSkillPreviewCancel;
+        battleManager.OnPreparedSkillCancel -= OnSkillTargetCancel;
+        battleManager.OnPreparedSkillConfirmPrep -= OnSkillConfirmPrep;
+        battleManager.OnPreparedSkillComplete -= OnSkillClear;
         if(battleManager.turnManager != null)
         {
             battleManager.turnManager.OnTurnStart -= OnTurnStart;
@@ -102,13 +106,19 @@ public class UnitBattleUI : MonoBehaviour
             {
                 SetState(UnitUIState.UNIT_WITH_COMMANDS);
             }
-            else if(curState == UnitUIState.PREVIEW_SKILL)
+            else if(curState == UnitUIState.SKILL_TARGET)
             {
-                battleManager.SkillPreviewCancel();
+                battleManager.PreparedSkillCancel();
+            }
+            else if(curState == UnitUIState.PREVIEW_SKILL 
+                && battleManager.targetLocked 
+                && battleManager.preparedSkill != null 
+                && !curUnit.unitGO.GetComponent<TacticsMotor>().isMoving)
+            {
+                battleManager.PreparedSkillCancelTarget();
             }
         }
     }
-
     void SetState(UnitUIState newState)
     {
         switch(newState)
@@ -169,14 +179,28 @@ public class UnitBattleUI : MonoBehaviour
         }
     }
 
-    void OnSkillTargetCancel(SkillData skillData, UnitData unitData)
+    void OnSkillTargetCancel()
     {
         SetState(UnitUIState.SKILL_LIST);
     }
 
-    void OnSkillPreview(SkillData skillData, UnitData unitData, List<GridCell> targets)
+    void OnPreparedSkillInit(BattleSkill battleSkill)
+    {
+        SetState(UnitUIState.SKILL_TARGET);
+    }
+
+    void OnSkillPreview(BattleSkill battleSkill)
     {
         SetState(UnitUIState.PREVIEW_SKILL);
+
+        SkillData skillData = battleSkill.skill;
+        UnitData unitData = battleSkill.source;
+        List<GridCell> targets = battleSkill.targets;
+        if(targets.Count == 0)
+        {
+            return;
+        }
+
         GridCell firstTarget = null;
         foreach(GridCell gridCell in targets)
         {
@@ -185,6 +209,7 @@ public class UnitBattleUI : MonoBehaviour
                 firstTarget = gridCell;
             }
         }
+    
         if(firstTarget == null) {
             firstTarget = targets[0];
         }
@@ -194,28 +219,36 @@ public class UnitBattleUI : MonoBehaviour
             UpdateTargetWindow(firstTarget.occupiedBy);
         }
         previewWindowText.text = skillPreview.text + " (" + skillPreview.hitChance.ToString() + "%)";
-        skillConfirmButton.onClick.RemoveListener(OnSkillConfirmButton);
-        skillConfirmButton.onClick.AddListener(OnSkillConfirmButton);
+        if(!battleSkill.source.isPlayerControlled)
+        {
+            skillConfirmButton.gameObject.SetActive(false);
+        }
+        else
+        {
+            skillConfirmButton.gameObject.SetActive(true);
+            skillConfirmButton.onClick.RemoveListener(OnSkillConfirmButton);
+            skillConfirmButton.onClick.AddListener(OnSkillConfirmButton);
+        }
     }
 
     void OnSkillConfirmButton()
     {
         skillConfirmButton.onClick.RemoveListener(OnSkillConfirmButton);
-        battleManager.SkillConfirm(battleManager.curSkill, battleManager.curUnit, battleManager.curTargets);
+        battleManager.PreparedSkillConfirm();
     }
 
-    void OnSkillPreviewCancel()
+    void OnSkillPreviewCancel(BattleSkill battleSkill)
     {
         SetState(UnitUIState.SKILL_TARGET);
     }
 
-    void OnSkillConfirmPrep(SkillData skillData, UnitData unitData, List<GridCell> targets)
+    void OnSkillConfirmPrep(BattleSkill battleSkill)
     {
         UpdateResources();
         SetState(UnitUIState.HIDDEN);
     }
 
-    void OnSkillClear(SkillData skillData)
+    void OnSkillClear(BattleSkill battleSkill)
     {
         if(curUnit != null)
         {
@@ -315,7 +348,7 @@ public class UnitBattleUI : MonoBehaviour
 
     void OnTravelPathEnd()
     {
-        if(curUnit != null && curUnit.isPlayerControlled)
+        if(curUnit != null && curUnit.isPlayerControlled && battleManager.preparedSkill == null)
         {
            SetState(UnitUIState.UNIT_WITH_COMMANDS);
         }

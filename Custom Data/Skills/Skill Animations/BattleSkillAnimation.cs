@@ -1,10 +1,12 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SkillAnimation : MonoBehaviour
+public class BattleSkillAnimation : MonoBehaviour
 {
     public string id;
+    BattleSkill battleSkill;
     SkillData skillData;
     UnitData unitData;
     List<GridCell> targets = new List<GridCell>();
@@ -18,12 +20,15 @@ public class SkillAnimation : MonoBehaviour
     [SerializeField]
     GameObject hitSFX;
 
-    public void SetSkill(SkillData skillData, UnitData unitData, List<GridCell> targets)
-    {
-        this.skillData = skillData;
-        this.unitData = unitData;
-        this.targets = targets;
+    List<UnitData> usedOn = new List<UnitData>();
 
+    public void SetSkill(BattleSkill _battleSkill)
+    {
+        battleSkill = _battleSkill;
+        skillData = _battleSkill.skillData;
+        unitData = _battleSkill.unitData;
+        targets = _battleSkill.targets;
+        usedOn.Clear();
         Animate();
     }
 
@@ -34,35 +39,43 @@ public class SkillAnimation : MonoBehaviour
             unitData.unitGO.GetComponent<TacticsMotor>().anim.speed = 0f;
         }
 
-        if(timeBetweenTargets > 0f)
-        {
-            StartCoroutine(AnimateOverTime());
-        }
-        else
-        {
-            skillData.Execute(unitData, targets);
-            if(pauseCastAnimation && unitData == BattleManager.Instance.curUnit)
-            {
-                unitData.unitGO.GetComponent<TacticsMotor>().anim.speed = 1f;
-            }
-            skillData.ResolveSkill();
-
-            Cleanup();
-        }
+        StartCoroutine(AnimateOverTime());
     }
 
     public IEnumerator AnimateOverTime()
     {
-        for(int i = 0; i < targets.Count; i++)
+        int i = 0;
+        bool continueExecuting = true;
+        while(i < targets.Count)
         {
+            if(!continueExecuting)
+            {
+                yield return null;
+                continue;
+            }
+
             GridCell gridCell = targets[i];
+            i++;
             if(skillData.requireUnitTarget && gridCell.occupiedBy == null)
             {
                 continue;
             }
 
+            if(gridCell.occupiedBy != null)
+            {
+                if(usedOn.Contains(gridCell.occupiedBy))
+                {
+                    continue;
+                }
+                else
+                {
+                    usedOn.Add(gridCell.occupiedBy);
+                }
+            }
+            
             if(skillData.requireUnitTarget && gridCell.occupiedBy != null)
             {
+                yield return new WaitForSeconds(timeBetweenTargets);
                 Camera.main.GetComponent<CameraController>().SetFocus(gridCell.occupiedBy.unitGO);
             }
 
@@ -77,17 +90,18 @@ public class SkillAnimation : MonoBehaviour
                     }
                 }
             }
-            skillData.ExecutePerTarget(unitData, gridCell);
 
-            if(i < targets.Count - 1)
+            continueExecuting = false;
+            Action continueTargeting = () =>
             {
-                yield return new WaitForSeconds(timeBetweenTargets);
-            }
-            else
-            {
-                yield return new WaitForSeconds(timeBetweenTargets);
-            }
+                continueExecuting = true;
+            };
+            
+            BattleManager.Instance.PerformSkillOnTarget(battleSkill, gridCell, continueTargeting);
+
+            yield return null;
         }
+        yield return new WaitForSeconds(timeBetweenTargets);
 
         Camera.main.GetComponent<CameraController>().SetFocus(BattleManager.Instance.curUnit.unitGO);
         
@@ -97,13 +111,13 @@ public class SkillAnimation : MonoBehaviour
         {
             unitData.unitGO.GetComponent<TacticsMotor>().anim.speed = 1f;
         }
-        skillData.ResolveSkill();
 
         Cleanup();
     }
 
     public void Cleanup()
     {
+        battleSkill.Complete();
         GameObject.Destroy(this.gameObject);
     }
 }

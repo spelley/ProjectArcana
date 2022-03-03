@@ -227,6 +227,8 @@ public class SkillData: ScriptableObject, IAssignableSkill, ILoadable<SkillSaveD
     {
         get
         {
+            Debug.Log("Area of Effect: " + _areaOfEffect);
+            Debug.Log("Additional Area: " + (matchTypes.Contains(MatchType.AREA) ? BattleManager.Instance.GetRiverMatches(this.elements) : 0));
             return _areaOfEffect + (matchTypes.Contains(MatchType.AREA) ? BattleManager.Instance.GetRiverMatches(this.elements) : 0);
         }
         private set
@@ -405,12 +407,16 @@ public class SkillData: ScriptableObject, IAssignableSkill, ILoadable<SkillSaveD
         return UnityEngine.Random.Range(0, 100) <= hitChance;
     }
 
-    public void HandlePush(UnitData source, UnitData target)
+    public void HandlePush(UnitData source, UnitData target, Action callback = null)
     {
         if(push != 0)
         {
-            GridCell targetCell = MapManager.Instance.GetForcedMovement(source.curPosition, target.curPosition, push);
-            target.PushTo(targetCell);
+            List<GridCell> pushPath = MapManager.Instance.GetForcedMovement(source.curPosition, target.curPosition, push);
+            target.PushTo(pushPath, callback);
+        }
+        else
+        {
+            callback.Invoke();
         }
     }
 
@@ -480,19 +486,15 @@ public class SkillData: ScriptableObject, IAssignableSkill, ILoadable<SkillSaveD
         return selfTargeting.Contains(targetType);
     }
 
-    public virtual void Execute(UnitData unitData, List<GridCell> targets)
+    public virtual void ExecutePerTarget(UnitData unitData, GridCell gridCell, Action callback)
     {
         if(skillEffect != null)
         {
-            skillEffect.Execute(this, unitData, targets);
+            skillEffect.ExecutePerTarget(this, unitData, gridCell, callback);
         }
-    }
-
-    public virtual void ExecutePerTarget(UnitData unitData, GridCell gridCell)
-    {
-        if(skillEffect != null)
+        else
         {
-            skillEffect.ExecutePerTarget(this, unitData, gridCell);
+            callback.Invoke();
         }
     }
 
@@ -518,11 +520,6 @@ public class SkillData: ScriptableObject, IAssignableSkill, ILoadable<SkillSaveD
     public virtual SkillStruct GetSkillStruct()
     {
         return new SkillStruct(range, areaOfEffect, heightTolerance, GetShapeRangeExtension(), rangeType, targetType, targetShape, actionType);
-    }
-
-    public virtual void ResolveSkill()
-    {
-        BattleManager.Instance.SkillClear();
     }
 
     public virtual SkillSaveData GetSaveData()
@@ -556,7 +553,7 @@ public class SkillData: ScriptableObject, IAssignableSkill, ILoadable<SkillSaveD
         
         if(_executeAnimation != null)
         {
-            saveData.executeAnimation = _executeAnimation.GetComponent<SkillAnimation>().id;
+            saveData.executeAnimation = _executeAnimation.GetComponent<BattleSkillAnimation>().id;
         }
 
         if(_associatedSkill != null)

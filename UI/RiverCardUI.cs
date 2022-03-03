@@ -33,24 +33,24 @@ public class RiverCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
 
     void Start()
     {
-        BattleManager.Instance.OnSkillTarget += OnSkillTarget;
-        BattleManager.Instance.OnSkillTargetCancel += OnSkillTargetCancel;
+        BattleManager.Instance.OnPreparedSkillInit += OnSkillTarget;
+        BattleManager.Instance.OnPreparedSkillCancel += OnSkillTargetCancel;
     }
 
     void OnDestroy()
     {
-        BattleManager.Instance.OnSkillTarget -= OnSkillTarget;
-        BattleManager.Instance.OnSkillTargetCancel -= OnSkillTargetCancel;
+        BattleManager.Instance.OnPreparedSkillInit -= OnSkillTarget;
+        BattleManager.Instance.OnPreparedSkillCancel -= OnSkillTargetCancel;
     }
 
-    void OnSkillTarget(SkillData skillData, UnitData unitData, GridCell originCell)
+    void OnSkillTarget(BattleSkill battleSkill)
     {
         if(riverCard.inactive)
         {
             return;
         }
         
-        foreach(ElementData element in skillData.elements)
+        foreach(ElementData element in battleSkill.skill.elements)
         {
             if(element == riverCard.element)
             {
@@ -72,7 +72,7 @@ public class RiverCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
         animator.SetBool("Highlighted", false);
     }
 
-    void OnSkillTargetCancel(SkillData skillData, UnitData unitData)
+    void OnSkillTargetCancel()
     {
         if(highlighted)
         {

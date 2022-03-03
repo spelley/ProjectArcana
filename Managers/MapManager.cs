@@ -6,6 +6,7 @@ using UnityEngine;
 
 public class MapManager : MonoBehaviour
 {
+    #region Initialization
     static MapManager _instance;
     public static MapManager Instance 
     { 
@@ -16,7 +17,9 @@ public class MapManager : MonoBehaviour
     }
 
     BattleManager battleManager;
+    #endregion
 
+    #region Private Variables
     Camera cam;
     Ray camRay;
     RaycastHit hit;
@@ -31,8 +34,9 @@ public class MapManager : MonoBehaviour
     GameObject tilePrefab;
     [SerializeField]
     GameObject targetTilePrefab;
+    #endregion
 
-    // grid data and positioning
+    #region Grid Data/Positioning
     public GridCell[,,] grid { get; private set; }
     Vector3Int gridAnchor = new Vector3Int(0, 0, 0);
     Vector3Int gridSize = new Vector3Int(24, 24, 12);
@@ -65,19 +69,25 @@ public class MapManager : MonoBehaviour
             _tileSize = value;
         }
     }
+    #endregion
 
+    #region Cell Lists & Filtering
     List<GridCell> cellList = new List<GridCell>();
     List<GridCell> walkableCells = new List<GridCell>();
-    List<GridCell> targetableCells = new List<GridCell>();
-    List<GridCell> targetedCells = new List<GridCell>();
     Dictionary<Vector3Int, Stack<GridCell>> cachedPaths = new Dictionary<Vector3Int, Stack<GridCell>>();
+    #endregion
 
+    #region Tile Rendering
     public int startPooledSize = 100;
     List<GameObject> pooledTiles;
     Dictionary<GridCell, GameObject> renderedTiles = new Dictionary<GridCell, GameObject>();
+    #endregion
+
+    #region Events
     public event Action<Stack<GridCell>> OnTravelPath;
     public event Action OnTravelPathEnd;
     public event Action<UnitData, GridCell> OnTravelEnter;
+    #endregion
 
     void Awake()
     {
@@ -115,16 +125,11 @@ public class MapManager : MonoBehaviour
         BindEvents();
     }
     
-    // EVENTS
+    #region Event Bindings
     void BindEvents()
     {
         battleManager.OnEncounterStart += OnEncounterStart;
         battleManager.OnEncounterEnd += OnEncounterEnd;
-        battleManager.OnSkillTarget += OnSkillTarget;
-        battleManager.OnSkillTargetCancel += OnSkillTargetCancel;
-        battleManager.OnSkillSelectTarget += OnSkillSelectTarget;
-        battleManager.OnSkillSelectTargetCancel += OnSkillSelectTargetCancel;
-        battleManager.OnSkillConfirmPrep += OnSkillConfirmPrep;
     }
 
     void UnbindEvents()
@@ -135,19 +140,14 @@ public class MapManager : MonoBehaviour
         {
             battleManager.turnManager.OnTurnEnd -= OnTurnEnd;
         }
-        battleManager.OnSkillTarget -= OnSkillTarget;
-        battleManager.OnSkillTargetCancel -= OnSkillTargetCancel;
-        battleManager.OnSkillSelectTarget -= OnSkillSelectTarget;
-        battleManager.OnSkillSelectTargetCancel -= OnSkillSelectTargetCancel;
-        battleManager.OnSkillConfirmPrep -= OnSkillConfirmPrep;
     }
+    #endregion
 
+    #region Encounter Events
     public void OnEncounterStart()
     {
         ClearAllTiles();
         ResetWalkableZoneCalculations();
-        ResetTargetableCells();
-        ResetTargetedCells();
 
         battleManager.turnManager.OnTurnEnd += OnTurnEnd;
     }
@@ -156,88 +156,25 @@ public class MapManager : MonoBehaviour
     {
         ClearAllTiles();
         ResetWalkableZoneCalculations();
-        ResetTargetableCells();
-        ResetTargetedCells();
     }
 
     public void OnEncounterEnd()
     {
         ClearAllTiles();
         ResetWalkableZoneCalculations();
-        ResetTargetableCells();
-        ResetTargetedCells();
         ClearOccupiedBy();
         battleManager.turnManager.OnTurnEnd -= OnTurnEnd;
     }
+    #endregion
 
-    public void SetMapData(MapData newMapData)
-    {
-        mapData = newMapData;
-        ResetGrid();
-        if(mapData)
-        {
-            LoadFromMapData();
-        }
-    }
+    #region Skill Targeting
 
-    public void OnSkillTarget(SkillData skillData, UnitData userData, GridCell originCell)
-    {
-        // remove the walkability tiles for now
-        ClearWalkabilityTiles();
-        // clear out any old targetable cells
-        ResetTargetableCells();
-        targetableCells.Clear();
-        targetableCells.AddRange(GetTargetableCells(skillData, originCell));
-        RenderTargetableCells();
-    }
-
-    public List<GridCell> GetTargetableCells(SkillData skillData, GridCell originCell)
-    {
-        List<GridCell> cells = new List<GridCell>();
-        if(skillData.targetType == TargetType.SELF)
-        {
-            cells.Add(originCell);
-        }
-        else
-        {
-            bool targetSelf = skillData.IsSelfTargeting();
-            
-            switch(skillData.rangeType)
-            {
-                case RangeType.AREA:
-                    cells.AddRange(GetTargetableArea(originCell, skillData.range, skillData.height, targetSelf));
-                break;
-                case RangeType.LINE:
-                    cells.AddRange(GetTargetableLine(originCell, skillData.range, skillData.height, targetSelf));
-                break;
-                default:
-                    // nothing
-                break;
-            }
-        }
-
-        return cells;
-    }
-
-    public void OnSkillTargetCancel(SkillData skillData, UnitData unitData)
-    {
-        ResetTargetableCells();
-        ResetTargetedCells();
-    }
-
-    public void OnSkillSelectTarget(SkillData skillData, GridCell originCell, GridCell targetCell)
-    {
-        if(skillData == null)
-        {
-            return;
-        }
-
-        ResetTargetedCells();
-        targetedCells.AddRange(GetTargetedArea(skillData, originCell, targetCell, targetableCells));
-        RenderTargetedCells();
-    }
-
-    public List<GridCell> GetTargetedArea(SkillData skillData, GridCell originCell, GridCell targetCell, List<GridCell> targetableArea, bool occupiedOnly = false)
+    public List<GridCell> GetTargetedArea(
+        SkillData skillData, 
+        GridCell originCell, 
+        GridCell targetCell, 
+        List<GridCell> targetableArea, 
+        bool occupiedOnly = false)
     {
         List<GridCell> targetedArea = new List<GridCell>();
 
@@ -246,45 +183,30 @@ public class MapManager : MonoBehaviour
             return targetedArea;
         }
 
-        List<Vector3Int> offsets = SkillTargetShape.GetTargetShape(skillData, originCell, targetCell, targetableCells);
+        List<Vector3Int> offsets = SkillTargetShape.GetTargetShape(skillData, originCell, targetCell, targetableArea);
+
         foreach(Vector3Int offset in offsets)
         {
-            if(CheckIfTargetable(targetCell.position.x + offset.x, targetCell.position.y + offset.y, targetCell.position.z + offset.z))
+            if(CheckIfTargetable(targetCell.position.x + offset.x, targetCell.position.y + offset.y, targetCell.position.z + offset.z, skillData.requireEmptyTile))
             {
                 GridCell newCell = grid[targetCell.position.x + offset.x, targetCell.position.y + offset.y, targetCell.position.z + offset.z];
-                if(!occupiedOnly || newCell.occupiedBy != null) 
-                {
-                    if(!skillData.requireEmptyTile || newCell.occupiedBy == null)
-                    {
-                        targetedArea.Add(newCell);
-                    }
-                }
+                targetedArea.Add(newCell);
             }
         }
 
         return targetedArea;
     }
 
-    public void OnSkillSelectTargetCancel(SkillData skillData, GridCell originCell, GridCell targetCell)
+    #endregion
+
+    #region Pathfinding
+    public void UpdateUnitPosition(Vector3Int position, UnitData unitData)
     {
-        ResetTargetedCells();
-        RenderTargetableCells();
+        grid[unitData.curPosition.x, unitData.curPosition.y, unitData.curPosition.z].occupiedBy = null;
+        unitData.curPosition = position;
+        grid[position.x, position.y, position.z].occupiedBy = unitData;
     }
 
-    public void OnSkillConfirmPrep(SkillData skillData, UnitData unitData, List<GridCell> targets)
-    {
-        ClearAllTiles();
-    }
-
-    public void OnSkillClear()
-    {
-        ResetWalkableZoneCalculations();
-        ResetTargetableCells();
-        ResetTargetedCells();
-    }
-    // END EVENTS
-
-    // PATHFINDING
     public Vector3Int LoadWalkabilityZone(GameObject player, Vector3 start, bool render = true)
     {
         UnitData unitData = player.GetComponent<CharacterMotor>().unitData;
@@ -405,11 +327,14 @@ public class MapManager : MonoBehaviour
         cachedPaths.Clear();
     }
 
-    public GridCell GetForcedMovement(Vector3Int pushOriginPosition, Vector3Int pushTargetPosition, int distance = 1, int maxHeightDiff = 100)
+    public List<GridCell> GetForcedMovement(Vector3Int pushOriginPosition, Vector3Int pushTargetPosition, int distance = 1, int maxHeightDiff = 100)
     {
+        List<GridCell> forcedPath = new List<GridCell>();
         if(pushOriginPosition == pushTargetPosition || distance == 0)
         {
-            return GetCell(pushTargetPosition);
+            forcedPath.Add(GetCell(pushTargetPosition));
+            return forcedPath;
+            // return GetCell(pushTargetPosition);
         }
 
         int distMod = distance > 0 ? 1 : -1;
@@ -428,7 +353,6 @@ public class MapManager : MonoBehaviour
         }
         else
         {
-            // TODO: pick one at random, instead of defaulting to X
             modVector = (pushOriginPosition.x < pushTargetPosition.x) ? new Vector3Int(distMod, 0, 0) : new Vector3Int(-distMod, 0, 0);
         }
 
@@ -447,7 +371,9 @@ public class MapManager : MonoBehaviour
                         Vector3Int heightPosition = new Vector3Int(checkPosition.x, checkPosition.y, checkPosition.z - h);
                         if(!CellInBounds(heightPosition.x, heightPosition.y, heightPosition.z))
                         {
-                            return GetCell(lastValidPosition);
+                            forcedPath.Add(GetCell(lastValidPosition));
+                            return forcedPath;
+                            // return GetCell(lastValidPosition);
                         }
                         
                         GridCell heightCell = GetCell(heightPosition);
@@ -457,80 +383,41 @@ public class MapManager : MonoBehaviour
                         }
                         if(heightCell.buildNoNeighbours)
                         {
-                            return GetCell(lastValidPosition);
+                            forcedPath.Add(GetCell(lastValidPosition));
+                            return forcedPath;
+                            // return GetCell(lastValidPosition);
                         }
                         if(heightCell.walkable)
                         {
-                            return heightCell;
+                            forcedPath.Add(heightCell);
+                            return forcedPath;
+                            // return heightCell;
                         }
                     }
-                    return GetCell(lastValidPosition);
+                    forcedPath.Add(GetCell(lastValidPosition));
+                    return forcedPath;
+                    // return GetCell(lastValidPosition);
                 }
                 else if(checkCell.buildNoNeighbours || !checkCell.walkable || checkCell.occupiedBy != null)
                 {
-                    return GetCell(lastValidPosition);
+                    forcedPath.Add(GetCell(lastValidPosition));
+                    return forcedPath;
+                    // return GetCell(lastValidPosition);
                 }
 
                 lastValidPosition = checkCell.position;
             }
             else
             {
-                return GetCell(lastValidPosition);
+                forcedPath.Add(GetCell(lastValidPosition));
+                return forcedPath;
+                // return GetCell(lastValidPosition);
             }
         }
 
-        return GetCell(lastValidPosition);
-    }
-
-    public GridCell GetClosestUnoccupiedGridCell(Vector3Int targetPosition, UnitData unitData)
-    {
-        GridCell closestCell = cellList
-                                .Where(gc => gc.walkable && (gc.occupiedBy == null || gc.occupiedBy == unitData))
-                                .OrderBy(gc =>  Vector3Int.Distance(gc.position, targetPosition))
-                                .FirstOrDefault();
-        return closestCell;
-    }
-
-    public GridCell GetClosestUnoccupiedGridCell(Vector3 targetPosition, UnitData unitData)
-    {
-        GridCell closestCell = cellList
-                                .Where(gc => gc.walkable && (gc.occupiedBy == null || gc.occupiedBy == unitData))
-                                .OrderBy(gc =>  Vector3.Distance(gc.realWorldPosition, targetPosition))
-                                .FirstOrDefault();
-        return closestCell;
-    }
-
-    public GridCell GetClosestGridCell(Vector3 targetPosition, bool walkable = true)
-    {
-        if(walkable)
-        {
-            GridCell closestCell = cellList.Where(gc => gc.walkable).OrderBy(gc => Vector3.Distance(gc.realWorldPosition, targetPosition)).FirstOrDefault();
-            return closestCell;
-        }
-        else
-        {
-            GridCell closestCell = cellList.OrderBy(gc => Vector3.Distance(gc.realWorldPosition, targetPosition)).FirstOrDefault();
-            return closestCell;
-        }
-    }
-
-    public GridCell GetClosestGridCell(Vector3Int targetPosition, List<GridCell> customList)
-    {
-        GridCell closestCell = customList.OrderBy(gc => Vector3Int.Distance(gc.position, targetPosition)).FirstOrDefault();
-        return closestCell;
-    }
-
-    public Stack<GridCell> GetPath(Vector3Int endPosition)
-    {
-        Stack<GridCell> path = new Stack<GridCell>();
-        GridCell endCell = grid[endPosition.x, endPosition.y, endPosition.z];
-
-        return CalculatePath(endCell);
-    }
-
-    public Stack<GridCell> GetPath(GridCell endCell)
-    {
-        return CalculatePath(endCell);
+        forcedPath.Add(GetCell(lastValidPosition));
+        return forcedPath;
+        // return GetCell(lastValidPosition);
     }
 
     public Stack<GridCell> CalculatePath(GridCell endCell)
@@ -593,7 +480,136 @@ public class MapManager : MonoBehaviour
             }
         }
     }
-    
+
+    public void TravelPath(Stack<GridCell> path)
+    {
+        OnTravelPath?.Invoke(path);
+    }
+
+    public void TravelEnter(UnitData unitData, GridCell cell)
+    {
+        OnTravelEnter?.Invoke(unitData, cell);
+    }
+
+    public void TravelPathEnd()
+    {
+        ModBool cancelExecution = new ModBool(false);
+        Action<ModBool> callback = (ModBool cancelled) => {
+            OnTravelPathEnd?.Invoke();
+        };
+        battleManager.ResolveInterrupts(cancelExecution, callback);
+    }
+    #endregion
+
+    #region Getters
+    GameObject GetPooledTile()
+    {
+        for(int i = 0; i < pooledTiles.Count; i++)
+        {
+            if(!pooledTiles[i].activeInHierarchy)
+            {
+                return pooledTiles[i];
+            }
+        }
+
+        GameObject tileObj = Instantiate(tilePrefab, mapHolder);
+        tileObj.SetActive(false);
+        pooledTiles.Add(tileObj);
+        return tileObj;
+    }
+
+    public List<GridCell> GetTargetableCells(SkillData skillData, GridCell originCell)
+    {
+        List<GridCell> cells = new List<GridCell>();
+        if(skillData.targetType == TargetType.SELF)
+        {
+            cells.Add(originCell);
+        }
+        else
+        {
+            bool targetSelf = skillData.IsSelfTargeting();
+            bool skipOccupied = skillData.requireEmptyTile;
+            
+            switch(skillData.rangeType)
+            {
+                case RangeType.AREA:
+                    cells.AddRange(GetTargetableArea(originCell, skillData.range, skillData.height, targetSelf, skipOccupied));
+                break;
+                case RangeType.LINE:
+                    cells.AddRange(GetTargetableLine(originCell, skillData.range, skillData.height, targetSelf, skipOccupied));
+                break;
+                default:
+                    // nothing
+                break;
+            }
+        }
+
+        return cells;
+    }
+
+    public GridCell GetClosestUnoccupiedGridCell(Vector3Int targetPosition, UnitData unitData)
+    {
+        GridCell closestCell = cellList
+                                .Where(gc => gc.walkable && (gc.occupiedBy == null || gc.occupiedBy == unitData))
+                                .OrderBy(gc =>  Vector3Int.Distance(gc.position, targetPosition))
+                                .FirstOrDefault();
+        return closestCell;
+    }
+
+    public GridCell GetClosestUnoccupiedGridCell(Vector3 targetPosition, UnitData unitData)
+    {
+        GridCell closestCell = cellList
+                                .Where(gc => gc.walkable && (gc.occupiedBy == null || gc.occupiedBy == unitData))
+                                .OrderBy(gc =>  Vector3.Distance(gc.realWorldPosition, targetPosition))
+                                .FirstOrDefault();
+        return closestCell;
+    }
+
+    public GridCell GetClosestGridCell(Vector3 targetPosition, bool walkable = true)
+    {
+        if(walkable)
+        {
+            GridCell closestCell = cellList.Where(gc => gc.walkable).OrderBy(gc => Vector3.Distance(gc.realWorldPosition, targetPosition)).FirstOrDefault();
+            return closestCell;
+        }
+        else
+        {
+            GridCell closestCell = cellList.OrderBy(gc => Vector3.Distance(gc.realWorldPosition, targetPosition)).FirstOrDefault();
+            return closestCell;
+        }
+    }
+
+    public GridCell GetClosestGridCell(Vector3Int targetPosition, List<GridCell> customList)
+    {
+        GridCell closestCell = customList.OrderBy(gc => Vector3Int.Distance(gc.position, targetPosition)).FirstOrDefault();
+        return closestCell;
+    }
+
+    public Stack<GridCell> GetPath(Vector3Int endPosition)
+    {
+        Stack<GridCell> path = new Stack<GridCell>();
+        GridCell endCell = grid[endPosition.x, endPosition.y, endPosition.z];
+
+        return CalculatePath(endCell);
+    }
+
+    public Stack<GridCell> GetPath(GridCell endCell)
+    {
+        return CalculatePath(endCell);
+    }
+
+    public GridCell GetCell(Vector3Int cellPosition)
+    {
+        return grid[cellPosition.x, cellPosition.y, cellPosition.z];
+    }
+
+    public List<GridCell> GetWalkableCells()
+    {
+        return walkableCells;
+    }
+    #endregion
+
+    #region Map Data
     void LoadFromMapData()
     {
         if(mapData)
@@ -621,11 +637,14 @@ public class MapManager : MonoBehaviour
         }
     }
 
-    public void UpdateUnitPosition(Vector3Int position, UnitData unitData)
+    public void SetMapData(MapData newMapData)
     {
-        grid[unitData.curPosition.x, unitData.curPosition.y, unitData.curPosition.z].occupiedBy = null;
-        unitData.curPosition = position;
-        grid[position.x, position.y, position.z].occupiedBy = unitData;
+        mapData = newMapData;
+        ResetGrid();
+        if(mapData)
+        {
+            LoadFromMapData();
+        }
     }
 
     void ResetGrid()
@@ -633,9 +652,7 @@ public class MapManager : MonoBehaviour
         grid = new GridCell[gridSize.x, gridSize.y, gridSize.z];
         cellList = new List<GridCell>();
     }
-    // END PATHFINDING
 
-    // CELL UTILITY FUNCTIONS
     bool CellInBounds(int x, int y, int z)
     {
         if(x < 0 || y < 0 || z < 0)
@@ -647,311 +664,6 @@ public class MapManager : MonoBehaviour
             return false;
         }
         return true;
-    }
-
-    public GridCell GetCell(Vector3Int cellPosition)
-    {
-        return grid[cellPosition.x, cellPosition.y, cellPosition.z];
-    }
-
-    public List<GridCell> GetWalkableCells()
-    {
-        return walkableCells;
-    }
-    // END CELL UTILITY FUNCTIONS
-
-    // SKILL TARGETING
-    List<GridCell> GetTargetableArea(GridCell originCell, int maxDistance, int maxUp, bool includeSelf = false)
-    {
-        List<GridCell> cells = new List<GridCell>();
-        for(int x = 0; x <= maxDistance; x++)
-        {
-            int targetXA = originCell.position.x + x;
-            int targetXB = originCell.position.x - x;
-            for(int y = 0; y <= maxDistance; y++)
-            {
-                // must be within the max distance, which will cut off corners
-                if((x + y) <= maxDistance)
-                {
-                    int targetYA = originCell.position.y + y;
-                    int targetYB = originCell.position.y - y;
-                    for(int z = 0; z <= maxUp; z++)
-                    {
-                        // checking the origin square, since +0/-0 means it just checks the same square 8 times
-                        if(x == 0 && y == 0)
-                        {
-                            if(z == 0 && includeSelf)
-                            {
-                                cells.Add(originCell);
-                            }
-                            continue;
-                        }
-
-                        int targetZA = originCell.position.z + z;
-                        int targetZB = originCell.position.z - z;
-
-                        if(CheckIfTargetable(targetXA, targetYA, targetZA))
-                        {
-                            cells.Add(grid[targetXA, targetYA, targetZA]);
-                        }
-
-                        if(x > 0)
-                        {
-                            if(CheckIfTargetable(targetXB, targetYA, targetZA))
-                            {
-                                cells.Add(grid[targetXB, targetYA, targetZA]);
-                            }
-                            
-                            if(y > 0)
-                            {
-                                if(CheckIfTargetable(targetXB, targetYB, targetZA))
-                                {
-                                    cells.Add(grid[targetXB, targetYB, targetZA]);
-                                }
-
-                                if(z > 0)
-                                {
-                                    if(CheckIfTargetable(targetXB, targetYB, targetZB))
-                                    {
-                                        cells.Add(grid[targetXB, targetYB, targetZB]);
-                                    }
-                                }
-                            }
-
-                            if(z > 0)
-                            {
-                                if(CheckIfTargetable(targetXB, targetYA, targetZB))
-                                {
-                                    cells.Add(grid[targetXB, targetYA, targetZB]);
-                                }
-                            }
-                        }
-
-                        if(y > 0)
-                        {
-                            if(CheckIfTargetable(targetXA, targetYB, targetZA))
-                            {
-                                cells.Add(grid[targetXA, targetYB, targetZA]);
-                            }
-
-                            if(z > 0)
-                            {
-                                if(CheckIfTargetable(targetXA, targetYB, targetZB))
-                                {
-                                    cells.Add(grid[targetXA, targetYB, targetZB]);
-                                }
-                            }
-                        }
-
-                        if(z != 0)
-                        {
-                            if(CheckIfTargetable(targetXA, targetYA, targetZB))
-                            {
-                                cells.Add(grid[targetXA, targetYA, targetZB]);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return cells;
-    }
-
-    List<GridCell> GetTargetableLine(GridCell originCell, int maxDistance, int maxUp, bool includeSelf = false)
-    {
-        List<GridCell> cells = new List<GridCell>();
-        for(int d = 0; d <= maxDistance; d++)
-        {
-            int targetXA = originCell.position.x + d;
-            int targetXB = originCell.position.x - d;
-            int targetYA = originCell.position.y + d;
-            int targetYB = originCell.position.y - d;
-
-            for(int z = 0; z <= maxUp; z++)
-            {
-                if(d == 0 && z == 0)
-                {
-                    if(includeSelf)
-                    {
-                        cells.Add(originCell);
-                    }
-                    continue;
-                }
-                int targetZA = originCell.position.z + z;
-                int targetZB = originCell.position.z - z;
-
-                // check along the X axis
-                if(CheckIfTargetable(targetXA, originCell.position.y, targetZA))
-                {
-                    cells.Add(grid[targetXA, originCell.position.y, targetZA]);
-                }
-                if(CheckIfTargetable(targetXB, originCell.position.y, targetZA))
-                {
-                    cells.Add(grid[targetXB, originCell.position.y, targetZA]);
-                }
-                if(targetZB != 0 && CheckIfTargetable(targetXA, originCell.position.y, targetZB))
-                {
-                    cells.Add(grid[targetXA, originCell.position.y, targetZB]);
-                }
-                if(targetZB != 0 && CheckIfTargetable(targetXB, originCell.position.y, targetZB))
-                {
-                    cells.Add(grid[targetXB, originCell.position.y, targetZB]);
-                }
-
-                // check along the Y axis
-                if(CheckIfTargetable(originCell.position.x, targetYA, targetZA))
-                {
-                    cells.Add(grid[originCell.position.x, targetYA, targetZA]);
-                }
-                if(CheckIfTargetable(originCell.position.x, targetYB, targetZA))
-                {
-                    cells.Add(grid[originCell.position.x, targetYB, targetZA]);
-                }
-                if(targetZB != 0 && CheckIfTargetable(originCell.position.x, targetYA, targetZB))
-                {
-                    cells.Add(grid[originCell.position.x, targetYA, targetZB]);
-                }
-                if(targetZB != 0 && CheckIfTargetable(originCell.position.x, targetYB, targetZB))
-                {
-                    cells.Add(grid[originCell.position.x, targetYB, targetZB]);
-                }
-            }
-        }
-        return cells;
-    }
-
-    public bool CheckIfTargetable(int x, int y, int z)
-    {
-        return CellInBounds(x, y, z) && grid[x, y, z] != null && !grid[x, y, z].buildNoNeighbours && grid[x, y, z].targetable;
-    }
-
-    public bool CheckIfTargetable(Vector3Int position)
-    {
-        int x = position.x;
-        int y = position.y;
-        int z = position.z;
-
-        return CheckIfTargetable(x, y, z);
-    }
-    
-    void RenderTargetableCells()
-    {
-        foreach(GridCell targetCell in targetableCells)
-        {
-            RenderCell(targetCell, TileType.TARGETABLE);
-        }
-    }
-
-    void RenderTargetedCells()
-    {
-        foreach(GridCell targetCell in targetedCells)
-        {
-            RenderCell(targetCell, TileType.TARGETED);
-        }
-    }
-
-    public List<GridCell> GetTargetableCells()
-    {
-        return targetableCells;
-    }
-
-    public List<GridCell> GetTargetedCells()
-    {
-        return targetedCells;
-    }
-
-    // END SKILL TARGETING
-
-    public void ClearAllTiles()
-    {
-        ClearWalkabilityTiles();
-        ClearTargetableTiles();
-        ClearTargetedTiles();
-    }
-
-    public void ClearOccupiedBy()
-    {
-        for(int i = 0; i < cellList.Count; i++)
-        {
-            cellList[i].occupiedBy = null;
-        }
-    }
-
-    public void ClearWalkabilityTiles()
-    {
-        foreach(GridCell gridCell in walkableCells)
-        {
-            GameObject tileObj = null;
-            if(renderedTiles.TryGetValue(gridCell, out tileObj))
-            {
-                renderedTiles.Remove(gridCell);
-                tileObj.SetActive(false);
-            }
-        }
-    }
-
-    public void ClearTargetableTiles()
-    {
-        foreach(GridCell gridCell in targetableCells)
-        {
-            GameObject tileObj = null;
-            if(renderedTiles.TryGetValue(gridCell, out tileObj))
-            {
-                renderedTiles.Remove(gridCell);
-                tileObj.SetActive(false);
-            }
-        }
-    }
-
-    void ResetTargetableCells()
-    {
-        ClearTargetableTiles();
-        targetableCells.Clear();
-    }
-
-    public void ClearTargetedTiles()
-    {
-        foreach(GridCell gridCell in targetedCells)
-        {
-            GameObject tileObj = null;
-            if(renderedTiles.TryGetValue(gridCell, out tileObj))
-            {
-                // if this tile exists as part of the targetable grid
-                // we don't want to get rid of it, just toggle it on off
-                if(targetableCells.Contains(gridCell))
-                {
-                    tileObj.GetComponent<Tile>().TileType = TileType.TARGETABLE;
-                }
-                else // we only exist because the target 
-                {
-                    renderedTiles.Remove(gridCell);
-                    tileObj.SetActive(false);
-                }
-            }
-        }
-    }
-
-    void ResetTargetedCells()
-    {
-        ClearTargetedTiles();
-        targetedCells.Clear();
-    }
-
-    GameObject GetPooledTile()
-    {
-        for(int i = 0; i < pooledTiles.Count; i++)
-        {
-            if(!pooledTiles[i].activeInHierarchy)
-            {
-                return pooledTiles[i];
-            }
-        }
-
-        GameObject tileObj = Instantiate(tilePrefab, mapHolder);
-        tileObj.SetActive(false);
-        pooledTiles.Add(tileObj);
-        return tileObj;
     }
 
     void RenderCell(GridCell gridCell, TileType tileType)
@@ -985,25 +697,258 @@ public class MapManager : MonoBehaviour
 
         renderedTiles.Add(gridCell, tileObj);
     }
+    #endregion
 
-    public void TravelPath(Stack<GridCell> path)
+    #region Skill Targeting
+    List<GridCell> GetTargetableArea(GridCell originCell, int maxDistance, int maxUp, bool includeSelf = false, bool skipOccupied = false)
     {
-        OnTravelPath?.Invoke(path);
+        List<GridCell> cells = new List<GridCell>();
+        for(int x = 0; x <= maxDistance; x++)
+        {
+            int targetXA = originCell.position.x + x;
+            int targetXB = originCell.position.x - x;
+            for(int y = 0; y <= maxDistance; y++)
+            {
+                // must be within the max distance, which will cut off corners
+                if((x + y) <= maxDistance)
+                {
+                    int targetYA = originCell.position.y + y;
+                    int targetYB = originCell.position.y - y;
+                    for(int z = 0; z <= maxUp; z++)
+                    {
+                        // checking the origin square, since +0/-0 means it just checks the same square 8 times
+                        if(x == 0 && y == 0)
+                        {
+                            if(z == 0 && includeSelf && !skipOccupied)
+                            {
+                                cells.Add(originCell);
+                            }
+                            continue;
+                        }
+
+                        int targetZA = originCell.position.z + z;
+                        int targetZB = originCell.position.z - z;
+
+                        if(CheckIfTargetable(targetXA, targetYA, targetZA, skipOccupied))
+                        {
+                            cells.Add(grid[targetXA, targetYA, targetZA]);
+                        }
+
+                        if(x > 0)
+                        {
+                            if(CheckIfTargetable(targetXB, targetYA, targetZA, skipOccupied))
+                            {
+                                cells.Add(grid[targetXB, targetYA, targetZA]);
+                            }
+                            
+                            if(y > 0)
+                            {
+                                if(CheckIfTargetable(targetXB, targetYB, targetZA, skipOccupied))
+                                {
+                                    cells.Add(grid[targetXB, targetYB, targetZA]);
+                                }
+
+                                if(z > 0)
+                                {
+                                    if(CheckIfTargetable(targetXB, targetYB, targetZB, skipOccupied))
+                                    {
+                                        cells.Add(grid[targetXB, targetYB, targetZB]);
+                                    }
+                                }
+                            }
+
+                            if(z > 0)
+                            {
+                                if(CheckIfTargetable(targetXB, targetYA, targetZB, skipOccupied))
+                                {
+                                    cells.Add(grid[targetXB, targetYA, targetZB]);
+                                }
+                            }
+                        }
+
+                        if(y > 0)
+                        {
+                            if(CheckIfTargetable(targetXA, targetYB, targetZA, skipOccupied))
+                            {
+                                cells.Add(grid[targetXA, targetYB, targetZA]);
+                            }
+
+                            if(z > 0)
+                            {
+                                if(CheckIfTargetable(targetXA, targetYB, targetZB, skipOccupied))
+                                {
+                                    cells.Add(grid[targetXA, targetYB, targetZB]);
+                                }
+                            }
+                        }
+
+                        if(z != 0)
+                        {
+                            if(CheckIfTargetable(targetXA, targetYA, targetZB, skipOccupied))
+                            {
+                                cells.Add(grid[targetXA, targetYA, targetZB]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return cells;
     }
 
-    public void TravelEnter(UnitData unitData, GridCell cell)
+    List<GridCell> GetTargetableLine(GridCell originCell, int maxDistance, int maxUp, bool includeSelf = false, bool skipOccupied = false)
     {
-        OnTravelEnter?.Invoke(unitData, cell);
+        List<GridCell> cells = new List<GridCell>();
+        for(int d = 0; d <= maxDistance; d++)
+        {
+            int targetXA = originCell.position.x + d;
+            int targetXB = originCell.position.x - d;
+            int targetYA = originCell.position.y + d;
+            int targetYB = originCell.position.y - d;
+
+            for(int z = 0; z <= maxUp; z++)
+            {
+                if(d == 0 && z == 0)
+                {
+                    if(includeSelf)
+                    {
+                        cells.Add(originCell);
+                    }
+                    continue;
+                }
+                int targetZA = originCell.position.z + z;
+                int targetZB = originCell.position.z - z;
+
+                // check along the X axis
+                if(CheckIfTargetable(targetXA, originCell.position.y, targetZA, skipOccupied))
+                {
+                    cells.Add(grid[targetXA, originCell.position.y, targetZA]);
+                }
+                if(CheckIfTargetable(targetXB, originCell.position.y, targetZA, skipOccupied))
+                {
+                    cells.Add(grid[targetXB, originCell.position.y, targetZA]);
+                }
+                if(targetZB != 0 && CheckIfTargetable(targetXA, originCell.position.y, targetZB, skipOccupied))
+                {
+                    cells.Add(grid[targetXA, originCell.position.y, targetZB]);
+                }
+                if(targetZB != 0 && CheckIfTargetable(targetXB, originCell.position.y, targetZB, skipOccupied))
+                {
+                    cells.Add(grid[targetXB, originCell.position.y, targetZB]);
+                }
+
+                // check along the Y axis
+                if(CheckIfTargetable(originCell.position.x, targetYA, targetZA, skipOccupied))
+                {
+                    cells.Add(grid[originCell.position.x, targetYA, targetZA]);
+                }
+                if(CheckIfTargetable(originCell.position.x, targetYB, targetZA, skipOccupied))
+                {
+                    cells.Add(grid[originCell.position.x, targetYB, targetZA]);
+                }
+                if(targetZB != 0 && CheckIfTargetable(originCell.position.x, targetYA, targetZB, skipOccupied))
+                {
+                    cells.Add(grid[originCell.position.x, targetYA, targetZB]);
+                }
+                if(targetZB != 0 && CheckIfTargetable(originCell.position.x, targetYB, targetZB, skipOccupied))
+                {
+                    cells.Add(grid[originCell.position.x, targetYB, targetZB]);
+                }
+            }
+        }
+        return cells;
     }
 
-    public void TravelPathEnd()
+    public bool CheckIfTargetable(int x, int y, int z, bool skipOccupied = false)
     {
-        ModBool cancelExecution = new ModBool(false);
-        Action<ModBool> callback = (ModBool cancelled) => {
-            OnTravelPathEnd?.Invoke();
-        };
-        battleManager.ResolveInterrupts(cancelExecution, callback);
+        return CellInBounds(x, y, z) 
+                && grid[x, y, z] != null 
+                && !grid[x, y, z].buildNoNeighbours 
+                && grid[x, y, z].targetable 
+                && (!skipOccupied || grid[x, y, z].occupiedBy == null);
     }
+
+    public bool CheckIfTargetable(Vector3Int position, bool skipOccupied = false)
+    {
+        int x = position.x;
+        int y = position.y;
+        int z = position.z;
+
+        return CheckIfTargetable(x, y, z, skipOccupied);
+    }
+
+    public void RenderTargetableTiles(List<GridCell> cells)
+    {
+        foreach(GridCell gridCell in cells)
+        {
+            RenderCell(gridCell, TileType.TARGETABLE);
+        }
+    }
+
+    public void RenderTargetedTiles(List<GridCell> cells)
+    {
+        foreach(GridCell gridCell in cells)
+        {
+            RenderCell(gridCell, TileType.TARGETED);
+        }
+    }
+
+    #endregion
+
+    #region Clear Functions
+    public void ClearAllTiles()
+    {
+        ClearWalkabilityTiles();
+    }
+
+    public void ClearOccupiedBy()
+    {
+        for(int i = 0; i < cellList.Count; i++)
+        {
+            cellList[i].occupiedBy = null;
+        }
+    }
+
+    public void ClearWalkabilityTiles()
+    {
+        foreach(GridCell gridCell in walkableCells)
+        {
+            GameObject tileObj = null;
+            if(renderedTiles.TryGetValue(gridCell, out tileObj))
+            {
+                renderedTiles.Remove(gridCell);
+                tileObj.SetActive(false);
+            }
+        }
+    }
+
+    public void ClearTargetableTiles(List<GridCell> tiles)
+    {
+        foreach(GridCell gridCell in tiles)
+        {
+            GameObject tileObj = null;
+            if(renderedTiles.TryGetValue(gridCell, out tileObj))
+            {
+                renderedTiles.Remove(gridCell);
+                tileObj.SetActive(false);
+            }
+        }
+    }
+
+    public void ClearTargetedTiles(List<GridCell> tiles)
+    {
+        foreach(GridCell gridCell in tiles)
+        {
+            GameObject tileObj = null;
+            if(renderedTiles.TryGetValue(gridCell, out tileObj))
+            {
+                renderedTiles.Remove(gridCell);
+                tileObj.SetActive(false);
+            }
+        }
+    }
+    #endregion    
 
     void OnDestroy()
     {

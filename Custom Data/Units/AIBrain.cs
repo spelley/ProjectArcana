@@ -164,7 +164,7 @@ public class AIBrain : ScriptableObject
             while(scores.Count > 0)
             {
                 SkillScore skillScore = scores.Dequeue();
-                if(MapManager.Instance.CheckIfTargetable(skillScore.target)) {
+                if(MapManager.Instance.CheckIfTargetable(skillScore.target, skills[skillScore.skillIndex].requireEmptyTile)) {
                     if((skillScore.score > maxScore) || (skillScore.score == maxScore && skillScore.distanceScore > maxDistanceScore))
                     {
                         maxScore = skillScore.score;

@@ -164,7 +164,7 @@ public class SaveDataLoader : MonoBehaviour
         executeAnimationDictionary.Clear();
         foreach(GameObject executeAnimation in executeAnimations)
         {
-            executeAnimationDictionary.Add(executeAnimation.GetComponent<SkillAnimation>().id, executeAnimation);
+            executeAnimationDictionary.Add(executeAnimation.GetComponent<BattleSkillAnimation>().id, executeAnimation);
         }
 
         statusEffectDictionary.Clear();

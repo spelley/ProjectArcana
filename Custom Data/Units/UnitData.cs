@@ -186,7 +186,7 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable, ILoadable<Uni
     public event Action<StatusEffect> OnAddStatusEffect;
     public event Action<StatusEffect> OnRemoveStatusEffect;
     
-    public event Action<GridCell, Action<Vector3Int>> OnUnitPush;
+    public event Action<List<GridCell>, Action> OnUnitPush;
 
     public event Action<int> OnUnitExperience;
     public event Action<int> OnUnitLevel;
@@ -335,14 +335,9 @@ public class UnitData : ScriptableObject, ITurnTaker, IDamageable, ILoadable<Uni
         OnUnitMiss?.Invoke();
     }
 
-    public void PushTo(GridCell targetCell)
+    public void PushTo(List<GridCell> cellPath, Action callback)
     {
-        OnUnitPush?.Invoke(targetCell, PushComplete);
-    }
-
-    public void PushComplete(Vector3Int targetPosition)
-    {
-        MapManager.Instance.UpdateUnitPosition(targetPosition, this);
+        OnUnitPush?.Invoke(cellPath, callback);
     }
 
     public int PredictDealDamage(int damage, IDamageable target, List<ElementData> elements)
