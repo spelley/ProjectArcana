@@ -225,7 +225,7 @@ public class BattleManager : MonoBehaviour
         // handle win conditions
         if(winConditions.Count == 0)
         {
-            curEncounterWinConditions.Add(defaultEncounterWinCondition);
+            // curEncounterWinConditions.Add(defaultEncounterWinCondition);
         }
         else
         {
@@ -235,7 +235,7 @@ public class BattleManager : MonoBehaviour
         // handle loss conditions
         if(lossConditions.Count == 0)
         {
-            curEncounterLossConditions.Add(defaultEncounterLossCondition);
+            // curEncounterLossConditions.Add(defaultEncounterLossCondition);
         }
         else
         {

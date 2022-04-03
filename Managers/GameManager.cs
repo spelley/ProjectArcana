@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEditor;
 
 public class GameManager : MonoBehaviour
 {
@@ -15,6 +16,8 @@ public class GameManager : MonoBehaviour
             return _instance; 
         }
     }
+
+    public GameState curState { get; private set; }
 
     void Awake()
     {
@@ -74,8 +77,6 @@ public class GameManager : MonoBehaviour
 
     [SerializeField]
     List<UnitData> curPlayers = new List<UnitData>();
-    [SerializeField]
-    List<Vector3> spawnLocations = new List<Vector3>();
 
     public Inventory playerInventory { get; private set; }
 
@@ -88,12 +89,14 @@ public class GameManager : MonoBehaviour
     public EquipmentData testAccessory;
 
     public event Action OnGameManagerLoaded;
+    public event Action<GameState> OnGameStateChanged;
 
     // Start is called before the first frame update
     void Start()
     {
-        Application.targetFrameRate = 60;
-        
+        // Application.targetFrameRate = 60;
+        SetState(GameState.INITIALIZING);
+
         party = new List<UnitData>();
         for(int i = 0; i < curPlayers.Count; i++)
         {
@@ -103,9 +106,6 @@ public class GameManager : MonoBehaviour
         }
 
         curFormation = defaultFormation;
-
-        GameObject mainPlayer = SpawnUnit(party[0], spawnLocations[0], true);
-        activePlayer = party[0];
 
         // TODO: remove test code
         playerInventory.AddItem(testWeapon, true);
@@ -128,14 +128,6 @@ public class GameManager : MonoBehaviour
         playerInventory.AddItem(testHelmet, true);
         playerInventory.AddItem(testArmor, true);
         playerInventory.AddItem(testAccessory, true);
-        
-        playerInventory.EquipFromInventory(testWeapon, activePlayer);
-        playerInventory.EquipFromInventory(testOffHand, activePlayer, true);
-        playerInventory.EquipFromInventory(testHelmet, activePlayer);
-        playerInventory.EquipFromInventory(testArmor, activePlayer);
-        playerInventory.EquipFromInventory(testAccessory, activePlayer);
-
-        activePlayer.RefreshUnit();
 
         StartCoroutine(DelayedInvoke());
     }
@@ -143,10 +135,11 @@ public class GameManager : MonoBehaviour
     IEnumerator DelayedInvoke()
     {
         yield return null;
+        SetState(GameState.RUNNING);
         OnGameManagerLoaded?.Invoke();
     }
 
-    public GameObject SpawnUnit(UnitData unitData, Vector3 spawnPosition, bool isPlayerControlled = false)
+    public GameObject SpawnUnit(UnitData unitData, Vector3 spawnPosition, bool isPlayerControlled = false, bool isActivePlayer = false)
     {
         unitData.Load();
 
@@ -157,6 +150,10 @@ public class GameManager : MonoBehaviour
             unitGO.tag = "Player";
         }
         unitData.unitGO = unitGO;
+        if(isActivePlayer)
+        {
+            activePlayer = unitData;
+        }
         return unitGO;
     }
 
@@ -182,15 +179,23 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        if(Input.GetKeyDown(KeyCode.F5))
+        if(Input.GetKeyDown(KeyCode.F5) && curState == GameState.RUNNING && !_battleManager.inCombat)
         {
             // Debug.Log"Quick Save");
-            QuickSave();
+            StartCoroutine(QuickSave());
         }
     }
 
-    public void QuickSave()
+    void SetState(GameState newState)
     {
+        curState = newState;
+        OnGameStateChanged?.Invoke(newState);
+    }
+
+    IEnumerator QuickSave()
+    {
+        SetState(GameState.SAVING);
+        yield return null;
         string folder = Application.persistentDataPath + "/Saves/Quick Save/";
         string filename = folder + "GameState.json";
         GameSaveData saveData = GetSaveData();
@@ -198,7 +203,10 @@ public class GameManager : MonoBehaviour
         {
             Directory.CreateDirectory(folder);
         }
+        yield return null;
         string json = JsonUtility.ToJson(saveData, true);
         File.WriteAllText(filename, json);
+        yield return null;
+        SetState(GameState.RUNNING);
     }
 }

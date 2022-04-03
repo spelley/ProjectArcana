@@ -111,6 +111,10 @@ public class MapManager : MonoBehaviour
         {
             LoadFromMapData();
         }
+        else
+        {
+            Debug.Log("No map data?");
+        }
 
         battleManager = BattleManager.Instance;
 
@@ -202,7 +206,12 @@ public class MapManager : MonoBehaviour
     #region Pathfinding
     public void UpdateUnitPosition(Vector3Int position, UnitData unitData)
     {
-        grid[unitData.curPosition.x, unitData.curPosition.y, unitData.curPosition.z].occupiedBy = null;
+        if(CellInBounds(unitData.curPosition.x, unitData.curPosition.y, unitData.curPosition.z) 
+            && grid[unitData.curPosition.x, unitData.curPosition.y, unitData.curPosition.z] != null)
+        {
+            grid[unitData.curPosition.x, unitData.curPosition.y, unitData.curPosition.z].occupiedBy = null;
+        }
+        
         unitData.curPosition = position;
         grid[position.x, position.y, position.z].occupiedBy = unitData;
     }
